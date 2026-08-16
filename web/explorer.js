@@ -102,6 +102,7 @@
       <canvas class="bar" width="1120" height="102" style="display:none"></canvas>
       <div class="regel"></div>
       <div class="globPop pop">
+        <label class="normval"><span>${T("matt")}</span><select></select></label>
         <label class="skalval"><span>${T("skala")}</span>
           <select><option value="log">${T("log")}</option>
                   <option value="lin">${T("linjar")}</option></select></label>
@@ -121,6 +122,13 @@
       ritaBarFor(p);
     };
     el.querySelector(".nollval select").onchange = e => { p.nollLage = e.target.value; visa(p); };
+    // Normaliseringen är ett MÅTTVAL, inte en ny serie: samma sak mätt per
+    // person, per km² eller i absoluta tal. Därför byts den här och inte i
+    // väljaren, som annars skulle lista samma serie tre gånger.
+    el.querySelector(".normval select").onchange = e => {
+      p.skala = null; p.nollLage = null;
+      visa(p, e.target.value);
+    };
     paneler.push(p);
     return p;
   }
@@ -153,6 +161,14 @@
     if (gammalZoom) p.glob.zoom = gammalZoom; else p.glob.zoom = VYER[vyval.value].zoom;
     el.querySelector(".saknas").style.display = "none";
     canvas.style.display = ""; bar.style.display = "";
+    const nvv = el.querySelector(".normval"), nsel = nvv.querySelector("select");
+    const varianter = (serieAv[p.id] || {}).v || [];
+    if (varianter.length > 1) {
+      nvv.style.display = "";
+      const NORM = T("norm") || {};
+      nsel.innerHTML = varianter.map(v =>
+        `<option value="${v.id}"${v.id === p.id ? " selected" : ""}>${NORM[v.n] || v.n}</option>`).join("");
+    } else nvv.style.display = "none";
     const sk = el.querySelector(".skalval");
     sk.style.display = meta.skala === "log10" ? "" : "none";
     sk.querySelector("select").value = p.skala;

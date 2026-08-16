@@ -58,6 +58,39 @@ def las_csv(slug):
     return d, kEnt, kKod, kAr, varden[0]
 
 
+"""── Normalisering ────────────────────────────────────────────────────────
+Ett absolut tal på en glob mäter mest hur STORT landet är: Ryssland brinner
+mest hektar för att Ryssland är störst. Allt som skalar med befolkning eller
+landyta ska därför normaliseras, och den normaliserade varianten är förvald.
+
+Ytmått (hektar, km²) blir en ANDEL av landytan — samma sort delad med samma
+sort, alltså rena promille eller ppm. Övriga extensiva mått blir per person
+och per km², och storleksordningen väljs så att siffran går att läsa: 0,000012
+fall per person säger ingenting, 12 fall per miljon säger något.
+"""
+YTENHET = re.compile(r"\b(hectares?|ha|km²|km2|square kilometres?|sq\.? ?km|acres?)\b", re.I)
+
+
+def ytfaktor_km2(enhet):
+    """→ hur många km² en enhet av måttet är, eller None om det inte är en yta."""
+    e = (enhet or "").lower()
+    if re.search(r"\bhectares?\b|\bha\b", e):   return 0.01
+    if re.search(r"\bacres?\b", e):             return 0.00404686
+    if re.search(r"km²|km2|square kilometres?|sq\.? ?km", e): return 1.0
+    return None
+
+
+def lasbar_skala(median, basenhet):
+    """Väljer tiopotens så att typvärdet hamnar i läsbart intervall."""
+    if median <= 0 or not np.isfinite(median):
+        return 1.0, basenhet
+    if median < 1e-4:  return 1e6, basenhet.replace("person", "miljon personer") \
+                                            .replace("km²", "miljon km²")
+    if median < 0.1:   return 1e3, basenhet.replace("person", "1 000 personer") \
+                                            .replace("km²", "1 000 km²")
+    return 1.0, basenhet
+
+
 def valj_representation(v, enhet):
     """Arketyp ur datans egen form (artikelns D1–D5). Regeln som gick igång
     skrivs ut i gränssnittet — valet är ett omdöme, inte en teknisk sanning."""
@@ -101,6 +134,108 @@ def viktat_varldssnitt(per_land, ar, folk, yta, ix, vikt):
     return tal / namn if namn > 0 else None
 
 
+def varianter_av(per_ar, ar_lista, post, ix, yta, folk):
+    """→ [(kod, enhet, titelsuffix, {år: {iso: värde}})] — absolut plus de
+    normaliseringar som är meningsfulla för måttet."""
+    e = (post["enhet"] or "").lower()
+    intensiv = ("per " in e or "%" in e or "/" in e
+                or "rate" in (post["titel"] or "").lower())
+    ut = [("abs", post["enhet"], "", per_ar)]
+    if intensiv:
+        return ut                                  # redan normaliserat
+    yf = ytfaktor_km2(post["enhet"])
+    if yf:
+        # yta delad med yta → ren andel. Promille eller ppm, men ändå jämförbar
+        # mellan Ryssland och Portugal, vilket hektaren aldrig är.
+        d = {}
+        for a in ar_lista:
+            d[a] = {s: v * yf / yta[ix[s]] * 100
+                    for s, v in per_ar[a].items() if yta[ix[s]] > 0}
+        ut.append(("andel", "% av landytan", " — andel av landytan", d))
+        return ut
+    for kod, namn, suffix in (("capita", "per person", " — per person"),
+                              ("km2", "per km²", " — per km²")):
+        d, allt = {}, []
+        for a in ar_lista:
+            rad = {}
+            for s, v in per_ar[a].items():
+                n = folk.get((s, a)) if kod == "capita" else (yta[ix[s]] or 0)
+                if n and n > 0:
+                    rad[s] = v / n
+            if len(rad) >= MIN_LANDER:
+                d[a] = rad; allt.extend(rad.values())
+        if len(d) < MIN_AR or not allt:
+            continue
+        faktor, enhet = lasbar_skala(float(np.median(allt)), namn)
+        if faktor != 1.0:
+            d = {a: {s: v * faktor for s, v in rad.items()} for a, rad in d.items()}
+        ut.append((kod, (post["enhet"] or "") + " " + enhet, suffix, d))
+    return ut
+
+
+def mat_variant(per_ar, ar_lista, varld, enhet, titel, kod, ix, yta, folk, NL):
+    """En variant → (kub, arketyp, skala, nollnivåserie). Samma kvarn oavsett
+    om det är absoluta hektar eller andel av landytan."""
+    alla = np.array([v for a in ar_lista for v in per_ar[a].values()], float)
+    alla = alla[np.isfinite(alla)]
+    if not len(alla):
+        return None
+    rep = valj_representation(alla, enhet)
+    if rep["skala"] == "log10":
+        pos = alla[alla > 0]
+        if not len(pos):
+            return None
+        vmin = float(np.log10(np.percentile(pos, 0.5)))
+        vmax = float(np.log10(np.percentile(pos, 99.5)))
+    else:
+        vmin = rep.get("vmin", float(np.percentile(alla, 0.5)))
+        vmax = rep.get("vmax", float(np.percentile(alla, 99.5)))
+    if not np.isfinite([vmin, vmax]).all() or vmax - vmin < 1e-9:
+        return None
+    kub = np.zeros((len(ar_lista), NL), np.uint16)
+    gmedel = []
+    e = (enhet or "").lower()
+    # Normaliserade varianter ÄR intensiva, oavsett vad grundmåttet var.
+    extensiv = kod == "abs" and not ("per " in e or "%" in e or "/" in e
+                                     or "rate" in (titel or "").lower())
+    vikt = "yta" if kod in ("km2", "andel") or "km²" in e else "folk"
+    berak = totalrader = 0
+    for t, a in enumerate(ar_lista):
+        for s, v in per_ar[a].items():
+            if rep["skala"] == "log10":
+                if v <= 0:
+                    continue
+                n = (np.log10(v) - vmin) / (vmax - vmin)
+            else:
+                n = (v - vmin) / (vmax - vmin)
+            kub[t, ix[s]] = 1 + int(np.clip(n, 0, 1) * 65534)
+        varden_ar = list(per_ar[a].values())
+        hogst = max(varden_ar)
+        # World-raden gäller bara den absoluta varianten; delar man med
+        # befolkningen är den inte längre jämförbar med länderna.
+        gv = varld.get(a) if kod == "abs" else None
+        # För ett extensivt mått är OWID:s World-rad SUMMAN, inte snittet.
+        if gv is not None and hogst > 0 and gv > 1.5 * hogst:
+            gv = None; totalrader += 1
+        if gv is None:
+            gv = (float(np.mean(varden_ar)) if extensiv
+                  else viktat_varldssnitt(per_ar[a], a, folk, yta, ix, vikt))
+            berak += 1
+        if gv is None or not np.isfinite(gv):
+            gv = float(np.median(varden_ar))
+        gmedel.append(round(float(gv), 8))
+    if berak >= len(ar_lista):
+        metod = ("snitt över länderna" if extensiv
+                 else f"{'ytviktat' if vikt=='yta' else 'befolkningsviktat'} snitt över länderna")
+        if totalrader:
+            metod += " (OWID:s världsrad är summan, inte snittet)"
+    else:
+        metod = "OWID:s världsvärde"
+        if berak:
+            metod += f", räknat snitt {berak} av {len(ar_lista)} år"
+    return kub, rep, round(vmin, 8), round(vmax, 8), gmedel, metod
+
+
 def bearbeta(post, ix, yta, folk, NL):
     d = las_csv(post["slug"])
     if not d:
@@ -123,81 +258,34 @@ def bearbeta(post, ix, yta, folk, NL):
         per_ar[a][kod] = v
     if not per_ar:
         return None, "inga länder"
-    # år med rimlig täckning; enstaka länder ett enskilt år ger en tom glob
     ar_lista = sorted(a for a, v in per_ar.items() if len(v) >= MIN_LANDER and a >= -10000)
     if len(ar_lista) < MIN_AR:
         return None, f"bara {len(ar_lista)} år med ≥{MIN_LANDER} länder"
-    alla = np.array([v for a in ar_lista for v in per_ar[a].values()], float)
-    rep = valj_representation(alla, post["enhet"])
-    if rep["skala"] == "log10":
-        pos = alla[alla > 0]
-        if not len(pos):
-            return None, "log utan positiva värden"
-        vmin = float(np.log10(np.percentile(pos, 0.5)))
-        vmax = float(np.log10(np.percentile(pos, 99.5)))
-    else:
-        vmin = rep.get("vmin", float(np.percentile(alla, 0.5)))
-        vmax = rep.get("vmax", float(np.percentile(alla, 99.5)))
-    if not np.isfinite([vmin, vmax]).all() or vmax - vmin < 1e-9:
-        return None, "urartad skala"
 
-    kub = np.zeros((len(ar_lista), NL), np.uint16)
-    gmedel = []
-    vikt = "yta" if "km²" in (post["enhet"] or "") else "folk"
-    # Extensiva mått (hektar, ton, antal fall) summeras över länder; intensiva
-    # (per person, %, per km²) medelvärdesbildas. Det avgör vad OWID:s World-rad
-    # ÄR — och därmed om den duger som nollnivå.
-    e = (post["enhet"] or "").lower()
-    extensiv = not ("per " in e or "%" in e or "/" in e or "rate" in (post["titel"] or "").lower())
-    berak = totalrader = 0
-    for t, a in enumerate(ar_lista):
-        for s, v in per_ar[a].items():
-            if rep["skala"] == "log10":
-                if v <= 0:
-                    continue
-                n = (np.log10(v) - vmin) / (vmax - vmin)
-            else:
-                n = (v - vmin) / (vmax - vmin)
-            kub[t, ix[s]] = 1 + int(np.clip(n, 0, 1) * 65534)
-        varden_ar = list(per_ar[a].values())
-        hogst = max(varden_ar)
-        gv = varld.get(a)
-        # För ett extensivt mått är OWID:s World-rad SUMMAN, inte snittet. Använde
-        # man den som nollnivå hamnade planet ovanför varje land och HELA jorden
-        # extruderades nedåt — det syntes direkt på skogsbrandsglobens
-        # 41 miljoner hektar mot en världstotal flera gånger så stor.
-        if gv is not None and hogst > 0 and gv > 1.5 * hogst:
-            gv = None
-            totalrader += 1
-        if gv is None:
-            gv = (float(np.mean(varden_ar)) if extensiv
-                  else viktat_varldssnitt(per_ar[a], a, folk, yta, ix, vikt))
-            berak += 1
-        if gv is None or not np.isfinite(gv):
-            gv = float(np.median(varden_ar))
-        gmedel.append(round(float(gv), 6))
-
-    lander = sorted({s for a in ar_lista for s in per_ar[a]})
-    if berak >= len(ar_lista):
-        metod = ("snitt över länderna" if extensiv
-                 else f"{'ytviktat' if vikt=='yta' else 'befolkningsviktat'} snitt över länderna")
-        if totalrader:
-            metod += " (OWID:s världsrad är summan, inte snittet)"
-    else:
-        metod = "OWID:s världsvärde"
-        if berak:
-            metod += (f", {'snitt' if extensiv else 'viktat snitt'} över länderna "
-                      f"{berak} av {len(ar_lista)} år")
-    post_ut = dict(
-        id=post["slug"], titel=post["titel"], enhet=post["enhet"],
-        kalla=post.get("kalla", ""), beskr=post.get("beskr", ""),
-        topics=post.get("topics", []), kategori=post.get("kategori", ""),
-        ar=[int(a) for a in ar_lista], nland=NL, nlander=len(lander),
-        vmin=round(vmin, 6), vmax=round(vmax, 6), linjarGainHojd=1.0,
-        globalmedel=gmedel, medelMetod=metod,
-        **{k: rep[k] for k in ("arketyp", "skala", "nollLage", "ramp", "regel")})
-    return (kub, post_ut), None
-
+    ut = []
+    for kod, enhet, suffix, data in varianter_av(per_ar, ar_lista, post, ix, yta, folk):
+        ar_v = sorted(a for a in ar_lista if a in data and len(data[a]) >= MIN_LANDER)
+        if len(ar_v) < MIN_AR:
+            continue
+        m = mat_variant({a: data[a] for a in ar_v}, ar_v, varld, enhet,
+                        post["titel"], kod, ix, yta, folk, NL)
+        if not m:
+            continue
+        kub, rep, vmin, vmax, gmedel, metod = m
+        lander = sorted({s for a in ar_v for s in data[a]})
+        ut.append((kod, kub, dict(
+            id=post["slug"] + ("" if kod == "abs" else "__" + kod),
+            bas=post["slug"], norm=kod, suffix=suffix,
+            titel=post["titel"] + suffix, enhet=enhet,
+            kalla=post.get("kalla", ""), beskr=post.get("beskr", ""),
+            topics=post.get("topics", []), kategori=post.get("kategori", ""),
+            ar=[int(a) for a in ar_v], nland=NL, nlander=len(lander),
+            vmin=vmin, vmax=vmax, linjarGainHojd=1.0,
+            globalmedel=gmedel, medelMetod=metod,
+            **{k: rep[k] for k in ("arketyp", "skala", "nollLage", "ramp", "regel")})))
+    if not ut:
+        return None, "ingen variant dög"
+    return ut, None
 
 def main():
     arg = sys.argv[1:]
@@ -220,6 +308,7 @@ def main():
         kand = kand[:maxantal]
 
     katalog, avvisade = [], defaultdict(int)
+    baser = []                       # en post per GRUNDSERIE, med sina varianter
     for i, post in enumerate(kand, 1):
         try:
             res, skal = bearbeta(post, ix, yta, folk, NL)
@@ -228,12 +317,19 @@ def main():
         if not res:
             avvisade[skal] += 1
             continue
-        kub, ut = res
-        kub.tofile(os.path.join(SERIER, post["slug"] + ".bin"))
-        ut["kb"] = round(os.path.getsize(os.path.join(SERIER, post["slug"] + ".bin")) / 1024, 1)
-        katalog.append(ut)
+        varianter = []
+        for kod, kub, ut in res:
+            fil = os.path.join(SERIER, ut["id"] + ".bin")
+            kub.tofile(fil)
+            ut["kb"] = round(os.path.getsize(fil) / 1024, 1)
+            katalog.append(ut)
+            varianter.append(ut)
+        # Den normaliserade varianten är FÖRVALD: ett absolut tal på en glob
+        # mäter mest hur stort landet är.
+        std = next((v for v in varianter if v["norm"] != "abs"), varianter[0])
+        baser.append(dict(bas=post["slug"], std=std["id"], varianter=varianter))
         if i % 100 == 0:
-            print(f"  {i}/{len(kand)}  {len(katalog)} exporterade", flush=True)
+            print(f"  {i}/{len(kand)}  {len(baser)} serier, {len(katalog)} varianter", flush=True)
 
     # ämnesträd: katalogen bär sin egen navigering
     kategorier = json.load(open(os.path.join(HER, "kategorier.json")))
@@ -244,10 +340,13 @@ def main():
         for t in ts:
             if t not in EJ:
                 topic_kat.setdefault(t, k)
+    # Ämnesträdet pekar på GRUNDSERIER, inte varianter — annars står samma sak
+    # tre gånger i väljaren. Varianten byts i globens egen ⋯-panel.
     trad = defaultdict(lambda: defaultdict(list))
-    for p in katalog:
+    for b in baser:
+        p = b["varianter"][0]
         for t in (p["topics"] or ["(otaggad)"]):
-            trad[topic_kat.get(t, "(otaggad)")][t].append(p["id"])
+            trad[topic_kat.get(t, "(otaggad)")][t].append(b["std"])
     ut_trad = [dict(kategori=k, amnen=[dict(topic=t, serier=sorted(set(v)))
                                        for t, v in sorted(a.items())])
                for k, a in sorted(trad.items(), key=lambda kv: -sum(len(x) for x in kv[1].values()))]
@@ -257,9 +356,15 @@ def main():
     # Med allt i katalogen blev den 2 MB för 1 301 serier — det får ingen betala
     # för att titta på en enda glob.
     lat = []
+    varianter_av_id = {}
+    for b in baser:
+        for v in b["varianter"]:
+            varianter_av_id[v["id"]] = [dict(id=x["id"], n=x["norm"], e=x["enhet"])
+                                        for x in b["varianter"]]
     for p in katalog:
         lat.append(dict(id=p["id"], t=p["titel"], e=p["enhet"], k=p["arketyp"],
-                        a0=p["ar"][0], a1=p["ar"][-1], n=p["nlander"], kb=p["kb"]))
+                        a0=p["ar"][0], a1=p["ar"][-1], n=p["nlander"], kb=p["kb"],
+                        v=varianter_av_id.get(p["id"], [])))
         tung = {k: v for k, v in p.items()
                 if k not in ("titel", "enhet", "arketyp", "nlander", "kb")}
         json.dump(tung, open(os.path.join(SERIER, p["id"] + ".json"), "w"),
@@ -279,8 +384,11 @@ def main():
     json.dump(dict(ny=180, nx=360, iso=iso, namn=namn, yta=[round(float(x), 2) for x in yta]),
               open(os.path.join(WEB_DATA, "lander.json"), "w"), ensure_ascii=False)
 
+    from collections import Counter
+    normer = Counter(p["norm"] for p in katalog)
     kb = sum(p["kb"] for p in katalog)
-    print(f"\n{len(katalog)} serier exporterade av {len(kand)} kandidater")
+    print(f"\n{len(baser)} serier av {len(kand)} kandidater, "
+          f"{len(katalog)} varianter ({dict(normer)})")
     print(f"  {kb/1024:.1f} MB serier + {os.path.getsize(os.path.join(WEB_DATA,'katalog.json'))/1024:.0f} kB katalog")
     print(f"  gränsgrid {kodF.shape[1]}×{kodF.shape[0]} ({grad}°)")
     print("\navvisade:")
