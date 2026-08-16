@@ -80,7 +80,9 @@
       titel: lat.t, enhet: lat.e, nland: tung.nland,
       varden, landvarden: raw, kodGrid: G, meshGrid: M, ra: null,
       ny: M.ny, nx: M.nx, lat0: -89.5, lon0: -179.5, platta: true,
-      nollpunkt: 0, medel: false, relieffaktor: 0.9, landdata: true,
+      nollpunkt: 0, medel: false, landdata: true,
+      // Reliefen är normaliserad per serie i exporten: p5–p95 siktar på ~12 mm.
+      relieffaktor: tung.relieffaktor ?? 0.9,
       linjarGain: tung.skala === "log10" ? 1.0 : 0,
       standardSkala: tung.skala === "log10" ? "log" : "lin",   // "lin" här = identitet
     });
@@ -319,6 +321,23 @@
     }, { passive: false });
   }
 
+  /* ── Favoriter ───────────────────────────────────────────────────────────
+     Ligger i webbläsaren (localStorage) och kräver inget konto. Vill man ta
+     dem med sig till en annan dator följer de med i delningslänken. */
+  const FAVNYCKEL = "owidx_favoriter";
+  let favoriter = (() => {
+    try { return new Set(JSON.parse(localStorage.getItem(FAVNYCKEL) || "[]")); }
+    catch (e) { return new Set(); }
+  })();
+  function sparaFav() {
+    try { localStorage.setItem(FAVNYCKEL, JSON.stringify([...favoriter])); }
+    catch (e) { /* privat läge: favoriterna gäller sessionen */ }
+  }
+  function vaxlaFav(id) {
+    if (favoriter.has(id)) favoriter.delete(id); else favoriter.add(id);
+    sparaFav(); ritaAmnen(); ritaSerier(); laggTillDelning();
+  }
+
   /* ── seriväljaren: kategori → ämne → serie, plus fritextsök ──
         1 300 serier ryms inte i en rullgardin, men de ryms i OWID:s egen
         indelning — som besökaren troligen redan känner igen. */
@@ -344,9 +363,17 @@
     amneslista.innerHTML = "";
     const alla = document.createElement("button");
     alla.className = "amne" + (aktivtAmne ? "" : " pa");
-    alla.innerHTML = `<span>${T("alla")}</span><b>${katalog.indikatorer.length}</b>`;
+    alla.innerHTML = `<span>${T("alla")}</span><b>${baslista().length}</b>`;
     alla.onclick = () => { aktivtAmne = null; ritaAmnen(); ritaSerier(); };
     amneslista.append(alla);
+    if (favoriter.size) {
+      const f = document.createElement("button");
+      f.className = "amne" + (aktivtAmne === "★" ? " pa" : "");
+      f.innerHTML = `<span>★ ${T("favoriter")}</span><b>${favoriter.size}</b>`;
+      f.onclick = () => { aktivtAmne = "★"; sokstrang = ""; $("#sok").value = "";
+                          ritaAmnen(); ritaSerier(); };
+      amneslista.append(f);
+    }
     for (const kat of katalog.trad) {
       const rub = document.createElement("h4");
       rub.textContent = KATEGORI(kat.kategori);
@@ -362,10 +389,22 @@
     }
   }
 
+  let _baser = null;
+  function baslista() {          // väljaren visar grundserier, inte varianter
+    if (_baser) return _baser;
+    const ids = new Set();
+    for (const kat of katalog.trad)
+      for (const a of kat.amnen) a.serier.forEach(s => ids.add(s));
+    _baser = katalog.indikatorer.filter(p => ids.has(p.id));
+    return _baser;
+  }
+
   function ritaSerier() {
     let lista;
-    if (sokstrang) {
-      lista = katalog.indikatorer.filter(p =>
+    if (aktivtAmne === "★") {
+      lista = katalog.indikatorer.filter(p => favoriter.has(p.id));
+    } else if (sokstrang) {
+      lista = baslista().filter(p =>
         (p.t + " " + (p.e || "")).toLowerCase().includes(sokstrang)).slice(0, 300);
     } else if (aktivtAmne) {
       const ids = new Set();
@@ -374,11 +413,18 @@
           if (a.topic === aktivtAmne) a.serier.forEach(s => ids.add(s));
       lista = katalog.indikatorer.filter(p => ids.has(p.id));
     } else {
-      lista = katalog.indikatorer.slice().sort((a, b) => b.n - a.n).slice(0, 300);
+      lista = baslista().slice().sort((a, b) => b.n - a.n).slice(0, 300);
     }
     serielista.innerHTML = "";
     if (!lista.length) { serielista.innerHTML = `<p class="inga">${T("inga")}</p>`; return; }
     for (const p of lista) {
+      const rad = document.createElement("div");
+      rad.className = "serierad";
+      const stj = document.createElement("button");
+      stj.className = "stjarna" + (favoriter.has(p.id) ? " pa" : "");
+      stj.textContent = favoriter.has(p.id) ? "★" : "☆";
+      stj.title = T("favorit");
+      stj.onclick = e => { e.stopPropagation(); vaxlaFav(p.id); };
       const b = document.createElement("button");
       b.className = "serie" + (aktivPanel && aktivPanel.id === p.id ? " pa" : "");
       b.innerHTML = `<span class="st">${p.t}</span>
@@ -390,7 +436,8 @@
         aktivPanel.skala = null; aktivPanel.nollLage = null;
         visa(aktivPanel, p.id);
       };
-      serielista.append(b);
+      rad.append(stj, b);
+      serielista.append(rad);
     }
   }
 
@@ -438,7 +485,8 @@
   function laggTillDelning() {
     const bit = paneler.filter(p => p.id).map(p =>
       [p.id, p.skala, p.nollLage].join("~")).join(",");
-    history.replaceState(null, "", "#s=" + encodeURIComponent(bit) + "&ar=" + Math.round(arNu));
+    const f = favoriter.size ? "&fav=" + encodeURIComponent([...favoriter].join(",")) : "";
+    history.replaceState(null, "", "#s=" + encodeURIComponent(bit) + "&ar=" + Math.round(arNu) + f);
   }
   $("#delaknapp").onclick = async () => {
     laggTillDelning();
@@ -468,6 +516,10 @@
     if (bitar.length) start = bitar;
   }
   if (hash.get("ar")) arNu = +hash.get("ar");
+  if (hash.get("fav")) {          // favoriter från en delad länk läggs till
+    decodeURIComponent(hash.get("fav")).split(",").filter(Boolean).forEach(x => favoriter.add(x));
+    sparaFav();
+  }
   for (let i = 0; i < Math.min(2, start.length); i++) {
     const [id, sk, no] = start[i];
     const p = paneler[i];

@@ -70,6 +70,23 @@ fall per person säger ingenting, 12 fall per miljon säger något.
 """
 YTENHET = re.compile(r"\b(hectares?|ha|km²|km2|square kilometres?|sq\.? ?km|acres?)\b", re.I)
 
+# VITLISTA, inte svartlista. Ett index, en poäng eller ett årtal är inte
+# additivt, och att dela det med landytan ger nonsens: "Political Polarization
+# Score — per km²" toppade med 270 mm för att Monaco är litet. En felaktig
+# normalisering är värre än en uteblíven, så bara enheter som verkligen mäter
+# en MÄNGD får normaliseras.
+EXTENSIV_ENHET = re.compile(
+    r"\b(people|persons?|inhabitants|population|immigrants?|emigrants?|refugees?|"
+    r"migrants?|births?|deaths?|cases?|patients?|children|students?|workers?|"
+    r"employees?|tonnes?|tons?|kg|kilograms?|grams?|pounds?|"
+    r"kwh|mwh|gwh|twh|joules?|barrels?|litres?|liters?|m³|cubic|"
+    r"dollars?|int-\$|us\$|\$|euros?|"
+    r"hectares?|km²|km2|acres?|square kilometres?|sq\.? ?km|"
+    r"units?|animals?|head|vehicles?|aircraft|ships?|number)\b", re.I)
+# Enheter som ALDRIG ska normaliseras, hur de än ser ut i övrigt
+EJ_NORMALISERA = re.compile(r"index|score|rank|rating|\bper\b|%|percent|\brate\b|"
+                            r"ratio|years?|age|°c|kelvin|scale|share", re.I)
+
 
 def ytfaktor_km2(enhet):
     """→ hur många km² en enhet av måttet är, eller None om det inte är en yta."""
@@ -137,12 +154,13 @@ def viktat_varldssnitt(per_land, ar, folk, yta, ix, vikt):
 def varianter_av(per_ar, ar_lista, post, ix, yta, folk):
     """→ [(kod, enhet, titelsuffix, {år: {iso: värde}})] — absolut plus de
     normaliseringar som är meningsfulla för måttet."""
-    e = (post["enhet"] or "").lower()
-    intensiv = ("per " in e or "%" in e or "/" in e
-                or "rate" in (post["titel"] or "").lower())
+    e, tit = (post["enhet"] or ""), (post["titel"] or "")
     ut = [("abs", post["enhet"], "", per_ar)]
-    if intensiv:
-        return ut                                  # redan normaliserat
+    # Normalisera BARA det som är en additiv mängd, och bara när varken enhet
+    # eller titel avslöjar att måttet redan är relativt.
+    if (not e or "/" in e or EJ_NORMALISERA.search(e) or EJ_NORMALISERA.search(tit)
+            or not EXTENSIV_ENHET.search(e)):
+        return ut
     yf = ytfaktor_km2(post["enhet"])
     if yf:
         # yta delad med yta → ren andel. Promille eller ppm, men ändå jämförbar
@@ -153,8 +171,12 @@ def varianter_av(per_ar, ar_lista, post, ix, yta, folk):
                     for s, v in per_ar[a].items() if yta[ix[s]] > 0}
         ut.append(("andel", "% av landytan", " — andel av landytan", d))
         return ut
-    for kod, namn, suffix in (("capita", "per person", " — per person"),
-                              ("km2", "per km²", " — per km²")):
+    # Befolkningen delad med befolkningen är 1 i varje land. Täthet är däremot
+    # meningsfullt, så bara per-capita faller bort.
+    ar_folk = re.search(r"\b(population|people|inhabitants)\b", tit, re.I) is not None
+    val = [("km2", "per km²", " — per km²")] if ar_folk else [
+        ("capita", "per person", " — per person"), ("km2", "per km²", " — per km²")]
+    for kod, namn, suffix in val:
         d, allt = {}, []
         for a in ar_lista:
             rad = {}
@@ -224,6 +246,43 @@ def mat_variant(per_ar, ar_lista, varld, enhet, titel, kod, ix, yta, folk, NL):
         if gv is None or not np.isfinite(gv):
             gv = float(np.median(varden_ar))
         gmedel.append(round(float(gv), 8))
+    # ── Reliefen normaliseras per serie ────────────────────────────────────
+    # En fast relieffaktor gav 24 mm spann på medianglobem och över 20 mm på
+    # 1 203 av 1 632 varianter — på en glob med 50 mm radie. Samtidigt blev 63
+    # helt platta. Skillnaden är att spännvidden i normaliserade enheter varierar
+    # tio gånger mellan serier. Nu siktar varje serie på samma SYNLIGA amplitud:
+    # p5–p95 ska bli ~12 mm med reliefreglaget i standardläge.
+    n_alla = kub[kub > 0].astype(np.float64)
+    spann_n = 0.0
+    if len(n_alla):
+        n_alla = (n_alla - 1) / 65534.0
+        spann_n = float(np.percentile(n_alla, 95) - np.percentile(n_alla, 5))
+    MAL_MM, S_MM, REGLAGE = 12.0, 50.0, 0.9
+    relieffaktor = (MAL_MM / (spann_n * REGLAGE * S_MM)) if spann_n > 1e-6 else 0.9
+    relieffaktor = float(np.clip(relieffaktor, 0.15, 6.0))
+
+    # Ett ensamt land långt över alla andra blir ett tunt spröt i utskriften och
+    # tar all uppmärksamhet på skärmen. Taket läggs vid p99,5 när toppen sticker
+    # upp mer än så — resten av globen behåller sin relief, och tooltipen visar
+    # ändå det sanna värdet.
+    tak = 1.0
+    if len(n_alla) > 20:
+        c = float(np.percentile(n_alla, 99.5))
+        if float(n_alla.max()) > c + 0.02 and c > 0.05:
+            tak = float(np.clip(10 ** ((1.0 - c) * (vmax - vmin)), 1.0, 1e9))
+
+    # Ligger världssnittet i skalans kant blir "medel" en nollnivå som allt
+    # extruderas åt ett håll ifrån. Då är 0 en ärligare utgångspunkt.
+    pivot = ((np.log10(gmedel[len(gmedel)//2]) if rep["skala"] == "log10"
+              else gmedel[len(gmedel)//2]) - vmin) / (vmax - vmin) \
+            if (rep["skala"] != "log10" or gmedel[len(gmedel)//2] > 0) else 0.0
+    if rep["nollLage"] == "medel" and not (0.08 < pivot < 0.92):
+        rep = dict(rep, nollLage="noll",
+                   regel=rep["regel"].replace("nollnivå = världssnittet",
+                       f"världssnittet hamnar i skalans kant ({pivot:.2f}) → nollnivå 0")
+                     .replace("nollnivå = världsandelen",
+                       f"världsandelen hamnar i skalans kant ({pivot:.2f}) → nollnivå 0"))
+
     if berak >= len(ar_lista):
         metod = ("snitt över länderna" if extensiv
                  else f"{'ytviktat' if vikt=='yta' else 'befolkningsviktat'} snitt över länderna")
@@ -233,7 +292,8 @@ def mat_variant(per_ar, ar_lista, varld, enhet, titel, kod, ix, yta, folk, NL):
         metod = "OWID:s världsvärde"
         if berak:
             metod += f", räknat snitt {berak} av {len(ar_lista)} år"
-    return kub, rep, round(vmin, 8), round(vmax, 8), gmedel, metod
+    return (kub, rep, round(vmin, 8), round(vmax, 8), gmedel, metod,
+            round(relieffaktor, 3), round(tak, 4))
 
 
 def bearbeta(post, ix, yta, folk, NL):
@@ -271,7 +331,7 @@ def bearbeta(post, ix, yta, folk, NL):
                         post["titel"], kod, ix, yta, folk, NL)
         if not m:
             continue
-        kub, rep, vmin, vmax, gmedel, metod = m
+        kub, rep, vmin, vmax, gmedel, metod, relieffaktor, tak = m
         lander = sorted({s for a in ar_v for s in data[a]})
         ut.append((kod, kub, dict(
             id=post["slug"] + ("" if kod == "abs" else "__" + kod),
@@ -280,7 +340,7 @@ def bearbeta(post, ix, yta, folk, NL):
             kalla=post.get("kalla", ""), beskr=post.get("beskr", ""),
             topics=post.get("topics", []), kategori=post.get("kategori", ""),
             ar=[int(a) for a in ar_v], nland=NL, nlander=len(lander),
-            vmin=vmin, vmax=vmax, linjarGainHojd=1.0,
+            vmin=vmin, vmax=vmax, linjarGainHojd=tak, relieffaktor=relieffaktor,
             globalmedel=gmedel, medelMetod=metod,
             **{k: rep[k] for k in ("arketyp", "skala", "nollLage", "ramp", "regel")})))
     if not ut:

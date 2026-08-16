@@ -110,6 +110,12 @@
   .amne.pa { background: #274056; color: #eef4fa; }
   .amne b { font-weight: 500; color: #7f8894; font-variant-numeric: tabular-nums; }
   #serier { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 3px; }
+  .serierad { display: flex; align-items: flex-start; gap: 2px; }
+  .serierad .serie { flex: 1; }
+  .stjarna { background: none; border: 0; color: #4d5560; font-size: 16px; line-height: 1;
+             padding: 8px 6px; cursor: pointer; border-radius: 6px; flex: none; }
+  .stjarna:hover { color: #d7a154; background: #23272e; }
+  .stjarna.pa { color: #d7a154; }
   .serie { display: block; width: 100%; text-align: left; background: none; border: 0;
            padding: 8px 11px; border-radius: 7px; }
   .serie:hover { background: #23272e; }
@@ -226,8 +232,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=5"></script>
+<script src="i18n.js?v=6"></script>
 <script src="motor.js?v=1"></script>
-<script src="explorer.js?v=5"></script>
+<script src="explorer.js?v=6"></script>
 </body>
 </html>
