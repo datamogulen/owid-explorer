@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OWID-utforskaren — världens data som jordglober</title>
+<meta name="description" content="Hela Our World in Data-katalogen som jordglober: ett värde per land och år, i höjd och färg. Nedladdningsbart för 3D-utskrift.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OWID-utforskaren — världens data som jordglober">
+<meta property="og:description" content="Bläddra i Our World in Data efter ämne och se varje serie som en jordglob. Ladda ner för 3D-utskrift.">
+<meta property="og:url" content="https://hedin.it/owid-explorer/">
+<style>
+  :root { color-scheme: dark; --globbredd: 46vw; --globkrom: 250px; }
+  body { margin: 0; background: #14161a; color: #e8e6e0;
+         font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { text-align: center; padding: 9px 16px 7px; }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0; color: #b6bcc4; }
+  button { background: #2b3038; color: #e8e6e0; border: 1px solid #3a3f47;
+           border-radius: 7px; padding: 7px 16px; font-size: 15px; cursor: pointer; }
+  button:hover { background: #353b45; }
+  select { background: #2b3038; color: #e8e6e0; border: 1px solid #3a3f47;
+           border-radius: 6px; padding: 4px 6px; }
+  input[type=range] { vertical-align: middle; }
+  a { color: #9db4d0; }
+  :focus-visible { outline: 2px solid #7aa7ff; outline-offset: 2px; }
+
+  /* Styrfält: det man gör ofta, på en rad. Resten bakom ⚙. */
+  #styrfalt { position: sticky; top: 0; z-index: 40; display: flex; align-items: center;
+              gap: 10px; padding: 6px 12px; background: rgba(18,20,24,.96);
+              backdrop-filter: blur(6px); box-shadow: 0 2px 10px rgba(0,0,0,.45); }
+  #tidslinje { flex: 1; min-width: 90px; }
+  #ar { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums;
+        letter-spacing: .5px; flex: none; min-width: 3.2em; text-align: right; }
+  #spela { padding: 5px 13px; font-size: 14px; flex: none; }
+  .styrhoger { display: flex; gap: 5px; align-items: center; flex: none; }
+  .mini { background: #2b3038; color: #c2c7cd; border: 1px solid #3a3f47;
+          border-radius: 7px; padding: 5px 11px; font-size: 13px; cursor: pointer; }
+  .mini:hover { background: #353b45; color: #eef4fa; }
+  .pop { position: absolute; z-index: 70; display: none; text-align: left;
+         background: #1a1d22; border: 1px solid #3a3f47; border-radius: 10px;
+         padding: 10px 13px; box-shadow: 0 10px 34px rgba(0,0,0,.6); min-width: 215px; }
+  .pop.open { display: block; }
+  .pop label { display: flex; align-items: center; justify-content: space-between;
+               gap: 10px; color: #9aa0a8; font-size: 13px; margin: 7px 0; }
+  #instpanel { top: calc(100% + 5px); right: 8px; }
+
+  /* Globerna */
+  .glober { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px;
+            padding: 6px 12px; }
+  .panel { text-align: center; }
+  .panel.stor { position: fixed; inset: 0; z-index: 60; margin: 0;
+                background: #0f1115; overflow: auto; padding: 6px 6px 12px; }
+  .panel.stor canvas.glob, .panel.stor .saknas { width: min(94vw, 78vh); height: min(94vw, 78vh); }
+  .panel.stor canvas.bar { width: min(94vw, 78vh); }
+  .panel h2 { margin: 4px 0 6px; }
+  .serieknapp { background: none; border: 0; padding: 4px 8px; border-radius: 7px;
+                font: 600 15px/1.3 inherit; color: #e8e6e0; max-width: min(46vw, 560px);
+                display: inline-flex; align-items: baseline; gap: 7px; }
+  .serieknapp:hover { background: #23272e; }
+  .serieknapp .pil { color: #7f8894; font-size: 11px; }
+  .globwrap { position: relative; display: inline-block; line-height: 0; }
+  .globknappar { position: absolute; top: 10px; right: 10px; z-index: 5;
+                 display: flex; gap: 6px; }
+  .maxKnapp, .merKnapp { background: rgba(20,23,28,.9); color: #e8e6e0;
+              border: 1px solid #6a7280; border-radius: 7px; padding: 4px 10px;
+              cursor: pointer; font-size: 15px; line-height: 1.15; display: flex;
+              align-items: center; gap: 5px; white-space: nowrap;
+              box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+  .maxKnapp:hover, .merKnapp:hover, .merKnapp.pa { background: #39414e; border-color: #93a0b2; }
+  .maxKnapp .txt, .merKnapp .txt { font-size: 12px; color: #b9c0ca; }
+  .globPop { top: 40px; right: 8px; line-height: 1.5; }
+  .globPop .stlRad { margin: 9px 0 2px; }
+  .globPop .stlBtn { background: #2a2e37; color: #c9cdd3; border: 1px solid #3a3f4a;
+                     border-radius: 5px; padding: 3px 11px; font-size: 13px; }
+  canvas.glob { width: min(var(--globbredd), calc(100vh - var(--globkrom)));
+                height: min(var(--globbredd), calc(100vh - var(--globkrom)));
+                background: radial-gradient(circle at 50% 45%, #1d2128 0%, #101216 70%);
+                border-radius: 10px; cursor: grab; touch-action: none; display: block; }
+  canvas.glob:active { cursor: grabbing; }
+  canvas.bar { width: min(var(--globbredd), calc(100vh - var(--globkrom)));
+               height: 46px; margin: 6px auto 0; display: block; }
+  .saknas { width: min(var(--globbredd), calc(100vh - var(--globkrom))); height: 120px;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto;
+            border: 1px dashed #3a3f47; border-radius: 10px; color: #9aa0a8; }
+  .regel { max-width: min(var(--globbredd), calc(100vh - var(--globkrom)));
+           margin: 4px auto 0; font-size: 11.5px; line-height: 1.45; color: #7f8894; }
+  .regel b { color: #a6aeb8; font-weight: 600; }
+
+  /* Seriväljaren */
+  #valjare { position: fixed; inset: 0; background: rgba(8,9,12,.75); z-index: 90;
+             display: none; align-items: flex-start; justify-content: center;
+             padding: 30px 16px; }
+  #valjare.open { display: flex; }
+  #valjareRuta { background: #1a1d22; border: 1px solid #3a3f47; border-radius: 12px;
+                 width: 100%; max-width: 1000px; max-height: calc(100vh - 60px);
+                 display: flex; flex-direction: column; box-shadow: 0 12px 48px rgba(0,0,0,.6); }
+  #valjareTopp { display: flex; gap: 12px; align-items: center;
+                 padding: 16px 20px; border-bottom: 1px solid #2f3742; }
+  #valjareTopp h2 { margin: 0; font-size: 17px; flex: none; }
+  #sok { flex: 1; background: #23272e; color: #e8e6e0; border: 1px solid #3a3f47;
+         border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+  #valjareKropp { display: grid; grid-template-columns: 260px 1fr; min-height: 0; flex: 1; }
+  #amnen { overflow-y: auto; border-right: 1px solid #2f3742; padding: 10px; }
+  #amnen h4 { margin: 14px 0 5px; padding: 0 8px; font-size: 11px; letter-spacing: .09em;
+              text-transform: uppercase; color: #6d7885; }
+  .amne { display: flex; justify-content: space-between; gap: 8px; width: 100%;
+          background: none; border: 0; padding: 6px 8px; border-radius: 6px;
+          font-size: 13.5px; color: #c2c7cd; text-align: left; }
+  .amne:hover { background: #23272e; color: #eef4fa; }
+  .amne.pa { background: #274056; color: #eef4fa; }
+  .amne b { font-weight: 500; color: #7f8894; font-variant-numeric: tabular-nums; }
+  #serier { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 3px; }
+  .serie { display: block; width: 100%; text-align: left; background: none; border: 0;
+           padding: 8px 11px; border-radius: 7px; }
+  .serie:hover { background: #23272e; }
+  .serie.pa { background: #274056; }
+  .serie .st { display: block; font-size: 14px; color: #e8e6e0; }
+  .serie .sm { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center;
+               margin-top: 3px; font-size: 11.5px; color: #7f8894; }
+  .serie .sm em { font-style: normal; color: #9aa0a8; }
+  .serie .sm i { font-style: normal; font-variant-numeric: tabular-nums; }
+  .ark { font: 600 10.5px/1 inherit; letter-spacing: .03em; padding: 3px 7px;
+         border-radius: 10px; }
+  .ark[data-a="tungsvans"] { background: #2c2415; color: #d7a154; }
+  .ark[data-a="intervall"] { background: #16232e; color: #7fb0d6; }
+  .ark[data-a="andel"]     { background: #212730; color: #98a2ae; }
+  .ark[data-a="signerad"]  { background: #2a2130; color: #c39bd8; }
+  .inga { color: #7f8894; padding: 20px; }
+
+  #tips { position: fixed; z-index: 80; display: none; pointer-events: none;
+          background: rgba(18,20,24,.95); border: 1px solid #3a3f47; border-radius: 7px;
+          padding: 5px 10px; font-size: 13px; white-space: nowrap;
+          box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+  #om { position: fixed; inset: 0; background: rgba(8,9,12,.72); z-index: 95;
+        display: none; align-items: flex-start; justify-content: center;
+        padding: 40px 16px; overflow-y: auto; }
+  #om.open { display: flex; }
+  #omRuta { background: #1a1d22; border: 1px solid #3a3f47; border-radius: 12px;
+            max-width: 720px; width: 100%; padding: 22px 26px 28px; }
+  #omRuta h2 { margin: 0 0 12px; font-size: 20px; }
+  #omRuta p { color: #c2c7cd; font-size: 14px; line-height: 1.6; }
+  #omTopp { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  #status { text-align: center; color: #9aa0a8; padding: 30px 12px; }
+  footer { text-align: center; color: #767c85; font-size: 12px; padding: 14px 18px 26px; }
+
+  @media (max-width: 760px) {
+    #valjareKropp { grid-template-columns: 1fr; }
+    #amnen { max-height: 30vh; border-right: 0; border-bottom: 1px solid #2f3742; }
+  }
+  @media (max-width: 560px) {
+    header { display: none; }
+    #styrfalt { padding: 4px 8px; gap: 7px; }
+    #ar { font-size: 16px; min-width: 2.9em; }
+    .mini { padding: 4px 8px; font-size: 12px; }
+    .maxKnapp .txt, .merKnapp .txt { display: none; }
+    .glober { gap: 6px; padding: 4px; }
+    .panel { width: 47vw; }
+    canvas.glob, .saknas { width: 46vw; height: 46vw; }
+    canvas.bar { width: 46vw; height: 30px; }
+    .regel, .serieknapp { max-width: 46vw; font-size: 11px; }
+    #valjareTopp { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<header><h1 data-i18n="rubrik">OWID-utforskaren — världens data som jordglober</h1></header>
+
+<div id="styrfalt">
+  <button id="spela" data-i18n="spela">▶ Spela</button>
+  <input type="range" id="tidslinje" min="0" max="1" step="0.01" value="0">
+  <div id="ar">–</div>
+  <div class="styrhoger">
+    <button id="instknapp" class="mini" title="Inställningar">⚙</button>
+    <button id="delaknapp" class="mini" title="Dela vy">🔗</button>
+    <span style="display:inline-flex;gap:2px">
+      <button class="mini flagga" data-sprak="sv" aria-label="Svenska">🇸🇪</button>
+      <button class="mini flagga" data-sprak="en" aria-label="English">🇬🇧</button>
+    </span>
+    <button id="omknapp" class="mini" title="Om">ⓘ</button>
+  </div>
+  <div id="instpanel" class="pop">
+    <label><span data-i18n="hastighet">Hastighet</span> <select id="fart">
+      <option value="1">1</option><option value="2">2</option>
+      <option value="4" selected>4</option><option value="8">8</option>
+      <option value="15">15</option><option value="50">50</option></select></label>
+    <label><span data-i18n="relief">Relief</span>
+      <input type="range" id="relief" min="0.45" max="2.0" step="0.05" value="0.9" style="width:110px"></label>
+    <label><span data-i18n="vyval">Vy</span> <select id="vyval">
+      <option value="varlden" selected>hela jorden</option>
+      <option value="europa">Europa</option><option value="afrika">Afrika</option>
+      <option value="asien">Asien</option><option value="nordam">Nordamerika</option>
+      <option value="sydam">Sydamerika</option><option value="oceanien">Oceanien</option>
+      <option value="arktis">Arktis</option></select></label>
+    <label><span data-i18n="autorotation">autorotation</span>
+      <input type="checkbox" id="rotera"></label>
+  </div>
+</div>
+
+<div id="status"></div>
+<div class="glober" id="glober"></div>
+<footer>Data: <a href="https://ourworldindata.org">Our World in Data</a> (CC BY) ·
+  Gränser: Natural Earth · <a href="/climate-globes/">Klimatgloberna</a></footer>
+
+<div id="valjare">
+  <div id="valjareRuta">
+    <div id="valjareTopp">
+      <h2 data-i18n="valjSerie">Välj serie</h2>
+      <input id="sok" type="search" autocomplete="off">
+      <button id="valjareStang" class="mini" data-i18n="stang">Stäng</button>
+    </div>
+    <div id="valjareKropp">
+      <div id="amnen"></div>
+      <div id="serier"></div>
+    </div>
+  </div>
+</div>
+
+<div id="om"><div id="omRuta">
+  <div id="omTopp"><h2 data-i18n="omKnapp">Om &amp; källor</h2>
+    <button id="omStang" class="mini" data-i18n="stang">Stäng</button></div>
+  <div id="omKropp"></div>
+</div></div>
+
+<script>
+  window.__fel = [];
+  window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
+  window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
+</script>
+<script src="i18n.js?v=1"></script>
+<script src="motor.js?v=1"></script>
+<script src="explorer.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,3276 @@
+[
+ {
+  "kategori": "Health",
+  "total": 731,
+  "amnen": [
+   {
+    "topic": "causes-of-death",
+    "antal": 160,
+    "fran": 1865,
+    "till": 2024,
+    "verifierade": 10,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "sales-of-cigarettes-per-adult-per-day",
+      "titel": "Sales of cigarettes per adult per day",
+      "enhet": "cigarettes per adult per day",
+      "ar": "1865–2015",
+      "lander": 48,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "crude-death-rate",
+      "titel": "Death rate",
+      "enhet": "deaths per 1,000 people",
+      "ar": "1950–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "number-of-deaths",
+      "titel": "Number of deaths",
+      "enhet": "deaths",
+      "ar": "1950–2023",
+      "lander": 236,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "burden-of-disease",
+    "antal": 65,
+    "fran": 1950,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 199,
+    "exempel": [
+     {
+      "slug": "neonatal-mortality-rate-gho",
+      "titel": "Neonatal mortality rate",
+      "enhet": "Deaths per 1000 live births",
+      "ar": "1951–2023",
+      "lander": 199,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "death-rate-from-digestive-diseases-who-mdb",
+      "titel": "Death rate from digestive diseases",
+      "enhet": "deaths per 100,000 people",
+      "ar": "1950–2023",
+      "lander": 117,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "global-health",
+    "antal": 54,
+    "fran": 1543,
+    "till": 2025,
+    "verifierade": 6,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "life-expectancy",
+      "titel": "Life expectancy",
+      "enhet": "years",
+      "ar": "1543–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "public-health-expenditure-share-gdp",
+      "titel": "Government health spending as a share of GDP",
+      "enhet": "% of GDP",
+      "ar": "1880–2025",
+      "lander": 60,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "physicians-per-1000-people",
+      "titel": "Medical doctors per 1,000 people",
+      "enhet": "per 1,000 people",
+      "ar": "1960–2023",
+      "lander": 207,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "hiv-aids",
+    "antal": 34,
+    "fran": 1543,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "life-expectancy",
+      "titel": "Life expectancy",
+      "enhet": "years",
+      "ar": "1543–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "share-of-the-population-infected-with-hiv",
+      "titel": "Share of the population living with HIV",
+      "enhet": "%",
+      "ar": "1990–2024",
+      "lander": 152,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "financing-healthcare",
+    "antal": 32,
+    "fran": 1880,
+    "till": 2025,
+    "verifierade": 2,
+    "lander": 207,
+    "exempel": [
+     {
+      "slug": "public-health-expenditure-share-gdp",
+      "titel": "Government health spending as a share of GDP",
+      "enhet": "% of GDP",
+      "ar": "1880–2025",
+      "lander": 60,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "physicians-per-1000-people",
+      "titel": "Medical doctors per 1,000 people",
+      "enhet": "per 1,000 people",
+      "ar": "1960–2023",
+      "lander": 207,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "alcohol-consumption",
+    "antal": 31,
+    "fran": 1890,
+    "till": 2023,
+    "verifierade": 2,
+    "lander": 187,
+    "exempel": [
+     {
+      "slug": "beer-consumption-per-person",
+      "titel": "Beer consumption per person",
+      "enhet": "Litres of pure alcohol per person per year",
+      "ar": "1960–2022",
+      "lander": 187,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "spirits-consumption-per-person",
+      "titel": "Spirits consumption per person",
+      "enhet": "Litres of pure alcohol per person per year",
+      "ar": "1960–2022",
+      "lander": 187,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "illicit-drug-use",
+    "antal": 30,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 0,
+    "lander": null,
+    "exempel": []
+   },
+   {
+    "topic": "cardiovascular-diseases",
+    "antal": 29,
+    "fran": 1950,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 199,
+    "exempel": [
+     {
+      "slug": "obesity-prevalence-adults-who-gho",
+      "titel": "Prevalence rate of obesity in adults",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 199,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "cardiovascular-disease-death-rate-who-mdb",
+      "titel": "Death rate from cardiovascular diseases",
+      "enhet": "deaths per 100,000 people",
+      "ar": "1950–2023",
+      "lander": 117,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "cardiovascular-disease-death-crude-rate-who-mdb",
+      "titel": "Death rate from cardiovascular diseases",
+      "enhet": "deaths per 100,000 people",
+      "ar": "1950–2023",
+      "lander": 117,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "vaccination",
+    "antal": 28,
+    "fran": 1974,
+    "till": 2025,
+    "verifierade": 7,
+    "lander": 212,
+    "exempel": [
+     {
+      "slug": "reported-cases-of-measles",
+      "titel": "Reported cases of measles",
+      "enhet": "Cases",
+      "ar": "1974–2024",
+      "lander": 212,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "share-of-children-vaccinated-against-measles",
+      "titel": "Share of one-year-olds vaccinated against measles",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "share-of-children-immunized-dtp3",
+      "titel": "Share of one-year-olds vaccinated against diphtheria, tetanus and pertussis",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "tuberculosis",
+    "antal": 27,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 1,
+    "lander": 167,
+    "exempel": [
+     {
+      "slug": "bcg-immunization-coverage-for-tb-among-1-year-olds",
+      "titel": "Share of newborns vaccinated against tuberculosis",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 167,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "cancer",
+    "antal": 27,
+    "fran": 1943,
+    "till": 2023,
+    "verifierade": 3,
+    "lander": 117,
+    "exempel": [
+     {
+      "slug": "lung-cancer-death-rates-males",
+      "titel": "Lung cancer death rates in men",
+      "enhet": "deaths per 100,000 people",
+      "ar": "1950–2023",
+      "lander": 117,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "cancer-death-rate-who-mdb",
+      "titel": "Death rate from cancer",
+      "enhet": "deaths per 100,000 people",
+      "ar": "1950–2023",
+      "lander": 117,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "reported-rate-of-new-cervical-cancer-cases",
+      "titel": "Reported rate of new cervical cancer cases",
+      "enhet": "per 100,000 women",
+      "ar": "1943–2023",
+      "lander": 46,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "diarrheal-diseases",
+    "antal": 26,
+    "fran": 1949,
+    "till": 2024,
+    "verifierade": 4,
+    "lander": 161,
+    "exempel": [
+     {
+      "slug": "children-who-receive-ors",
+      "titel": "Share of children with diarrhea receiving oral rehydration salts",
+      "enhet": "% of children under 5 who received ORS packet",
+      "ar": "1985–2021",
+      "lander": 148,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "number-reported-cases-of-cholera",
+      "titel": "Cholera reported cases",
+      "enhet": "reported cases",
+      "ar": "1949–2021",
+      "lander": 161,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "cholera-case-fatality-rate",
+      "titel": "Cholera case-fatality rate",
+      "enhet": "%",
+      "ar": "1949–2021",
+      "lander": 160,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "obesity",
+    "antal": 21,
+    "fran": 1274,
+    "till": 2024,
+    "verifierade": 4,
+    "lander": 199,
+    "exempel": [
+     {
+      "slug": "daily-per-capita-caloric-supply",
+      "titel": "Daily supply of calories per person",
+      "enhet": "kilocalories per day",
+      "ar": "1274–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "share-of-adults-who-are-overweight",
+      "titel": "Share of adults who are overweight or obese",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 199,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "share-of-females-defined-as-obese",
+      "titel": "Share of women who are obese",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 199,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "eradication-of-diseases",
+    "antal": 21,
+    "fran": 1980,
+    "till": 2025,
+    "verifierade": 2,
+    "lander": 199,
+    "exempel": [
+     {
+      "slug": "number-of-estimated-paralytic-polio-cases-by-world-region",
+      "titel": "Paralytic polio: estimated cases by world region",
+      "enhet": "cases",
+      "ar": "1980–2023",
+      "lander": 199,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "number-of-reported-guinea-worm-dracunculiasis-cases",
+      "titel": "Reported cases of guinea worm disease",
+      "enhet": "cases",
+      "ar": "1980–2025",
+      "lander": 195,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "pneumonia",
+    "antal": 18,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 194,
+    "exempel": [
+     {
+      "slug": "share-of-children-immunized-dtp3",
+      "titel": "Share of one-year-olds vaccinated against diphtheria, tetanus and pertussis",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "access-to-clean-fuels-and-technologies-for-cooking",
+      "titel": "Share of the population with access to clean fuels for cooking",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "air-pollution",
+    "antal": 18,
+    "fran": 1950,
+    "till": 2024,
+    "verifierade": 1,
+    "lander": 117,
+    "exempel": [
+     {
+      "slug": "chronic-respiratory-diseases-death-rate-who-mdb",
+      "titel": "Chronic respiratory diseases death rate",
+      "enhet": "deaths per 100,000 people",
+      "ar": "1950–2023",
+      "lander": 117,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "smoking",
+    "antal": 18,
+    "fran": 1865,
+    "till": 2023,
+    "verifierade": 1,
+    "lander": 48,
+    "exempel": [
+     {
+      "slug": "sales-of-cigarettes-per-adult-per-day",
+      "titel": "Sales of cigarettes per adult per day",
+      "enhet": "cigarettes per adult per day",
+      "ar": "1865–2015",
+      "lander": 48,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "mental-health",
+    "antal": 14,
+    "fran": 1980,
+    "till": 2023,
+    "verifierade": 0,
+    "lander": null,
+    "exempel": []
+   },
+   {
+    "topic": "malaria",
+    "antal": 13,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 0,
+    "lander": null,
+    "exempel": []
+   },
+   {
+    "topic": "suicide",
+    "antal": 10,
+    "fran": 1950,
+    "till": 2023,
+    "verifierade": 1,
+    "lander": 117,
+    "exempel": [
+     {
+      "slug": "suicide-rate-who-mdb",
+      "titel": "Reported suicide rates",
+      "enhet": "deaths per 100,000 population",
+      "ar": "1950–2023",
+      "lander": 117,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "tetanus",
+    "antal": 8,
+    "fran": 1974,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 212,
+    "exempel": [
+     {
+      "slug": "share-of-children-immunized-dtp3",
+      "titel": "Share of one-year-olds vaccinated against diphtheria, tetanus and pertussis",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "new-neonatal-tetanus-cases-per-million",
+      "titel": "Annual new cases of neonatal tetanus per million people",
+      "enhet": "cases per million",
+      "ar": "1974–2024",
+      "lander": 212,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "polio",
+    "antal": 8,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 4,
+    "lander": 199,
+    "exempel": [
+     {
+      "slug": "polio-vaccine-coverage-of-one-year-olds",
+      "titel": "Share of one-year-olds who are vaccinated against polio",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "the-number-of-reported-paralytic-polio-cases",
+      "titel": "Reported cases of paralytic polio",
+      "enhet": "cases",
+      "ar": "1980–2023",
+      "lander": 199,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "reported-paralytic-polio-cases-per-1-million-people",
+      "titel": "Reported paralytic polio cases per million",
+      "enhet": "cases per million",
+      "ar": "1980–2023",
+      "lander": 199,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "maternal-mortality",
+    "antal": 8,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 205,
+    "exempel": [
+     {
+      "slug": "births-attended-by-health-staff-sdgs",
+      "titel": "Share of births attended by skilled health staff",
+      "enhet": "% of total",
+      "ar": "1980–2022",
+      "lander": 205,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "lifetime-risk-of-maternal-death",
+      "titel": "Share of women who are expected to die from pregnancy-related causes",
+      "enhet": "%",
+      "ar": "1985–2023",
+      "lander": 194,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "outdoor-air-pollution",
+    "antal": 7,
+    "fran": 1990,
+    "till": 2026,
+    "verifierade": 1,
+    "lander": 248,
+    "exempel": [
+     {
+      "slug": "annual-pm25-emissions-from-wildfires",
+      "titel": "Annual PM2.5 emissions from wildfires",
+      "enhet": "tonnes",
+      "ar": "2003–2026",
+      "lander": 248,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "antibiotics",
+    "antal": 7,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 0,
+    "lander": null,
+    "exempel": []
+   },
+   {
+    "topic": "lead-pollution",
+    "antal": 6,
+    "fran": 1990,
+    "till": 2023,
+    "verifierade": 0,
+    "lander": null,
+    "exempel": []
+   },
+   {
+    "topic": "indoor-air-pollution",
+    "antal": 5,
+    "fran": 1990,
+    "till": 2024,
+    "verifierade": 1,
+    "lander": 194,
+    "exempel": [
+     {
+      "slug": "access-to-clean-fuels-and-technologies-for-cooking",
+      "titel": "Share of the population with access to clean fuels for cooking",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "pandemics",
+    "antal": 4,
+    "fran": 1949,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 199,
+    "exempel": [
+     {
+      "slug": "share-of-the-population-infected-with-hiv",
+      "titel": "Share of the population living with HIV",
+      "enhet": "%",
+      "ar": "1990–2024",
+      "lander": 152,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "number-of-estimated-paralytic-polio-cases-by-world-region",
+      "titel": "Paralytic polio: estimated cases by world region",
+      "enhet": "cases",
+      "ar": "1980–2023",
+      "lander": 199,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "number-of-reported-cholera-deaths",
+      "titel": "Cholera reported deaths",
+      "enhet": "reported deaths",
+      "ar": "1949–2021",
+      "lander": 161,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "influenza",
+    "antal": 2,
+    "fran": 2000,
+    "till": 2022,
+    "verifierade": 2,
+    "lander": 85,
+    "exempel": [
+     {
+      "slug": "influenza-vaccination-rate-elderly-oecd",
+      "titel": "Flu vaccination coverage in the over-65's",
+      "enhet": "%",
+      "ar": "2000–2021",
+      "lander": 37,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "influenza-vaccination-rate-elderly-who-unicef",
+      "titel": "Flu vaccination coverage in older people",
+      "enhet": "%",
+      "ar": "2003–2022",
+      "lander": 85,
+      "arketyp": "andel"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Energy and Environment",
+  "total": 293,
+  "amnen": [
+   {
+    "topic": "co2-and-greenhouse-gas-emissions",
+    "antal": 89,
+    "fran": 1750,
+    "till": 2025,
+    "verifierade": 9,
+    "lander": 217,
+    "exempel": [
+     {
+      "slug": "cumulative-co-emissions",
+      "titel": "Cumulative CO₂ emissions",
+      "enhet": "tonnes",
+      "ar": "1750–2024",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "co-emissions-per-capita",
+      "titel": "CO₂ emissions per capita",
+      "enhet": "tonnes per person",
+      "ar": "1750–2024",
+      "lander": 213,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "annual-co2-emissions-per-country",
+      "titel": "Annual CO₂ emissions",
+      "enhet": "tonnes",
+      "ar": "1750–2024",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "clean-water-sanitation",
+    "antal": 36,
+    "fran": 1990,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 232,
+    "exempel": [
+     {
+      "slug": "people-practicing-open-defecation-of-population",
+      "titel": "Share of people practicing open defecation",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 232,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "proportion-using-safely-managed-drinking-water",
+      "titel": "Share using safely managed drinking water",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 163,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "energy",
+    "antal": 27,
+    "fran": 1820,
+    "till": 2025,
+    "verifierade": 7,
+    "lander": 220,
+    "exempel": [
+     {
+      "slug": "share-of-the-population-with-access-to-electricity",
+      "titel": "Share of the population with access to electricity",
+      "enhet": "% of population",
+      "ar": "1990–2024",
+      "lander": 214,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "installed-solar-pv-capacity",
+      "titel": "Installed solar energy capacity",
+      "enhet": "gigawatts",
+      "ar": "2000–2024",
+      "lander": 220,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "cumulative-installed-wind-energy-capacity-gigawatts",
+      "titel": "Installed wind energy capacity",
+      "enhet": "gigawatts",
+      "ar": "2000–2024",
+      "lander": 157,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "biodiversity",
+    "antal": 26,
+    "fran": -10000,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 238,
+    "exempel": [
+     {
+      "slug": "aquaculture-farmed-fish-production",
+      "titel": "Aquaculture production",
+      "enhet": "metric tons",
+      "ar": "1960–2024",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "capture-fishery-production",
+      "titel": "Capture fishery production",
+      "enhet": "metric tons",
+      "ar": "1960–2024",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "population",
+      "titel": "Population",
+      "enhet": "people",
+      "ar": "-10000–2023",
+      "lander": 238,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "forests-and-deforestation",
+    "antal": 22,
+    "fran": 1990,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 235,
+    "exempel": [
+     {
+      "slug": "forest-area-km",
+      "titel": "Forest area",
+      "enhet": "hectares",
+      "ar": "1990–2025",
+      "lander": 235,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "share-global-forest",
+      "titel": "Share of global forest area",
+      "enhet": "%",
+      "ar": "1990–2025",
+      "lander": 235,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "annual-change-forest-area",
+      "titel": "Annual change in forest area",
+      "enhet": "hectares",
+      "ar": "1991–2025",
+      "lander": 235,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "water-use-stress",
+    "antal": 17,
+    "fran": -10000,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 238,
+    "exempel": [
+     {
+      "slug": "daily-per-capita-caloric-supply",
+      "titel": "Daily supply of calories per person",
+      "enhet": "kilocalories per day",
+      "ar": "1274–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "average-precipitation-per-year",
+      "titel": "Annual precipitation",
+      "enhet": "millimeters",
+      "ar": "1940–2025",
+      "lander": 192,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "population",
+      "titel": "Population",
+      "enhet": "people",
+      "ar": "-10000–2023",
+      "lander": 238,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "land-use",
+    "antal": 14,
+    "fran": -10000,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 215,
+    "exempel": [
+     {
+      "slug": "total-agricultural-land-use-per-person",
+      "titel": "Agricultural land use per person",
+      "enhet": "hectares per person",
+      "ar": "-10000–2025",
+      "lander": 202,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "land-area-km",
+      "titel": "Land area in square kilometres",
+      "enhet": "sq. km",
+      "ar": "1961–2023",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "land-use-palm-oil",
+      "titel": "Land use for palm oil production",
+      "enhet": "hectares",
+      "ar": "1961–2024",
+      "lander": 44,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "fish-and-overfishing",
+    "antal": 9,
+    "fran": 1950,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 215,
+    "exempel": [
+     {
+      "slug": "aquaculture-farmed-fish-production",
+      "titel": "Aquaculture production",
+      "enhet": "metric tons",
+      "ar": "1960–2024",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "capture-fishery-production",
+      "titel": "Capture fishery production",
+      "enhet": "metric tons",
+      "ar": "1960–2024",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "bottom-trawling",
+      "titel": "Wild fish catch from bottom trawling",
+      "enhet": "tonnes",
+      "ar": "1950–2018",
+      "lander": 117,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "sanitation",
+    "antal": 7,
+    "fran": 1990,
+    "till": 2024,
+    "verifierade": 1,
+    "lander": 232,
+    "exempel": [
+     {
+      "slug": "people-practicing-open-defecation-of-population",
+      "titel": "Share of people practicing open defecation",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 232,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "clean-water",
+    "antal": 6,
+    "fran": 1990,
+    "till": 2024,
+    "verifierade": 1,
+    "lander": 163,
+    "exempel": [
+     {
+      "slug": "proportion-using-safely-managed-drinking-water",
+      "titel": "Share using safely managed drinking water",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 163,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "waste-management",
+    "antal": 6,
+    "fran": 1980,
+    "till": 2022,
+    "verifierade": 3,
+    "lander": 35,
+    "exempel": [
+     {
+      "slug": "recycling-rates-paper-and-cardboard",
+      "titel": "Recycling rates of paper and cardboard",
+      "enhet": "Percent of Apparent Consumption",
+      "ar": "1980–2005",
+      "lander": 29,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "recycling-rates-glass",
+      "titel": "Recycling rates of glass",
+      "enhet": "Percent of Apparent Consumption",
+      "ar": "1980–2005",
+      "lander": 27,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "municipal-waste-recycling-rate",
+      "titel": "Municipal waste recycling rate",
+      "enhet": "Percentage",
+      "ar": "1990–2015",
+      "lander": 35,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "climate-change",
+    "antal": 6,
+    "fran": 1851,
+    "till": 2090,
+    "verifierade": 3,
+    "lander": 215,
+    "exempel": [
+     {
+      "slug": "contributions-global-temp-change",
+      "titel": "Global warming: Contributions to the change in global mean surface temperature",
+      "enhet": "%",
+      "ar": "1851–2024",
+      "lander": 215,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "annual-temperature-anomalies",
+      "titel": "Annual temperature anomalies",
+      "enhet": "°C",
+      "ar": "1940–2026",
+      "lander": 193,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "average-annual-surface-temperature",
+      "titel": "Average annual surface temperature",
+      "enhet": "°C",
+      "ar": "1940–2026",
+      "lander": 193,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "wildfires",
+    "antal": 6,
+    "fran": 2003,
+    "till": 2026,
+    "verifierade": 3,
+    "lander": 248,
+    "exempel": [
+     {
+      "slug": "annual-area-burnt-by-wildfires",
+      "titel": "Annual area burnt by wildfires",
+      "enhet": "hectares",
+      "ar": "2012–2026",
+      "lander": 248,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "annual-carbon-dioxide-emissions",
+      "titel": "Annual CO₂ emissions from wildfires",
+      "enhet": "tonnes",
+      "ar": "2003–2026",
+      "lander": 248,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "annual-pm25-emissions-from-wildfires",
+      "titel": "Annual PM2.5 emissions from wildfires",
+      "enhet": "tonnes",
+      "ar": "2003–2026",
+      "lander": 248,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "energy-access",
+    "antal": 4,
+    "fran": 1990,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 214,
+    "exempel": [
+     {
+      "slug": "share-of-the-population-with-access-to-electricity",
+      "titel": "Share of the population with access to electricity",
+      "enhet": "% of population",
+      "ar": "1990–2024",
+      "lander": 214,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "access-to-clean-fuels-and-technologies-for-cooking",
+      "titel": "Share of the population with access to clean fuels for cooking",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "people-without-electricity-country",
+      "titel": "Number of people without access to electricity",
+      "enhet": "people",
+      "ar": "1990–2024",
+      "lander": 214,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "renewable-energy",
+    "antal": 4,
+    "fran": 1990,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 220,
+    "exempel": [
+     {
+      "slug": "biofuel-production",
+      "titel": "Biofuel energy production",
+      "enhet": "terawatt-hours",
+      "ar": "1990–2025",
+      "lander": 24,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "installed-solar-pv-capacity",
+      "titel": "Installed solar energy capacity",
+      "enhet": "gigawatts",
+      "ar": "2000–2024",
+      "lander": 220,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "cumulative-installed-wind-energy-capacity-gigawatts",
+      "titel": "Installed wind energy capacity",
+      "enhet": "gigawatts",
+      "ar": "2000–2024",
+      "lander": 157,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "metals-minerals",
+    "antal": 3,
+    "fran": 1970,
+    "till": 2025,
+    "verifierade": 1,
+    "lander": 212,
+    "exempel": [
+     {
+      "slug": "natural-resource-rents",
+      "titel": "Total natural resource rents",
+      "enhet": "% of GDP",
+      "ar": "1970–2021",
+      "lander": 212,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "ozone-layer",
+    "antal": 3,
+    "fran": 1961,
+    "till": 2023,
+    "verifierade": 3,
+    "lander": 215,
+    "exempel": [
+     {
+      "slug": "countries-to-montreal-protocol-and-vienna-convention",
+      "titel": "Countries subscribed to the Montreal Protocol",
+      "enhet": "parties subscribed to Montreal Protocol",
+      "ar": "1985–2022",
+      "lander": 196,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "consumption-of-ozone-depleting-substances",
+      "titel": "Consumption of ozone-depleting substances",
+      "enhet": "ODP tonnes",
+      "ar": "1986–2022",
+      "lander": 169,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "land-area-km",
+      "titel": "Land area in square kilometres",
+      "enhet": "sq. km",
+      "ar": "1961–2023",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "environmental-impacts-of-food",
+    "antal": 3,
+    "fran": 1990,
+    "till": 2015,
+    "verifierade": 3,
+    "lander": 217,
+    "exempel": [
+     {
+      "slug": "food-share-total-emissions",
+      "titel": "Share of national greenhouse gas emissions that come from food",
+      "enhet": "%",
+      "ar": "1990–2015",
+      "lander": 217,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "share-global-food-emissions",
+      "titel": "Share of global greenhouse gas emissions from food",
+      "enhet": "%",
+      "ar": "1990–2015",
+      "lander": 217,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "emissions-from-food",
+      "titel": "Greenhouse gas emissions from food systems",
+      "enhet": "tonnes CO₂e",
+      "ar": "1990–2015",
+      "lander": 217,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "natural-disasters",
+    "antal": 2,
+    "fran": -10000,
+    "till": 2023,
+    "verifierade": 1,
+    "lander": 238,
+    "exempel": [
+     {
+      "slug": "population",
+      "titel": "Population",
+      "enhet": "people",
+      "ar": "-10000–2023",
+      "lander": 238,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "animal-welfare",
+    "antal": 2,
+    "fran": 1961,
+    "till": 2025,
+    "verifierade": 2,
+    "lander": 198,
+    "exempel": [
+     {
+      "slug": "eggs-cage-free",
+      "titel": "Share of egg-laying hens in cage-free systems",
+      "enhet": "%",
+      "ar": "1996–2025",
+      "lander": 68,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "hypothetical-land-animals-slaughtered",
+      "titel": "Land animals slaughtered if all countries produced meat like..",
+      "enhet": "animals",
+      "ar": "1961–2024",
+      "lander": 198,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "bioenergy-biofuels",
+    "antal": 1,
+    "fran": 1990,
+    "till": 2025,
+    "verifierade": 1,
+    "lander": 24,
+    "exempel": [
+     {
+      "slug": "biofuel-production",
+      "titel": "Biofuel energy production",
+      "enhet": "terawatt-hours",
+      "ar": "1990–2025",
+      "lander": 24,
+      "arketyp": "tungsvans"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Food and Agriculture",
+  "total": 188,
+  "amnen": [
+   {
+    "topic": "agricultural-production",
+    "antal": 55,
+    "fran": -10000,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 202,
+    "exempel": [
+     {
+      "slug": "total-agricultural-land-use-per-person",
+      "titel": "Agricultural land use per person",
+      "enhet": "hectares per person",
+      "ar": "-10000–2025",
+      "lander": 202,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "tobacco-production",
+      "titel": "Tobacco production",
+      "enhet": "tonnes",
+      "ar": "1961–2024",
+      "lander": 146,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "orange-production",
+      "titel": "Orange production",
+      "enhet": "tonnes",
+      "ar": "1961–2024",
+      "lander": 141,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "crop-yields",
+    "antal": 31,
+    "fran": 1275,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 125,
+    "exempel": [
+     {
+      "slug": "wheat-yields",
+      "titel": "Wheat yields",
+      "enhet": "tonnes per hectare",
+      "ar": "1275–2024",
+      "lander": 125,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "barley-yields",
+      "titel": "Barley yields",
+      "enhet": "tonnes per hectare",
+      "ar": "1275–2024",
+      "lander": 106,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "rye-yield",
+      "titel": "Rye yields",
+      "enhet": "tonnes per hectare",
+      "ar": "1275–2024",
+      "lander": 65,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "meat-production",
+    "antal": 29,
+    "fran": 1960,
+    "till": 2025,
+    "verifierade": 6,
+    "lander": 215,
+    "exempel": [
+     {
+      "slug": "meat-supply-per-person",
+      "titel": "Meat supply per person",
+      "enhet": "kilograms per year per capita",
+      "ar": "1961–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "aquaculture-farmed-fish-production",
+      "titel": "Aquaculture production",
+      "enhet": "metric tons",
+      "ar": "1960–2024",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "capture-fishery-production",
+      "titel": "Capture fishery production",
+      "enhet": "metric tons",
+      "ar": "1960–2024",
+      "lander": 215,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "hunger-and-undernourishment",
+    "antal": 13,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 170,
+    "exempel": [
+     {
+      "slug": "prevalence-of-undernourishment",
+      "titel": "Share of people who are undernourished",
+      "enhet": "percent",
+      "ar": "2000–2024",
+      "lander": 170,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "share-of-children-underweight",
+      "titel": "Malnutrition: Share of children who are underweight",
+      "enhet": "% of children under 5",
+      "ar": "1983–2024",
+      "lander": 162,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "number-undernourished",
+      "titel": "Number of people who are undernourished",
+      "enhet": "millions",
+      "ar": "2000–2024",
+      "lander": 139,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "food-supply",
+    "antal": 11,
+    "fran": 1274,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 192,
+    "exempel": [
+     {
+      "slug": "meat-supply-per-person",
+      "titel": "Meat supply per person",
+      "enhet": "kilograms per year per capita",
+      "ar": "1961–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "daily-per-capita-caloric-supply",
+      "titel": "Daily supply of calories per person",
+      "enhet": "kilocalories per day",
+      "ar": "1274–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "daily-per-capita-protein-supply",
+      "titel": "Daily per capita protein supply",
+      "enhet": "grams of protein per day per capita",
+      "ar": "1961–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "employment-in-agriculture",
+    "antal": 10,
+    "fran": 1300,
+    "till": 2025,
+    "verifierade": 6,
+    "lander": 204,
+    "exempel": [
+     {
+      "slug": "share-of-employment-in-agriculture",
+      "titel": "Share of employment in agriculture",
+      "enhet": "%",
+      "ar": "1300–2025",
+      "lander": 186,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "number-of-people-employed-in-agriculture",
+      "titel": "Number of people employed in agriculture",
+      "enhet": "people",
+      "ar": "1801–2025",
+      "lander": 186,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "income-small-scale-food-producers",
+      "titel": "Average income of small-scale food producers",
+      "enhet": "constant ppp usd",
+      "ar": "2001–2022",
+      "lander": 49,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "micronutrient-deficiency",
+    "antal": 8,
+    "fran": 1985,
+    "till": 2023,
+    "verifierade": 3,
+    "lander": 192,
+    "exempel": [
+     {
+      "slug": "prevalence-of-anemia-in-pregnant-women",
+      "titel": "Share of pregnant women who have anemia",
+      "enhet": "%",
+      "ar": "2000–2023",
+      "lander": 192,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "share-of-households-consuming-iodized-salt",
+      "titel": "Share of households consuming iodized salt",
+      "enhet": "% of households",
+      "ar": "1994–2020",
+      "lander": 112,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "children-who-receive-ors",
+      "titel": "Share of children with diarrhea receiving oral rehydration salts",
+      "enhet": "% of children under 5 who received ORS packet",
+      "ar": "1985–2021",
+      "lander": 148,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "fertilizers",
+    "antal": 7,
+    "fran": 1961,
+    "till": 2023,
+    "verifierade": 3,
+    "lander": 200,
+    "exempel": [
+     {
+      "slug": "fertilizer-use-in-kg-per-hectare-of-arable-land",
+      "titel": "Fertilizer use per hectare of arable land",
+      "enhet": "kilograms per hectare of arable land",
+      "ar": "1961–2023",
+      "lander": 200,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "phosphate-application-per-hectare-of-cropland",
+      "titel": "Phosphate fertilizer use per hectare of cropland",
+      "enhet": "kilograms per hectare",
+      "ar": "1961–2023",
+      "lander": 200,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "nitrogen-fertilizer-application-per-hectare-of-cropland",
+      "titel": "Nitrogen fertilizer use per hectare of cropland",
+      "enhet": "kilograms per hectare",
+      "ar": "1961–2023",
+      "lander": 200,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "human-height",
+    "antal": 5,
+    "fran": 1550,
+    "till": 2000,
+    "verifierade": 3,
+    "lander": 200,
+    "exempel": [
+     {
+      "slug": "average-height-of-men-for-selected-countries",
+      "titel": "Average height of men by decade of birth",
+      "enhet": "cm",
+      "ar": "1550–2000",
+      "lander": 153,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "average-height-of-men-by-year-of-birth",
+      "titel": "Average height of men by year of birth",
+      "enhet": "cm",
+      "ar": "1550–2000",
+      "lander": 152,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "male-to-female-height-ratio",
+      "titel": "Male-to-female height ratio by year of birth",
+      "enhet": "",
+      "ar": "1896–1996",
+      "lander": 200,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "diet-compositions",
+    "antal": 5,
+    "fran": 1961,
+    "till": 2023,
+    "verifierade": 3,
+    "lander": 192,
+    "exempel": [
+     {
+      "slug": "fruit-consumption-per-capita",
+      "titel": "Fruit consumption per capita",
+      "enhet": "kilograms per year per capita",
+      "ar": "1961–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "vegetable-consumption-per-capita",
+      "titel": "Vegetable consumption per capita",
+      "enhet": "kilograms per year per capita",
+      "ar": "1961–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "average-per-capita-vegetable-intake-vs-minimum-recommended-guidelines",
+      "titel": "Average per capita vegetable intake vs. minimum recommended guidelines",
+      "enhet": "kilograms per year per capita",
+      "ar": "1961–2023",
+      "lander": 192,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "food-prices",
+    "antal": 4,
+    "fran": 1960,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 192,
+    "exempel": [
+     {
+      "slug": "income-small-scale-food-producers",
+      "titel": "Average income of small-scale food producers",
+      "enhet": "constant ppp usd",
+      "ar": "2001–2022",
+      "lander": 49,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "income-large-scale-food-producers",
+      "titel": "Average income of large-scale food producers",
+      "enhet": "constant ppp usd",
+      "ar": "2001–2022",
+      "lander": 48,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "inflation-of-consumer-prices",
+      "titel": "Inflation of consumer prices",
+      "enhet": "annual %",
+      "ar": "1960–2025",
+      "lander": 192,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "farm-size",
+    "antal": 4,
+    "fran": 1960,
+    "till": 2019,
+    "verifierade": 3,
+    "lander": 175,
+    "exempel": [
+     {
+      "slug": "average-farm-size",
+      "titel": "Average farm size",
+      "enhet": "hectares",
+      "ar": "1960–2000",
+      "lander": 107,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "share-farms-smallholders",
+      "titel": "Share of farms operated by smallholders",
+      "enhet": "",
+      "ar": "1987–2005",
+      "lander": 102,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "machinery-per-agricultural-land",
+      "titel": "Farm machinery per unit of agricultural land",
+      "enhet": "",
+      "ar": "1961–2019",
+      "lander": 175,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "famines",
+    "antal": 3,
+    "fran": 1980,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 194,
+    "exempel": [
+     {
+      "slug": "share-of-children-vaccinated-against-measles",
+      "titel": "Share of one-year-olds vaccinated against measles",
+      "enhet": "%",
+      "ar": "1980–2024",
+      "lander": 194,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "prevalence-of-undernourishment",
+      "titel": "Share of people who are undernourished",
+      "enhet": "percent",
+      "ar": "2000–2024",
+      "lander": 170,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "number-undernourished",
+      "titel": "Number of people who are undernourished",
+      "enhet": "millions",
+      "ar": "2000–2024",
+      "lander": 139,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "pesticides",
+    "antal": 3,
+    "fran": 1990,
+    "till": 2023,
+    "verifierade": 3,
+    "lander": 211,
+    "exempel": [
+     {
+      "slug": "pesticide-use-per-hectare-of-cropland",
+      "titel": "Pesticide use per hectare of cropland",
+      "enhet": "kilograms per hectare",
+      "ar": "1990–2023",
+      "lander": 198,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "pesticide-use-tonnes",
+      "titel": "Pesticide use",
+      "enhet": "tonnes",
+      "ar": "1990–2023",
+      "lander": 211,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "insecticide-use",
+      "titel": "Insecticide use",
+      "enhet": "tonnes",
+      "ar": "1990–2023",
+      "lander": 211,
+      "arketyp": "tungsvans"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Poverty and Economic Development",
+  "total": 163,
+  "amnen": [
+   {
+    "topic": "economic-growth",
+    "antal": 47,
+    "fran": 1827,
+    "till": 2025,
+    "verifierade": 7,
+    "lander": 201,
+    "exempel": [
+     {
+      "slug": "gdp-per-capita-penn-world-table",
+      "titel": "GDP per capita",
+      "enhet": "international-$ in 2021 prices",
+      "ar": "1950–2023",
+      "lander": 184,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "labor-productivity-per-hour-pennworldtable",
+      "titel": "Productivity: output per hour worked",
+      "enhet": "international-$ in 2021 prices per hour",
+      "ar": "1950–2023",
+      "lander": 130,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "unemployment-rate",
+      "titel": "Unemployment rate",
+      "enhet": "%",
+      "ar": "1991–2025",
+      "lander": 186,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "poverty",
+    "antal": 19,
+    "fran": 1960,
+    "till": 2026,
+    "verifierade": 4,
+    "lander": 191,
+    "exempel": [
+     {
+      "slug": "data-deprivation-poverty-surveys-per-decade",
+      "titel": "Number of income/consumption surveys in the past decade available via the World Bank",
+      "enhet": "surveys",
+      "ar": "1963–2025",
+      "lander": 170,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "total-shortfall-from-extreme-poverty",
+      "titel": "Total shortfall from extreme poverty",
+      "enhet": "international-$ in 2021 prices",
+      "ar": "1963–2026",
+      "lander": 170,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "share-living-with-less-than-1-int--per-day",
+      "titel": "Poverty: Share of population living on less than $1 a day",
+      "enhet": "%",
+      "ar": "1963–2026",
+      "lander": 170,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "foreign-aid",
+    "antal": 18,
+    "fran": 1960,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 195,
+    "exempel": [
+     {
+      "slug": "oda-for-scholarships",
+      "titel": "Gross overseas development assistance from all donors for scholarships",
+      "enhet": "millions of constant united states dollars",
+      "ar": "2006–2023",
+      "lander": 151,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "net-official-development-assistance-and-aid-received",
+      "titel": "Net official development assistance and official aid received",
+      "enhet": "constant 2023 US$",
+      "ar": "1960–2023",
+      "lander": 179,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "total-financial-assistance-and-flows-for-agriculture-by-recipient",
+      "titel": "Total financial assistance and flows for agriculture, by recipient",
+      "enhet": "millions of constant united states dollars",
+      "ar": "2000–2023",
+      "lander": 155,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "trade-and-globalization",
+    "antal": 14,
+    "fran": -10000,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 238,
+    "exempel": [
+     {
+      "slug": "population",
+      "titel": "Population",
+      "enhet": "people",
+      "ar": "-10000–2023",
+      "lander": 238,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "merchandise-exports-gdp-cepii",
+      "titel": "Value of exported goods as  a share of GDP",
+      "enhet": "%",
+      "ar": "1827–2014",
+      "lander": 194,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "merchandise-imports-gdp-cepii",
+      "titel": "Value of imported goods as a share of GDP",
+      "enhet": "%",
+      "ar": "1827–2014",
+      "lander": 193,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "economic-inequality-by-gender",
+    "antal": 12,
+    "fran": 1920,
+    "till": 2025,
+    "verifierade": 5,
+    "lander": 205,
+    "exempel": [
+     {
+      "slug": "gender-ratios-for-mean-years-of-schooling",
+      "titel": "Average years of schooling, adjusted gender parity index",
+      "enhet": "index",
+      "ar": "1970–2024",
+      "lander": 205,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "women-can-take-the-same-jobs-as-men",
+      "titel": "Women can take the same jobs as men",
+      "enhet": "(1=yes; 0=no)",
+      "ar": "1970–2023",
+      "lander": 188,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "women-and-men-have-equal-rights-to-immovable-property",
+      "titel": "Women and men have the same rights to own property",
+      "enhet": "(1=yes; 0=no)",
+      "ar": "1970–2023",
+      "lander": 188,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "taxation",
+    "antal": 10,
+    "fran": 1972,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 187,
+    "exempel": [
+     {
+      "slug": "taxes-on-incomes-of-individuals-and-corporations-gdp",
+      "titel": "Taxes on incomes of individuals and corporations as share of GDP",
+      "enhet": "%",
+      "ar": "1980–2023",
+      "lander": 187,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "reduction-in-income-inequality",
+      "titel": "Reduction in income inequality before and after tax",
+      "enhet": "%",
+      "ar": "1976–2024",
+      "lander": 45,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "government-revenues-as-a-share-of-gdp-world-bank",
+      "titel": "Central government revenues as a share of GDP",
+      "enhet": "% of GDP",
+      "ar": "1972–2024",
+      "lander": 162,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "female-labor-supply",
+    "antal": 9,
+    "fran": 1960,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 209,
+    "exempel": [
+     {
+      "slug": "female-labor-force-participation-rates-slopes",
+      "titel": "Female labor force participation rate",
+      "enhet": "%",
+      "ar": "1960–2025",
+      "lander": 209,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "female-labor-force-participation-rates",
+      "titel": "Female labor force participation rate",
+      "enhet": "%",
+      "ar": "1990–2025",
+      "lander": 186,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "female-employment-to-population-ratio",
+      "titel": "Female employment rate",
+      "enhet": "%",
+      "ar": "1960–2025",
+      "lander": 206,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "work-employment",
+    "antal": 9,
+    "fran": 1990,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 186,
+    "exempel": [
+     {
+      "slug": "female-labor-force-participation-rates",
+      "titel": "Female labor force participation rate",
+      "enhet": "%",
+      "ar": "1990–2025",
+      "lander": 186,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "unemployment-rate",
+      "titel": "Unemployment rate",
+      "enhet": "%",
+      "ar": "1991–2025",
+      "lander": 186,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "labor-participation-rate",
+      "titel": "Labor force participation rate",
+      "enhet": "%",
+      "ar": "1990–2025",
+      "lander": 186,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "government-spending",
+    "antal": 8,
+    "fran": 1880,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 157,
+    "exempel": [
+     {
+      "slug": "reduction-in-income-inequality",
+      "titel": "Reduction in income inequality before and after tax",
+      "enhet": "%",
+      "ar": "1976–2024",
+      "lander": 45,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "share-of-employee-compensation-in-public-spending",
+      "titel": "Employee compensation as share of government spending",
+      "enhet": "% of expense",
+      "ar": "1972–2024",
+      "lander": 157,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "social-spending-oecd-longrun",
+      "titel": "Public social spending as share of GDP",
+      "enhet": "% of GDP",
+      "ar": "1880–2024",
+      "lander": 42,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "state-capacity",
+    "antal": 5,
+    "fran": 1789,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 207,
+    "exempel": [
+     {
+      "slug": "physicians-per-1000-people",
+      "titel": "Medical doctors per 1,000 people",
+      "enhet": "per 1,000 people",
+      "ar": "1960–2023",
+      "lander": 207,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "rigorous-and-impartial-public-administration-score",
+      "titel": "Rigorous and Impartial Public Administration Score",
+      "enhet": "",
+      "ar": "1789–2025",
+      "lander": 176,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "domestic-policy-free-from-interference-of-other-states-score",
+      "titel": "Domestic Policy Free from Interference of other States Score",
+      "enhet": "",
+      "ar": "1789–2025",
+      "lander": 176,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "corruption",
+    "antal": 4,
+    "fran": 1789,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 176,
+    "exempel": [
+     {
+      "slug": "rigorous-and-impartial-public-administration-score",
+      "titel": "Rigorous and Impartial Public Administration Score",
+      "enhet": "",
+      "ar": "1789–2025",
+      "lander": 176,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "judicial-corruption-score",
+      "titel": "Judicial Corruption Score",
+      "enhet": "",
+      "ar": "1789–2025",
+      "lander": 176,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "legislative-corruption-score",
+      "titel": "Legislative Corruption Score",
+      "enhet": "",
+      "ar": "1789–2025",
+      "lander": 175,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "financing-education",
+    "antal": 3,
+    "fran": 1900,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 173,
+    "exempel": [
+     {
+      "slug": "staff-compensation-as-share-of-total-expenditure-in-public-education-all-levels",
+      "titel": "Share of total public education spending allocated to staff compensation",
+      "enhet": "%",
+      "ar": "1998–2024",
+      "lander": 173,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "oda-for-scholarships",
+      "titel": "Gross overseas development assistance from all donors for scholarships",
+      "enhet": "millions of constant united states dollars",
+      "ar": "2006–2023",
+      "lander": 151,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "working-hours",
+    "antal": 2,
+    "fran": 1950,
+    "till": 2023,
+    "verifierade": 2,
+    "lander": 130,
+    "exempel": [
+     {
+      "slug": "labor-productivity-per-hour-pennworldtable",
+      "titel": "Productivity: output per hour worked",
+      "enhet": "international-$ in 2021 prices per hour",
+      "ar": "1950–2023",
+      "lander": 130,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "average-working-hours-of-children",
+      "titel": "Average weekly working hours of children",
+      "enhet": "hours per week",
+      "ar": "1999–2016",
+      "lander": 93,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "tourism",
+    "antal": 2,
+    "fran": 2000,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 204,
+    "exempel": [
+     {
+      "slug": "share-of-global-services-exports",
+      "titel": "Share of global services exports",
+      "enhet": "%",
+      "ar": "2000–2023",
+      "lander": 204,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "annual-co-emissions-from-aviation",
+      "titel": "Annual CO₂ emissions from aviation",
+      "enhet": "tonnes",
+      "ar": "2013–2024",
+      "lander": 163,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "economic-inequality",
+    "antal": 1,
+    "fran": 1963,
+    "till": 2025,
+    "verifierade": 1,
+    "lander": 170,
+    "exempel": [
+     {
+      "slug": "data-deprivation-poverty-surveys-per-decade",
+      "titel": "Number of income/consumption surveys in the past decade available via the World Bank",
+      "enhet": "surveys",
+      "ar": "1963–2025",
+      "lander": 170,
+      "arketyp": "intervall"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "(otaggad)",
+  "total": 108,
+  "amnen": [
+   {
+    "topic": "(otaggad)",
+    "antal": 108,
+    "fran": -10000,
+    "till": 2100,
+    "verifierade": 3,
+    "lander": 238,
+    "exempel": [
+     {
+      "slug": "urban-area-long-term",
+      "titel": "Urban area over the long-term",
+      "enhet": "km² per grid cell",
+      "ar": "-10000–2025",
+      "lander": 202,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "urban-vs-rural-majority",
+      "titel": "Do more people live in urban or rural areas?",
+      "enhet": "%",
+      "ar": "-10000–2025",
+      "lander": 238,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "significant-volcanic-eruptions",
+      "titel": "Number of significant volcanic eruptions",
+      "enhet": "events",
+      "ar": "-4360–2024",
+      "lander": 49,
+      "arketyp": "intervall"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Population and Demographic Change",
+  "total": 106,
+  "amnen": [
+   {
+    "topic": "child-mortality",
+    "antal": 38,
+    "fran": 1751,
+    "till": 2024,
+    "verifierade": 4,
+    "lander": 200,
+    "exempel": [
+     {
+      "slug": "children-died-before-five-per-woman",
+      "titel": "Number of child deaths per woman",
+      "enhet": "under-five deaths per woman",
+      "ar": "1800–2024",
+      "lander": 200,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "infant-mortality",
+      "titel": "Infant mortality rate",
+      "enhet": "deaths per 100 live births",
+      "ar": "1931–2024",
+      "lander": 199,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "child-mortality",
+      "titel": "Child mortality rate",
+      "enhet": "deaths per 100 live births",
+      "ar": "1751–2024",
+      "lander": 200,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "life-expectancy",
+    "antal": 17,
+    "fran": 1543,
+    "till": 2100,
+    "verifierade": 3,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "life-expectancy",
+      "titel": "Life expectancy",
+      "enhet": "years",
+      "ar": "1543–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "life-expectancy-at-age-15",
+      "titel": "Life expectancy at age 15",
+      "enhet": "years",
+      "ar": "1751–2100",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "crude-death-rate-hmd",
+      "titel": "Crude death rate",
+      "enhet": "deaths per 1,000 people",
+      "ar": "1751–2024",
+      "lander": 41,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "fertility-rate",
+    "antal": 16,
+    "fran": 1751,
+    "till": 2025,
+    "verifierade": 6,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "children-born-per-woman",
+      "titel": "Fertility rate: births per woman",
+      "enhet": "live births per woman",
+      "ar": "1891–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "children-per-woman-un",
+      "titel": "Fertility rate: births per woman",
+      "enhet": "live births per woman",
+      "ar": "1950–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "contraceptive-prevalence-any-methods-of-women-ages-15-49",
+      "titel": "Share of women using contraceptives",
+      "enhet": "% of women ages 15-49",
+      "ar": "1961–2024",
+      "lander": 183,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "population-growth",
+    "antal": 11,
+    "fran": -10000,
+    "till": 2100,
+    "verifierade": 7,
+    "lander": 238,
+    "exempel": [
+     {
+      "slug": "contraceptive-prevalence-any-methods-of-women-ages-15-49",
+      "titel": "Share of women using contraceptives",
+      "enhet": "% of women ages 15-49",
+      "ar": "1961–2024",
+      "lander": 183,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "population",
+      "titel": "Population",
+      "enhet": "people",
+      "ar": "-10000–2023",
+      "lander": 238,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "population-density",
+      "titel": "Population density",
+      "enhet": "people per km²",
+      "ar": "-10000–2100",
+      "lander": 234,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "age-structure",
+    "antal": 10,
+    "fran": 1751,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "children-born-per-woman",
+      "titel": "Fertility rate: births per woman",
+      "enhet": "live births per woman",
+      "ar": "1891–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "child-mortality",
+      "titel": "Child mortality rate",
+      "enhet": "deaths per 100 live births",
+      "ar": "1751–2024",
+      "lander": 200,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "one-person-households",
+      "titel": "Percentage of one-person households",
+      "enhet": "%",
+      "ar": "1864–2018",
+      "lander": 149,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "gender-ratio",
+    "antal": 6,
+    "fran": -10000,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 238,
+    "exempel": [
+     {
+      "slug": "children-per-woman-un",
+      "titel": "Fertility rate: births per woman",
+      "enhet": "live births per woman",
+      "ar": "1950–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "population",
+      "titel": "Population",
+      "enhet": "people",
+      "ar": "-10000–2023",
+      "lander": 238,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "sex-ratio-at-five-years-old",
+      "titel": "Sex ratio at age 5",
+      "enhet": "males per 100 females",
+      "ar": "1950–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "migration",
+    "antal": 6,
+    "fran": 1951,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 232,
+    "exempel": [
+     {
+      "slug": "refugee-population-by-country-or-territory-of-asylum",
+      "titel": "Refugees by country of asylum",
+      "enhet": "people",
+      "ar": "1951–2024",
+      "lander": 194,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "number-of-refugees-per-100000",
+      "titel": "Refugees by country of origin per 100,000 people",
+      "enhet": "people per 100,000 inhabitants",
+      "ar": "1960–2024",
+      "lander": 211,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "migrant-stock-total",
+      "titel": "Total number of international immigrants",
+      "enhet": "immigrants",
+      "ar": "1990–2024",
+      "lander": 232,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "urbanization",
+    "antal": 2,
+    "fran": -10000,
+    "till": 2025,
+    "verifierade": 2,
+    "lander": 205,
+    "exempel": [
+     {
+      "slug": "share-of-urban-population-living-in-slums",
+      "titel": "Share of urban population living in slums",
+      "enhet": "%",
+      "ar": "1999–2024",
+      "lander": 205,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "long-term-urban-population-region",
+      "titel": "Share of population living in urbanized areas",
+      "enhet": "%",
+      "ar": "-10000–2025",
+      "lander": 202,
+      "arketyp": "andel"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Human Rights and Democracy",
+  "total": 65,
+  "amnen": [
+   {
+    "topic": "women-rights",
+    "antal": 28,
+    "fran": 1970,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 188,
+    "exempel": [
+     {
+      "slug": "women-can-take-the-same-jobs-as-men",
+      "titel": "Women can take the same jobs as men",
+      "enhet": "(1=yes; 0=no)",
+      "ar": "1970–2023",
+      "lander": 188,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "female-genital-mutilation-prevalence",
+      "titel": "Share of women who have undergone female genital mutilation",
+      "enhet": "%",
+      "ar": "1990–2023",
+      "lander": 30,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "law-mandate-nondiscrimination-hiring",
+      "titel": "Employment discrimination based on gender prohibited",
+      "enhet": "(1=yes; 0=no)",
+      "ar": "1970–2023",
+      "lander": 188,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "democracy",
+    "antal": 14,
+    "fran": 1776,
+    "till": 2025,
+    "verifierade": 4,
+    "lander": 167,
+    "exempel": [
+     {
+      "slug": "oecd-average-trust-in-governments",
+      "titel": "Trust in government",
+      "enhet": "%",
+      "ar": "2007–2024",
+      "lander": 47,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "age-of-electoral-democracy",
+      "titel": "Age of electoral democracy",
+      "enhet": "years",
+      "ar": "1789–2025",
+      "lander": 115,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "democracy-index-polity",
+      "titel": "Democracy Index",
+      "enhet": "",
+      "ar": "1776–2020",
+      "lander": 167,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "human-rights",
+    "antal": 12,
+    "fran": 1789,
+    "till": 2025,
+    "verifierade": 5,
+    "lander": 193,
+    "exempel": [
+     {
+      "slug": "physical-integrity-rights-score-fariss-kenwick-reuning",
+      "titel": "Physical Integrity Rights Score",
+      "enhet": "",
+      "ar": "1946–2019",
+      "lander": 193,
+      "arketyp": "signerad"
+     },
+     {
+      "slug": "unsentenced-detainees-as-proportion-of-prison-population",
+      "titel": "Unsentenced detainees as a proportion of overall prison population",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 188,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "equality-of-civil-liberties-across-social-groups-score",
+      "titel": "Equality of Civil Liberties across Social Groups Score",
+      "enhet": "",
+      "ar": "1789–2025",
+      "lander": 176,
+      "arketyp": "signerad"
+     }
+    ]
+   },
+   {
+    "topic": "violence-against-rights-for-children",
+    "antal": 7,
+    "fran": 1990,
+    "till": 2024,
+    "verifierade": 4,
+    "lander": 138,
+    "exempel": [
+     {
+      "slug": "incidence-of-child-labour",
+      "titel": "Share of children in employment",
+      "enhet": "%",
+      "ar": "1994–2016",
+      "lander": 100,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "female-genital-mutilation-prevalence",
+      "titel": "Share of women who have undergone female genital mutilation",
+      "enhet": "%",
+      "ar": "1990–2023",
+      "lander": 30,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "average-working-hours-of-children",
+      "titel": "Average weekly working hours of children",
+      "enhet": "hours per week",
+      "ar": "1999–2016",
+      "lander": 93,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "child-labor",
+    "antal": 3,
+    "fran": 1994,
+    "till": 2016,
+    "verifierade": 3,
+    "lander": 100,
+    "exempel": [
+     {
+      "slug": "incidence-of-child-labour",
+      "titel": "Share of children in employment",
+      "enhet": "%",
+      "ar": "1994–2016",
+      "lander": 100,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "share-of-working-children-who-work-only",
+      "titel": "Share of working children who do not attend school",
+      "enhet": "%",
+      "ar": "1994–2016",
+      "lander": 100,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "average-working-hours-of-children",
+      "titel": "Average weekly working hours of children",
+      "enhet": "hours per week",
+      "ar": "1999–2016",
+      "lander": 93,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "lgbt-rights",
+    "antal": 1,
+    "fran": 1991,
+    "till": 2019,
+    "verifierade": 1,
+    "lander": 192,
+    "exempel": [
+     {
+      "slug": "lgbt-rights-index",
+      "titel": "LGBT+ Rights Index",
+      "enhet": "",
+      "ar": "1991–2019",
+      "lander": 192,
+      "arketyp": "signerad"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Innovation and Technological Change",
+  "total": 46,
+  "amnen": [
+   {
+    "topic": "transport",
+    "antal": 24,
+    "fran": 1970,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 185,
+    "exempel": [
+     {
+      "slug": "air-transport-freight-ton-km",
+      "titel": "Tonne-kilometers of air freight",
+      "enhet": "million ton-km",
+      "ar": "1970–2023",
+      "lander": 184,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "number-airline-passengers",
+      "titel": "Number of airline passengers per year",
+      "enhet": "",
+      "ar": "1970–2023",
+      "lander": 185,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "road-accident-deaths-per-passenger-kilometers",
+      "titel": "Road accident deaths per billion passenger kilometers",
+      "enhet": "deaths",
+      "ar": "1970–2022",
+      "lander": 44,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "technological-change",
+    "antal": 13,
+    "fran": 1957,
+    "till": 2025,
+    "verifierade": 7,
+    "lander": 213,
+    "exempel": [
+     {
+      "slug": "broadband-penetration-by-country",
+      "titel": "Landline Internet subscriptions per 100 people",
+      "enhet": "per 100 people",
+      "ar": "1998–2025",
+      "lander": 208,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "share-of-individuals-using-the-internet",
+      "titel": "Share of the population using the Internet",
+      "enhet": "% of population",
+      "ar": "1990–2025",
+      "lander": 212,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "fixed-telephone-subscriptions-per-100-people",
+      "titel": "Landline phone subscriptions per 100 people",
+      "enhet": "per 100 people",
+      "ar": "1960–2025",
+      "lander": 212,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "space-exploration-satellites",
+    "antal": 5,
+    "fran": 1957,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 102,
+    "exempel": [
+     {
+      "slug": "cumulative-number-of-objects-launched-into-outer-space",
+      "titel": "Cumulative number of objects launched into space",
+      "enhet": "objects",
+      "ar": "1957–2025",
+      "lander": 102,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "yearly-number-of-objects-launched-into-outer-space",
+      "titel": "Annual number of objects launched into space",
+      "enhet": "objects",
+      "ar": "1957–2025",
+      "lander": 102,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "annual-space-visits",
+      "titel": "Human visits to space per year",
+      "enhet": "visits",
+      "ar": "1961–2021",
+      "lander": 39,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "medicine-biotech",
+    "antal": 2,
+    "fran": 1543,
+    "till": 2031,
+    "verifierade": 2,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "life-expectancy",
+      "titel": "Life expectancy",
+      "enhet": "years",
+      "ar": "1543–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "number-of-clinical-trials",
+      "titel": "Number of clinical trials",
+      "enhet": "trials",
+      "ar": "1918–2031",
+      "lander": 194,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "artificial-intelligence",
+    "antal": 2,
+    "fran": 2014,
+    "till": 2025,
+    "verifierade": 2,
+    "lander": 119,
+    "exempel": [
+     {
+      "slug": "share-artificial-intelligence-job-postings",
+      "titel": "Share of artificial intelligence jobs among all job postings",
+      "enhet": "%",
+      "ar": "2014–2025",
+      "lander": 22,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "private-investment-in-artificial-intelligence-cset",
+      "titel": "Estimated funding raised by privately held AI companies",
+      "enhet": "constant 2021 US dollars",
+      "ar": "2016–2025",
+      "lander": 119,
+      "arketyp": "tungsvans"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Education and Knowledge",
+  "total": 19,
+  "amnen": [
+   {
+    "topic": "research-and-development",
+    "antal": 9,
+    "fran": 1972,
+    "till": 2024,
+    "verifierade": 3,
+    "lander": 158,
+    "exempel": [
+     {
+      "slug": "share-of-government-expenditure-going-to-interest-payments",
+      "titel": "Share of government spending going to interest payments",
+      "enhet": "% of expense",
+      "ar": "1972–2024",
+      "lander": 156,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "patent-applications-per-million",
+      "titel": "Annual patent applications per million people",
+      "enhet": "applications per million people",
+      "ar": "1980–2021",
+      "lander": 158,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "researchers-in-rd-per-million-people",
+      "titel": "Number of R&D researchers per million people",
+      "enhet": "per million people",
+      "ar": "1996–2024",
+      "lander": 145,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "literacy",
+    "antal": 5,
+    "fran": 1475,
+    "till": 2040,
+    "verifierade": 3,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "life-expectancy",
+      "titel": "Life expectancy",
+      "enhet": "years",
+      "ar": "1543–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "share-of-the-population-with-basic-numeracy-skills-by-birth-decade",
+      "titel": "Historical basic numeracy rates",
+      "enhet": "%",
+      "ar": "1500–1970",
+      "lander": 144,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "cross-country-literacy-rates",
+      "titel": "Literacy rate",
+      "enhet": "%",
+      "ar": "1475–2024",
+      "lander": 218,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "internet",
+    "antal": 5,
+    "fran": 1990,
+    "till": 2025,
+    "verifierade": 3,
+    "lander": 212,
+    "exempel": [
+     {
+      "slug": "broadband-penetration-by-country",
+      "titel": "Landline Internet subscriptions per 100 people",
+      "enhet": "per 100 people",
+      "ar": "1998–2025",
+      "lander": 208,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "share-of-individuals-using-the-internet",
+      "titel": "Share of the population using the Internet",
+      "enhet": "% of population",
+      "ar": "1990–2025",
+      "lander": 212,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "number-of-internet-users",
+      "titel": "Number of people using the Internet",
+      "enhet": "users",
+      "ar": "1990–2021",
+      "lander": 212,
+      "arketyp": "tungsvans"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Living Conditions, Community and Wellbeing",
+  "total": 17,
+  "amnen": [
+   {
+    "topic": "marriages-and-divorces",
+    "antal": 8,
+    "fran": 1886,
+    "till": 2024,
+    "verifierade": 4,
+    "lander": 183,
+    "exempel": [
+     {
+      "slug": "contraceptive-prevalence-any-methods-of-women-ages-15-49",
+      "titel": "Share of women using contraceptives",
+      "enhet": "% of women ages 15-49",
+      "ar": "1961–2024",
+      "lander": 183,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "women-married-by-age-15",
+      "titel": "Share of women who were married by age 15",
+      "enhet": "%",
+      "ar": "2004–2024",
+      "lander": 138,
+      "arketyp": "intervall"
+     },
+     {
+      "slug": "marriage-rate-per-1000-inhabitants",
+      "titel": "Marriage rates",
+      "enhet": "per 1,000 people",
+      "ar": "1886–2022",
+      "lander": 46,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "social-connections-and-loneliness",
+    "antal": 4,
+    "fran": 1864,
+    "till": 2025,
+    "verifierade": 2,
+    "lander": 212,
+    "exempel": [
+     {
+      "slug": "share-of-individuals-using-the-internet",
+      "titel": "Share of the population using the Internet",
+      "enhet": "% of population",
+      "ar": "1990–2025",
+      "lander": 212,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "one-person-households",
+      "titel": "Percentage of one-person households",
+      "enhet": "%",
+      "ar": "1864–2018",
+      "lander": 149,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "trust",
+    "antal": 2,
+    "fran": 2007,
+    "till": 2024,
+    "verifierade": 2,
+    "lander": 52,
+    "exempel": [
+     {
+      "slug": "oecd-average-trust-in-governments",
+      "titel": "Trust in government",
+      "enhet": "%",
+      "ar": "2007–2024",
+      "lander": 47,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "safety-walking-alone",
+      "titel": "Share that feel safe walking alone around the area they live at night",
+      "enhet": "%",
+      "ar": "2009–2024",
+      "lander": 52,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "time-use",
+    "antal": 1,
+    "fran": 1543,
+    "till": 2023,
+    "verifierade": 1,
+    "lander": 236,
+    "exempel": [
+     {
+      "slug": "life-expectancy",
+      "titel": "Life expectancy",
+      "enhet": "years",
+      "ar": "1543–2023",
+      "lander": 236,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "happiness-and-life-satisfaction",
+    "antal": 1,
+    "fran": 1973,
+    "till": 2016,
+    "verifierade": 1,
+    "lander": 35,
+    "exempel": [
+     {
+      "slug": "share-of-people-who-say-they-are-happy-eurobarometer",
+      "titel": "Share of people who say they are satisfied with their life",
+      "enhet": "%",
+      "ar": "1973–2016",
+      "lander": 35,
+      "arketyp": "andel"
+     }
+    ]
+   },
+   {
+    "topic": "light-at-night",
+    "antal": 1,
+    "fran": 1990,
+    "till": 2024,
+    "verifierade": 1,
+    "lander": 214,
+    "exempel": [
+     {
+      "slug": "share-of-the-population-with-access-to-electricity",
+      "titel": "Share of the population with access to electricity",
+      "enhet": "% of population",
+      "ar": "1990–2024",
+      "lander": 214,
+      "arketyp": "andel"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "kategori": "Violence and War",
+  "total": 11,
+  "amnen": [
+   {
+    "topic": "war-and-peace",
+    "antal": 7,
+    "fran": 1989,
+    "till": 2026,
+    "verifierade": 3,
+    "lander": 196,
+    "exempel": [
+     {
+      "slug": "death-rate-in-armed-conflicts",
+      "titel": "Death rate in armed conflicts based on where they occurred",
+      "enhet": "deaths per 100,000 people",
+      "ar": "1989–2025",
+      "lander": 196,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "deaths-in-interstate-conflicts",
+      "titel": "Deaths in interstate conflicts based on where they occurred",
+      "enhet": "deaths",
+      "ar": "1989–2025",
+      "lander": 196,
+      "arketyp": "tungsvans"
+     },
+     {
+      "slug": "deaths-in-armed-conflicts-by-country",
+      "titel": "Deaths in armed conflicts based on where they occurred",
+      "enhet": "deaths",
+      "ar": "1989–2026",
+      "lander": 196,
+      "arketyp": "tungsvans"
+     }
+    ]
+   },
+   {
+    "topic": "homicides",
+    "antal": 3,
+    "fran": 1980,
+    "till": 2026,
+    "verifierade": 2,
+    "lander": 219,
+    "exempel": [
+     {
+      "slug": "unsentenced-detainees-as-proportion-of-prison-population",
+      "titel": "Unsentenced detainees as a proportion of overall prison population",
+      "enhet": "%",
+      "ar": "2000–2024",
+      "lander": 188,
+      "arketyp": "andel"
+     },
+     {
+      "slug": "prison-population-rate",
+      "titel": "Prison population rate",
+      "enhet": "prisoners per 100,000 people",
+      "ar": "1993–2026",
+      "lander": 219,
+      "arketyp": "intervall"
+     }
+    ]
+   },
+   {
+    "topic": "nuclear-weapons",
+    "antal": 1,
+    "fran": 1968,
+    "till": 2025,
+    "verifierade": 0,
+    "lander": null,
+    "exempel": []
+   }
+  ]
+ }
+]

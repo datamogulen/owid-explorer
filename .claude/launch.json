@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "owid-explorer", "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8413", "--directory", "web"], "port": 8413 }
+  ]
+}
