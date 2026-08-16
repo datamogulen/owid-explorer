@@ -33,9 +33,16 @@
         letter-spacing: .5px; flex: none; min-width: 3.2em; text-align: right; }
   #spela { padding: 5px 13px; font-size: 14px; flex: none; }
   .styrhoger { display: flex; gap: 5px; align-items: center; flex: none; }
-  .mini { background: #2b3038; color: #c2c7cd; border: 1px solid #3a3f47;
-          border-radius: 7px; padding: 5px 11px; font-size: 13px; cursor: pointer; }
-  .mini:hover { background: #353b45; color: #eef4fa; }
+  .mini { background: #2b3038; color: #dfe3e8; border: 1px solid #5a6470;
+          border-radius: 7px; padding: 6px 11px; font-size: 13px; cursor: pointer;
+          display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .mini:hover { background: #3b4250; border-color: #93a0b2; color: #fff; }
+  .mini .txt { font-size: 12px; color: #b9c0ca; }
+  #vyfalt { display: inline-flex; align-items: center; gap: 7px; flex: none;
+            background: #23272e; border: 1px solid #5a6470; border-radius: 7px;
+            padding: 3px 6px 3px 11px; }
+  #vyfalt .vytxt { font-size: 12px; color: #9aa0a8; }
+  #vyfalt select { border: 0; background: none; font-size: 13.5px; padding: 3px 2px; }
   .pop { position: absolute; z-index: 70; display: none; text-align: left;
          background: #1a1d22; border: 1px solid #3a3f47; border-radius: 10px;
          padding: 10px 13px; box-shadow: 0 10px 34px rgba(0,0,0,.6); min-width: 215px; }
@@ -158,6 +165,8 @@
     #styrfalt { padding: 4px 8px; gap: 7px; }
     #ar { font-size: 16px; min-width: 2.9em; }
     .mini { padding: 4px 8px; font-size: 12px; }
+    .mini .txt, #vyfalt .vytxt { display: none; }
+    #vyfalt { padding: 2px 4px; }
     .maxKnapp .txt, .merKnapp .txt { display: none; }
     .glober { gap: 6px; padding: 4px; }
     .panel { width: 47vw; }
@@ -175,8 +184,15 @@
   <button id="spela" data-i18n="spela">▶ Spela</button>
   <input type="range" id="tidslinje" min="0" max="1" step="0.01" value="0">
   <div id="ar">–</div>
+  <label id="vyfalt"><span class="vytxt" data-i18n="vyval">Vy</span>
+    <select id="vyval">
+      <option value="varlden" selected>hela jorden</option>
+      <option value="europa">Europa</option><option value="afrika">Afrika</option>
+      <option value="asien">Asien</option><option value="nordam">Nordamerika</option>
+      <option value="sydam">Sydamerika</option><option value="oceanien">Oceanien</option>
+      <option value="arktis">Arktis</option></select></label>
   <div class="styrhoger">
-    <button id="instknapp" class="mini" title="Inställningar">⚙</button>
+    <button id="instknapp" class="mini" title="Inställningar">⚙ <span class="txt" data-i18n="instTitel">Inställningar</span></button>
     <button id="delaknapp" class="mini" title="Dela vy">🔗</button>
     <span style="display:inline-flex;gap:2px">
       <button class="mini flagga" data-sprak="sv" aria-label="Svenska">🇸🇪</button>
@@ -191,12 +207,6 @@
       <option value="15">15</option><option value="50">50</option></select></label>
     <label><span data-i18n="relief">Relief</span>
       <input type="range" id="relief" min="0.45" max="2.0" step="0.05" value="0.9" style="width:110px"></label>
-    <label><span data-i18n="vyval">Vy</span> <select id="vyval">
-      <option value="varlden" selected>hela jorden</option>
-      <option value="europa">Europa</option><option value="afrika">Afrika</option>
-      <option value="asien">Asien</option><option value="nordam">Nordamerika</option>
-      <option value="sydam">Sydamerika</option><option value="oceanien">Oceanien</option>
-      <option value="arktis">Arktis</option></select></label>
     <label><span data-i18n="autorotation">autorotation</span>
       <input type="checkbox" id="rotera"></label>
   </div>
@@ -232,8 +242,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=6"></script>
+<script src="i18n.js?v=7"></script>
 <script src="motor.js?v=1"></script>
-<script src="explorer.js?v=6"></script>
+<script src="explorer.js?v=7"></script>
 </body>
 </html>

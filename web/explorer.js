@@ -457,12 +457,15 @@
     spela.textContent = spelar ? T("paus") : T("spela");
   };
   tidslinje.oninput = () => { arNu = parseFloat(tidslinje.value); };
-  vyval.onchange = e => {
-    const v = VYER[e.target.value]; if (!v) return;
+  vyval.onchange = e => sattVy(e.target.value);
+  function sattVy(namn) {
+    const v = VYER[namn]; if (!v) return;
     yaw = -v.lon * Math.PI / 180;
     pitch = Math.max(-1.4, Math.min(1.4, v.lat * Math.PI / 180));
     paneler.forEach(p => { if (p.glob) p.glob.zoom = v.zoom; });
-  };
+    // annars snurrar globen bort från världsdelen man just valde
+    if (namn !== "varlden" && rotera.checked) rotera.checked = false;
+  }
   $("#instknapp").onclick = e => {
     e.stopPropagation();
     const o = $("#instpanel").classList.toggle("open");
