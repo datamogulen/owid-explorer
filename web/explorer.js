@@ -81,6 +81,11 @@
       varden, landvarden: raw, kodGrid: G, meshGrid: M, ra: null,
       ny: M.ny, nx: M.nx, lat0: -89.5, lon0: -179.5, platta: true,
       nollpunkt: 0, medel: false, landdata: true,
+      // Havet och kustlinjen på en ljus sida. Skickas som parameter till
+      // motorn, som annars ritar klimatglobernas mörka.
+      // Havet måste vara tydligt SVALARE och mörkare än landramperna, annars
+      // flyter land och hav ihop till en urtvättad gröt på den ljusa sidan.
+      havFarg: [0.60, 0.60, 0.585], kustFarg: [0.26, 0.24, 0.20], ljusMin: 0.56,
       // Reliefen är normaliserad per serie i exporten: p5–p95 siktar på ~12 mm.
       relieffaktor: tung.relieffaktor ?? 0.9,
       linjarGain: tung.skala === "log10" ? 1.0 : 0,
@@ -89,6 +94,10 @@
     cache[id] = meta;
     return meta;
   }
+
+  // färgskalans etiketter måste bytas till mörka — ljus text på beige syns inte
+  Object.assign(BAR_STIL, { text: "#3c352a", dim: "#8d8371", etikett: "#2a251d",
+                            markering: "#2a251d", markeringKant: "#fbf8f1" });
 
   /* ── panelerna ── */
   const paneler = [];
@@ -201,12 +210,32 @@
     pop.querySelectorAll(".perGlob").forEach(e => e.remove());
     const d = document.createElement("div");
     d.className = "perGlob";
+    // Taket kapar HÖJDEN på de få extremvärdena (stadsstater i täthetsmått) —
+    // färgen behåller hela skalan, så de syns fortfarande, de tar bara inte
+    // över hela reliefen.
+    const m = p.glob.meta, harTak = m.skala === "log10";
+    const CAPSPAN = 2.5, SPAN = m.vmax - m.vmin;
+    const gainTillSlider = g => 1 - Math.log10(g) / CAPSPAN;
     d.innerHTML = `<label title="${T("reliefTitel")}"><span>${T("reliefKort")}</span>
       <input type="range" class="pRelief" min="0" max="2" step="0.02"
-             value="${p.glob.reliefMul.toFixed(2)}"></label>
-      <div class="stlRad"><button class="stlBtn" title="${T("stlTitel")}">${T("stlKnapp")}</button></div>`;
+             value="${p.glob.reliefMul.toFixed(2)}"></label>` +
+      (harTak ? `<label title="${T("takTitel")}"><span class="takTxt">${T("tak")}</span>
+      <input type="range" class="pTak" min="0" max="1" step="0.02"
+             value="${gainTillSlider(p.glob.gainHojd).toFixed(2)}"></label>` : "") +
+      `<div class="stlRad"><button class="stlBtn" title="${T("stlTitel")}">${T("stlKnapp")}</button></div>`;
     pop.append(d);
     d.querySelector(".pRelief").oninput = e => { p.glob.reliefMul = +e.target.value; };
+    if (harTak) {
+      const takTxt = d.querySelector(".takTxt");
+      const settTak = sl => {
+        const c = 1 - (1 - sl) * CAPSPAN / SPAN;          // takets läge på skalan
+        p.glob.gainHojd = Math.pow(10, (1 - Math.max(0, Math.min(1, c))) * SPAN);
+        takTxt.textContent = T("tak") + " " + p.glob.fysisktVarde(Math.max(0, Math.min(1, c)));
+        ritaBarFor(p);
+      };
+      settTak(gainTillSlider(p.glob.gainHojd));
+      d.querySelector(".pTak").oninput = e => settTak(+e.target.value);
+    }
     const sb = d.querySelector(".stlBtn");
     sb.onclick = () => {
       sb.disabled = true; const gam = sb.textContent; sb.textContent = "…";

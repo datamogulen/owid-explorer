@@ -329,6 +329,15 @@ class Glob {
     this.meta = meta;
     this.ramp = rampNamn;
     this.kustLjus = kustLjus;   // ljusa kustlinjer för mörka ramper
+    // Hav och kustlinje är sidans, inte motorns: klimatgloberna står på mörk
+    // botten, utforskaren på ljus. Utan detta blir havet en svart fläck mitt
+    // på en beige sida.
+    const f3 = (v, d) => (Array.isArray(v) && v.length === 3) ? v : d;
+    this.havFarg = f3(meta.havFarg, [0.13, 0.15, 0.19]);
+    // Grundljuset: på mörk botten får skuggsidan gärna gå ned i 0,38, men på
+    // ljus botten blir samma siffra en grå klump mitt i bilden.
+    this.ljusMin = typeof meta.ljusMin === "number" ? meta.ljusMin : 0.38;
+    this.kustFarg = f3(meta.kustFarg, kustLjus ? [0.42, 0.44, 0.48] : [0.10, 0.10, 0.12]);
     this.kanaler = meta.kanaler || 1;   // 1 = R8, 2 = RG8 (bivariat)
     this.reliefMul = 1;                  // per-glob relief-multiplikator (befolkning-reglage)
     this.gainHojd = meta.linjarGainHojd || meta.linjarGain || 1;   // höjdtak (befolkning-reglage)
@@ -470,8 +479,12 @@ class Glob {
       vPos = world.xyz;
       gl_Position = uProj * world;
     }`;
+    const v3 = a => `vec3(${a.map(x => (+x).toFixed(4)).join(", ")})`;
     const fs = `#version 300 es
     precision highp float;
+    const vec3 HAVFARG = ${v3(this.havFarg)};
+    const vec3 KUSTFARG = ${v3(this.kustFarg)};
+    const float LJUSMIN = ${this.ljusMin.toFixed(3)};
     in float vVal; in vec3 vN; in vec3 vPos; in vec2 vUV; in float vLand;
     uniform sampler2D uKustTex;
     uniform float uKust, uPick, uNollpF;
@@ -506,10 +519,10 @@ class Glob {
       vec3 c = farg(t);
       // havet i färgen avgörs av det FINA landuppslaget (0 = hav/ingen data),
       // inte av höjdmasken — då blir kusten lika skarp som gränsgriddet
-      ${platta ? "c = mix(vec3(0.13, 0.15, 0.19), c, step(0.002, vv));"
-        : landdata ? "c = mix(vec3(0.13, 0.15, 0.19), c, smoothstep(0.10, 0.55, vLand));" : ""}
+      ${platta ? `c = mix(HAVFARG, c, step(0.002, vv));`
+        : landdata ? `c = mix(HAVFARG, c, smoothstep(0.10, 0.55, vLand));` : ""}
       float k = texture(uKustTex, vUV).r * uKust;
-      c = mix(c, ${this.kustLjus ? "vec3(0.42, 0.44, 0.48)" : "vec3(0.10, 0.10, 0.12)"}, min(k * 1.4, ${this.kustLjus ? "0.6" : "0.85"}));
+      c = mix(c, KUSTFARG, min(k * 1.4, ${this.kustLjus ? "0.6" : "0.85"}));
       // Platådata är fasetterad geometri: platta tak och lodräta väggar. En
       // radiell normal får väggarna att lysa som om de låg ned — det var
       // "trådarna" längs kusterna. Skärmderivatan ger exakt fasettnormal utan
@@ -517,7 +530,7 @@ class Glob {
       ${platta ? `vec3 N = normalize(cross(dFdx(vPos), dFdy(vPos)));
       if (dot(N, normalize(-vPos)) < 0.0) N = -N;` : "vec3 N = normalize(vN);"}
       vec3 L = normalize(vec3(0.45, 0.5, 0.75));
-      float ljus = 0.38 + 0.62 * max(dot(N, L), 0.0);
+      float ljus = LJUSMIN + (1.0 - LJUSMIN) * max(dot(N, L), 0.0);
       float spegl = pow(max(dot(reflect(-L, N), normalize(-vPos)), 0.0), 24.0) * 0.12;
       utfarg = vec4(c * ljus + spegl, 1.0);
     }`;
@@ -931,6 +944,10 @@ class Glob {
 }
 
 /* ── Färgstapel ── */
+/* Färgskalans text: ljus på mörk botten som standard, men sidan får ändra —
+   samma etiketter i #c9cdd3 försvinner spårlöst på en beige sida. */
+const BAR_STIL = { text: "#c9cdd3", dim: "#7f8894",
+                   markering: "#f2f4f7", markeringKant: "#0d0f13", etikett: "#dfe3e8" };
 function ritaBar(canvas, meta, ramp, lin = false, pivotNorm = null, stat = null, glob = null) {
   const ctx = canvas.getContext("2d"), W = canvas.width, H = canvas.height;
   const STRIP = stat ? 44 : H * 0.55;       // plats för en extra etikettrad
@@ -943,7 +960,7 @@ function ritaBar(canvas, meta, ramp, lin = false, pivotNorm = null, stat = null,
     ctx.fillStyle = `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
     ctx.fillRect(x, 0, 1, STRIP);
   }
-  ctx.fillStyle = "#c9cdd3"; ctx.font = "22px sans-serif";
+  ctx.fillStyle = BAR_STIL.text; ctx.font = "22px sans-serif";
   const [v0, v1] = [meta.vmin, meta.vmax];
   const bas = ENHETTEXT(meta.enhet.replace(/ *\(log-skala\)/, ""));
   const nollp = pivotNorm ?? meta.nollpunkt;
@@ -978,10 +995,10 @@ function ritaBar(canvas, meta, ramp, lin = false, pivotNorm = null, stat = null,
   // skalans ändpunkter: vad färgrampen som HELHET täcker
   const skalRad = stat ? H - 4 : H - 4;
   ctx.font = stat ? "19px sans-serif" : "22px sans-serif";
-  ctx.fillStyle = stat ? "#7f8894" : "#c9cdd3";
+  ctx.fillStyle = stat ? BAR_STIL.dim : BAR_STIL.text;
   ctx.textAlign = "left";   ctx.fillText(e0, 2, skalRad);
   ctx.textAlign = "right";  ctx.fillText(e1, W - 2, skalRad);
-  ctx.font = "22px sans-serif"; ctx.fillStyle = "#c9cdd3";
+  ctx.font = "22px sans-serif"; ctx.fillStyle = BAR_STIL.text;
   const pivotX = nollp > 0 ? nollp * W : null;
   if (pivotX !== null) {
     ctx.fillRect(pivotX - 1, 0, 2, STRIP + (stat ? 12 : H * 0.17));
@@ -1016,11 +1033,11 @@ function ritaBar(canvas, meta, ramp, lin = false, pivotNorm = null, stat = null,
   for (const p of punkter) {
     const x = Math.max(0, Math.min(1, p.n)) * W;
     if (pivotX === null || Math.abs(x - pivotX) > 3) {   // rita inte två streck i samma spår
-      ctx.fillStyle = "#0d0f13"; ctx.fillRect(x - 2, 0, 4, STRIP + 12);
-      ctx.fillStyle = "#f2f4f7"; ctx.fillRect(x - 1, 0, 2, STRIP + 12);
+      ctx.fillStyle = BAR_STIL.markeringKant; ctx.fillRect(x - 2, 0, 4, STRIP + 12);
+      ctx.fillStyle = BAR_STIL.markering; ctx.fillRect(x - 1, 0, 2, STRIP + 12);
     }
   }
-  ctx.fillStyle = "#dfe3e8"; ctx.textAlign = "left";
+  ctx.fillStyle = BAR_STIL.etikett; ctx.textAlign = "left";
   // Enheten skrivs ut EN gång, på max — tre gånger blev bara brus.
   const utanEnhet = t => (bas && t.endsWith(" " + bas)) ? t.slice(0, -(bas.length + 1)) : t;
   punkter[0].v = utanEnhet(punkter[0].v);

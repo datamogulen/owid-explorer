@@ -265,11 +265,19 @@ def mat_variant(per_ar, ar_lista, varld, enhet, titel, kod, ix, yta, folk, NL):
     # tar all uppmärksamhet på skärmen. Taket läggs vid p99,5 när toppen sticker
     # upp mer än så — resten av globen behåller sin relief, och tooltipen visar
     # ändå det sanna värdet.
+    # Taket måste ligga UNDER p99,5, för vmax ÄR p99,5 av datan — därför var
+    # p99,5 alltid exakt 1,000 och taket alltid 1,0, alltså dött. p98 flackar
+    # ut de få stadsstaterna (Monaco, Singapore, Malta, Maldiverna) och låter
+    # resten behålla sin relief. Färgen behåller hela skalan, och tooltipen
+    # visar alltid det sanna värdet.
     tak = 1.0
     if len(n_alla) > 20:
-        c = float(np.percentile(n_alla, 99.5))
-        if float(n_alla.max()) > c + 0.02 and c > 0.05:
-            tak = float(np.clip(10 ** ((1.0 - c) * (vmax - vmin)), 1.0, 1e9))
+        c = float(np.percentile(n_alla, 98))
+        if float(n_alla.max()) - c > 0.05 and c > 0.05:
+            # Klipp EXPONENTEN, inte resultatet: spänner skalan många
+            # tiopotenser blir 10**exponent större än en float och Python
+            # kastar OverflowError — det tappade 29 serier tyst.
+            tak = float(10.0 ** min((1.0 - c) * (vmax - vmin), 9.0))
 
     # Ligger världssnittet i skalans kant blir "medel" en nollnivå som allt
     # extruderas åt ett håll ifrån. Då är 0 en ärligare utgångspunkt.
