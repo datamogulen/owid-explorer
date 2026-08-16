@@ -82,7 +82,7 @@
       ny: M.ny, nx: M.nx, lat0: -89.5, lon0: -179.5, platta: true,
       nollpunkt: 0, medel: false, relieffaktor: 0.9, landdata: true,
       linjarGain: tung.skala === "log10" ? 1.0 : 0,
-      standardSkala: tung.skala === "log10" ? "log" : "lin",
+      standardSkala: tung.skala === "log10" ? "log" : "lin",   // "lin" här = identitet
     });
     cache[id] = meta;
     return meta;
@@ -117,7 +117,7 @@
     el.querySelector(".serieknapp").onclick = () => oppnaValjare(p);
     el.querySelector(".skalval select").onchange = e => {
       p.skala = e.target.value;
-      p.glob.lin = p.skala === "lin";
+      p.glob.lin = p.glob.meta.skala === "log10" && p.skala === "lin";
       ritaBarFor(p);
     };
     el.querySelector(".nollval select").onchange = e => { p.nollLage = e.target.value; visa(p); };
@@ -145,7 +145,11 @@
       p.nollLage === "medel" ? meta.globalmedel
       : p.nollLage === "fast" ? meta.globalmedel.map(() => meta.globalmedel[0])
       : null;
-    p.glob.lin = p.skala === "lin";
+    // Skalväljaren gäller bara data som LAGRATS logaritmiskt. Shaderns lin-läge
+    // är 10^((v−1)·SPAN), alltså av-logaritmering — kör man den på redan linjär
+    // data med SPAN 54 (t.ex. medellivslängd 30–84 år) blir varje höjd 10⁻²⁷ och
+    // globen alldeles platt fast färgen ser rätt ut.
+    p.glob.lin = meta.skala === "log10" && p.skala === "lin";
     if (gammalZoom) p.glob.zoom = gammalZoom; else p.glob.zoom = VYER[vyval.value].zoom;
     el.querySelector(".saknas").style.display = "none";
     canvas.style.display = ""; bar.style.display = "";

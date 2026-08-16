@@ -144,7 +144,12 @@ def bearbeta(post, ix, yta, folk, NL):
     kub = np.zeros((len(ar_lista), NL), np.uint16)
     gmedel = []
     vikt = "yta" if "km²" in (post["enhet"] or "") else "folk"
-    berak = 0
+    # Extensiva mått (hektar, ton, antal fall) summeras över länder; intensiva
+    # (per person, %, per km²) medelvärdesbildas. Det avgör vad OWID:s World-rad
+    # ÄR — och därmed om den duger som nollnivå.
+    e = (post["enhet"] or "").lower()
+    extensiv = not ("per " in e or "%" in e or "/" in e or "rate" in (post["titel"] or "").lower())
+    berak = totalrader = 0
     for t, a in enumerate(ar_lista):
         for s, v in per_ar[a].items():
             if rep["skala"] == "log10":
@@ -154,19 +159,35 @@ def bearbeta(post, ix, yta, folk, NL):
             else:
                 n = (v - vmin) / (vmax - vmin)
             kub[t, ix[s]] = 1 + int(np.clip(n, 0, 1) * 65534)
+        varden_ar = list(per_ar[a].values())
+        hogst = max(varden_ar)
         gv = varld.get(a)
+        # För ett extensivt mått är OWID:s World-rad SUMMAN, inte snittet. Använde
+        # man den som nollnivå hamnade planet ovanför varje land och HELA jorden
+        # extruderades nedåt — det syntes direkt på skogsbrandsglobens
+        # 41 miljoner hektar mot en världstotal flera gånger så stor.
+        if gv is not None and hogst > 0 and gv > 1.5 * hogst:
+            gv = None
+            totalrader += 1
         if gv is None:
-            gv = viktat_varldssnitt(per_ar[a], a, folk, yta, ix, vikt)
+            gv = (float(np.mean(varden_ar)) if extensiv
+                  else viktat_varldssnitt(per_ar[a], a, folk, yta, ix, vikt))
             berak += 1
         if gv is None or not np.isfinite(gv):
-            gv = float(np.median(list(per_ar[a].values())))
+            gv = float(np.median(varden_ar))
         gmedel.append(round(float(gv), 6))
 
     lander = sorted({s for a in ar_lista for s in per_ar[a]})
-    metod = "OWID:s världsvärde"
-    if berak:
-        metod += (f", {'ytviktat' if vikt=='yta' else 'befolkningsviktat'} snitt "
-                  f"{berak} av {len(ar_lista)} år")
+    if berak >= len(ar_lista):
+        metod = ("snitt över länderna" if extensiv
+                 else f"{'ytviktat' if vikt=='yta' else 'befolkningsviktat'} snitt över länderna")
+        if totalrader:
+            metod += " (OWID:s världsrad är summan, inte snittet)"
+    else:
+        metod = "OWID:s världsvärde"
+        if berak:
+            metod += (f", {'snitt' if extensiv else 'viktat snitt'} över länderna "
+                      f"{berak} av {len(ar_lista)} år")
     post_ut = dict(
         id=post["slug"], titel=post["titel"], enhet=post["enhet"],
         kalla=post.get("kalla", ""), beskr=post.get("beskr", ""),
