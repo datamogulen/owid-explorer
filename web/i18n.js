@@ -39,7 +39,7 @@ const SPRAK = {
             andel: "andel av landytan" },
     nollAr: "aktuellt år", nollStart: "startåret {ar}", nollSlut: "slutåret {ar}", nollNoll: "0",
     nollEtikett: "nollnivå", fargMot: "färg mot årets snitt",
-    korrRubrik: "Samband", korrLander: "länder", korrRang: "rangkorr.",
+    kvot: "kvot", korrRubrik: "Samband", korrLander: "länder", korrRang: "rangkorr.",
     korrVarning: "Samvariation är inte orsak.", korrMer: "Vad siffran inte säger",
     korrMerText: "<p><b>Korrelation är inte kausalitet.</b> Att två serier följs åt betyder "
       + "inte att den ena orsakar den andra. Det kan lika gärna vara tvärtom, eller ingetdera.</p>"
@@ -135,7 +135,7 @@ const SPRAK = {
             andel: "share of land area" },
     nollAr: "current year", nollStart: "start year {ar}", nollSlut: "end year {ar}", nollNoll: "0",
     nollEtikett: "zero level", fargMot: "colour vs this year's mean",
-    korrRubrik: "Relationship", korrLander: "countries", korrRang: "rank corr.",
+    kvot: "ratio", korrRubrik: "Relationship", korrLander: "countries", korrRang: "rank corr.",
     korrVarning: "Covariation is not cause.", korrMer: "What the number does not say",
     korrMerText: "<p><b>Correlation is not causation.</b> Two series moving together does not "
       + "mean one causes the other. It may be the reverse, or neither.</p>"

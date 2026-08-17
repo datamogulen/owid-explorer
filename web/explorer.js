@@ -431,6 +431,56 @@
   const ruta = document.createElement("div");
   ruta.id = "tips";
   document.body.append(ruta);
+  // Ett kryss per glob: pekar man på Sverige i den ena ska man se Sverige i den
+  // andra också. Det är hela poängen med att visa två samtidigt.
+  const markorer = [];
+  function markor(i) {
+    if (!markorer[i]) {
+      const d = document.createElement("div");
+      d.className = "markor";
+      d.innerHTML = `<svg width="26" height="26" viewBox="0 0 26 26"><g fill="none"
+        stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85">
+        <path d="M13 3v6M13 17v6M3 13h6M17 13h6"/></g>
+        <g fill="none" stroke="#1d2126" stroke-width="1.2" stroke-linecap="round">
+        <path d="M13 3v6M13 17v6M3 13h6M17 13h6"/></g>
+        <circle cx="13" cy="13" r="4.5" fill="none" stroke="#1d2126" stroke-width="1.2"/>
+        <circle cx="13" cy="13" r="4.5" fill="none" stroke="#fff" stroke-width="2.4" opacity=".85"/></svg>`;
+      document.body.append(d);
+      markorer[i] = d;
+    }
+    return markorer[i];
+  }
+  function doljMarkorer() { markorer.forEach(m => { if (m) m.style.display = "none"; }); }
+
+  /* Kvoten mellan de två serierna. Delar de samma nämnare — båda "per person"
+     eller båda "per km²" — tar den ut sig och kvarstår som en meningsfull
+     intensitet: CO₂ per person delat med BNP per person är CO₂ per krona. */
+  /* Enheten för kvoten, förkortad där den går. \"tonnes\" delat med
+     \"tonnes per km²\" är km² — det är landytan, inte något obegripligt. */
+  function kvotEnhet(ea, eb) {
+    let a = (ea || "").trim(), b = (eb || "").trim();
+    const l = a.toLowerCase(), r = b.toLowerCase();
+    if (l === r) return "×";                                   // dimensionslös
+    const per = /^(.*?)\s+per\s+(.+)$/;
+    const ma = l.match(per), mb = r.match(per);
+    if (mb && mb[1] === l) return b.slice(-mb[2].length);       // X ÷ (X per Y) = Y
+    if (ma && ma[1] === r) return "1 / " + a.slice(-ma[2].length);
+    if (ma && mb && ma[2] === mb[2]) {                          // samma nämnare tar ut sig
+      a = a.slice(0, a.length - ma[2].length).replace(/\s+per\s*$/i, "").trim();
+      b = b.slice(0, b.length - mb[2].length).replace(/\s+per\s*$/i, "").trim();
+    }
+    return (a || "?") + " / " + (b || "?");
+  }
+  function landvarde(m, k, ar) {          // → {n, fys} eller null
+    let t = -1, d = 1e9;
+    m.ar.forEach((a, i) => { const q = Math.abs(a - ar); if (q < d) { d = q; t = i; } });
+    if (t < 0 || d > 3) return null;
+    const ra = m.landvarden[t * m.nland + k];
+    if (!ra) return null;
+    const n = (ra - 1) / 65534;
+    const lv = m.vmin + n * (m.vmax - m.vmin);
+    return { n, tal: m.skala === "log10" ? Math.pow(10, lv) : lv, txt: null };
+  }
   function bindInteraktion(p, canvas) {
     canvas.addEventListener("pointerdown", e => {
       canvas.setPointerCapture(e.pointerId);
@@ -448,30 +498,47 @@
       if (!p.glob) return;
       const r = canvas.getBoundingClientRect();
       const uv = p.glob.plockaUV((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
-      if (!uv) { ruta.style.display = "none"; return; }
+      if (!uv) { ruta.style.display = "none"; doljMarkorer(); return; }
       const G = lander.fin;
       const j = Math.max(0, Math.min(G.ny - 1, Math.floor(uv.v * G.ny)));
       const i = (((Math.floor(uv.u * G.nx) % G.nx) + G.nx) % G.nx);
       const k = G.kod[j * G.nx + i];
-      const namn = (k !== 65535 && lander.namn[k]) ? lander.namn[k] : T("havText");
-      let txt = namn;
-      if (k !== 65535 && lander.namn[k]) {
-        const m = p.glob.meta;
-        let t = m.ar.indexOf(Math.round(arNu));
-        if (t < 0) {
-          let b = 0, d = 1e9;
-          m.ar.forEach((a, ii) => { const q = Math.abs(a - arNu); if (q < d) { d = q; b = ii; } });
-          t = b;
+      const arLand = k !== 65535 && lander.namn[k];
+      const aktiva = paneler.filter(q => q.glob);
+      let html = `<b>${arLand ? lander.namn[k] : T("havText")}</b>`;
+      if (arLand) {
+        const varden = aktiva.map(q => {
+          const m = q.glob.meta, v = landvarde(m, k, arNu);
+          html += `<br><span class="tips-t">${m.titel.replace(/\s*\(\d{4}\)\s*$/, "")}</span> ` +
+                  (v ? q.glob.fysisktVarde(v.n) : T("ingenData2"));
+          return v;
+        });
+        // Kvoten: bara när båda finns och nämnaren inte är noll
+        if (aktiva.length === 2 && varden[0] && varden[1] && Math.abs(varden[1].tal) > 1e-12) {
+          const q = varden[0].tal / varden[1].tal;
+          const abs = Math.abs(q);
+          const txt = abs >= 1000 ? Math.round(q).toLocaleString(lokal())
+                    : abs >= 1 ? q.toFixed(2) : abs >= 0.001 ? q.toFixed(4)
+                    : q.toExponential(2);
+          html += `<br><span class="tips-kvot">${T("kvot")} ${txt} ` +
+                  `${kvotEnhet(aktiva[0].glob.meta.enhet, aktiva[1].glob.meta.enhet)}</span>`;
         }
-        const ra = m.landvarden[t * m.nland + k];
-        txt += " · " + (ra ? p.glob.fysisktVarde((ra - 1) / 65534) : T("ingenData2"));
       }
-      ruta.textContent = txt;
+      ruta.innerHTML = html;
       ruta.style.display = "block";
-      ruta.style.left = (e.clientX + 14) + "px";
-      ruta.style.top = (e.clientY + 14) + "px";
+      ruta.style.left = (e.clientX + 16) + "px";
+      ruta.style.top = (e.clientY + 16) + "px";
+      // samma lat/lon på ALLA glober
+      aktiva.forEach((q, ix) => {
+        const mk = markor(ix);
+        const pr = q.glob.projektUV ? q.glob.projektUV(uv.u, uv.v) : null;
+        if (!pr || !pr.framsida) { mk.style.display = "none"; return; }
+        mk.style.display = "block";
+        mk.style.left = pr.sx + "px";
+        mk.style.top = pr.sy + "px";
+      });
     });
-    canvas.addEventListener("pointerleave", () => { ruta.style.display = "none"; });
+    canvas.addEventListener("pointerleave", () => { ruta.style.display = "none"; doljMarkorer(); });
     const slapp = () => { dras = null; };
     canvas.addEventListener("pointerup", slapp);
     canvas.addEventListener("pointercancel", slapp);
