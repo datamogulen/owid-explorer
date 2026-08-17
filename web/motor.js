@@ -5,7 +5,7 @@
    finns, hur gränssnittet ser ut — bor i respektive sidas egen app-fil.
 
    Kräver att i18n.js laddats först: T(), lokal(), ENHETTEXT() och LANG. */
-const VERSION = "43";
+const VERSION = "44";
 /* Cache-bust bara över http(s) (webben). I appen laddas allt via file://
    där ?v= skulle bryta fil-URL:erna → tom sträng där. */
 const CB = (typeof location !== "undefined" && location.protocol === "file:") ? "" : "?v=" + VERSION;
@@ -894,11 +894,20 @@ class Glob {
     const p = this._param;
     if (!p) return null;
     const m = this.meta;
-    const norm = this.samplaNorm(u, v, p.arVarde);
+    // MÅSTE räkna höjden precis som vertexshaderns hojd(). Här stod tidigare
+    // m.nollpunkt där shadern använder uNollp = pivotNu().h — och när nollnivån
+    // är årets medelvärde är den skillnaden hela pivoten. Felet är radiellt, så
+    // det syns inte alls mitt på skivan (där radien pekar mot kameran) men växer
+    // stadigt ut mot randen: krysset gled ifrån muspekaren.
+    const rv = this.samplaNorm(u, v, p.arVarde);
     const gH = this.gainHojd, SPAN = m.vmax - m.vmin;
-    const dispH = this.lin ? Math.min(Math.pow(10, (norm - 1) * SPAN) * gH, 1)
-                           : Math.min(norm, 1 - Math.log10(gH) / SPAN);
-    const h = (dispH - m.nollpunkt) * p.relief * (m.relieffaktor ?? 1.0) * this.reliefMul;   // matchar samplaHojd
+    const dispH = this.lin ? Math.min(Math.pow(10, (rv - 1) * SPAN) * gH, 1)
+                           : Math.min(rv, 1 - Math.log10(gH) / SPAN);
+    // Platåer: ingen data ligger på havsplanet, inte i botten (samma regel som
+    // shadern). Kustdämpningen med landandelen gäller bara icke-platta
+    // landdataglober, och där används ingen markör.
+    const h = (m.platta && rv < 0.002) ? 0
+            : (dispH - this.pivotNu().h) * p.relief * (m.relieffaktor ?? 1.0) * this.reliefMul;
     const lat = (v * 180 - 90) * Math.PI / 180, lon = (u * 360 - 180) * Math.PI / 180;
     const cl = Math.cos(lat);
     const dx = cl * Math.sin(lon), dy = Math.sin(lat), dz = cl * Math.cos(lon);

@@ -475,10 +475,20 @@
   }
   const esc2 = t => String(t == null ? "" : t).replace(/[&<>"]/g,
     c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  // Låg skärm: rutan skulle hamna under vykanten. Då hänger den ovanför kortet
-  // i stället — höjden är stabil för ett givet seriepar, så den fladdrar inte.
+  // Låg skärm: rutan får inte plats under kortet och hänger ovanför i stället.
+  // Det beslutet måste vara stabilt — annars byter rutan sida så fort musen
+  // passerar en kust, för "hav" är kortare än ett land med långa enheter.
+  // Därför låses höjden till det högsta rutan varit för det aktuella seriepar
+  // (viloläget undantaget: då pekar man inte på någon glob ändå).
+  let avlasPar = "", avlasMax = 0;
   function placeraAvlas() {
-    if (getComputedStyle(ruta).position !== "absolute") return;
+    if (getComputedStyle(ruta).position !== "absolute") { ruta.style.minHeight = ""; return; }
+    const par = paneler.map(q => q.id || "").join("|");
+    if (par !== avlasPar) { avlasPar = par; avlasMax = 0; }
+    ruta.style.minHeight = "";
+    if (!ruta.classList.contains("vilar")) avlasMax = Math.max(avlasMax, ruta.offsetHeight);
+    // Även viloläget håller höjden, annars hoppar rutan när musen lämnar globen.
+    if (avlasMax) ruta.style.minHeight = avlasMax + "px";
     ruta.classList.remove("over");
     if (ruta.getBoundingClientRect().bottom > innerHeight - 8) ruta.classList.add("over");
   }
@@ -608,27 +618,31 @@
       const arLand = k !== 65535 && lander.namn[k];
       const aktiva = paneler.filter(q => q.glob);
       let html = `<div class="land">${arLand ? lander.namn[k] : T("havText")}</div>`;
-      if (arLand) {
-        // Serienamnen står redan i stort ovanför varje glob — att upprepa dem
-        // här gjorde rutan tre gånger så hög som den behövde vara. Rutan
-        // hänger mellan globerna, så en pil åt vardera hållet räcker för att
-        // säga vilket värde som hör till vilken.
-        const pilar = aktiva.length === 2 ? ["◀", "▶"] : [""];
-        const varden = aktiva.map((q, ix) => {
-          const m = q.glob.meta, v = landvarde(m, k, arNu);
-          const namn = esc2(m.titel.replace(/\s*\(\d{4}\)\s*$/, ""));
-          html += `<div class="post p${ix}" title="${namn}"><span class="pil">${pilar[ix] || ""}</span>` +
-                  `<span class="tal">${v ? q.glob.fysisktVarde(v.n) : T("ingenData2")}</span></div>`;
-          return v;
-        });
-        // Kvoten: bara när båda finns och nämnaren inte är noll
-        if (aktiva.length === 2 && varden[0] && varden[1] && Math.abs(varden[1].tal) > 1e-12) {
-          const d = kvotDelar(varden[0].tal / varden[1].tal,
-                              aktiva[0].glob.meta.enhet, aktiva[1].glob.meta.enhet, kvotSkala);
-          html += `<div class="post kvot"><span class="serie">${T("kvot")}</span>` +
-                  `<span class="tal">${d.tal}</span>` +
-                  (kvotSkala ? "" : `<span class="enhet">${d.enhet}</span>`) + `</div>`;
-        }
+      // Serienamnen står redan i stort ovanför varje glob — att upprepa dem
+      // här gjorde rutan tre gånger så hög som den behövde vara. Rutan hänger
+      // mellan globerna, så en pil åt vardera hållet räcker för att säga vilket
+      // värde som hör till vilken. Raderna ritas ALLTID, även över hav: annars
+      // ändrar rutan höjd när musen passerar en kust, och då hoppar den.
+      const pilar = aktiva.length === 2 ? ["◀", "▶"] : [""];
+      const varden = aktiva.map((q, ix) => {
+        const mt = q.glob.meta, v = arLand ? landvarde(mt, k, arNu) : null;
+        const namn = esc2(mt.titel.replace(/\s*\(\d{4}\)\s*$/, ""));
+        html += `<div class="post p${ix}" title="${namn}"><span class="pil">${pilar[ix] || ""}</span>` +
+                `<span class="tal">${v ? q.glob.fysisktVarde(v.n)
+                  : (arLand ? T("ingenData2") : "–")}</span></div>`;
+        return v;
+      });
+      // Kvoten: bara när båda finns och nämnaren inte är noll. Enheten skrivs
+      // ut här också — kortets enhetsrad hör synligt till kortets egna två tal,
+      // och ett ensamt "256,7" utan enhet går inte att tolka.
+      if (aktiva.length === 2) {
+        const gar = varden[0] && varden[1] && Math.abs(varden[1].tal) > 1e-12;
+        const d = gar ? kvotDelar(varden[0].tal / varden[1].tal,
+                                  aktiva[0].glob.meta.enhet, aktiva[1].glob.meta.enhet,
+                                  kvotSkala) : null;
+        html += `<div class="post kvot"><span class="serie">${T("kvot")}</span>` +
+                `<span class="tal">${d ? d.tal : "–"}</span>` +
+                `<span class="enhet">${d ? d.enhet : ""}</span></div>`;
       }
       ruta.innerHTML = html;
       ruta.classList.remove("vilar");
