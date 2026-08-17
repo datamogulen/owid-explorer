@@ -438,9 +438,13 @@
   });
 
   /* ── rotera, zooma, läsa av ── */
+  // Avläsningen låg förut som en tooltip vid muspekaren och skymde nästan
+  // alltid sambandskortet — man pekar ju på länder mitt emellan globerna. Den
+  // har nu en egen fast plats i mittkolumnen, under kortet: den hör till BÅDA
+  // globerna, och muspekaren är aldrig där. Krysshåren följer fortfarande
+  // musen, så kopplingen mellan pekare och siffra går inte förlorad.
   const ruta = document.createElement("div");
-  ruta.id = "tips";
-  document.body.append(ruta);
+  ruta.id = "avlas";
   // Ett kryss per glob: pekar man på Sverige i den ena ska man se Sverige i den
   // andra också. Det är hela poängen med att visa två samtidigt.
   const markorer = [];
@@ -461,6 +465,23 @@
     return markorer[i];
   }
   function doljMarkorer() { markorer.forEach(m => { if (m) m.style.display = "none"; }); }
+  // Tom ruta skulle få kortet ovanför att hoppa. Den står kvar och uppmanar
+  // i stället till det man faktiskt kan göra.
+  function vila() {
+    if (ruta.classList.contains("vilar")) return;
+    ruta.classList.add("vilar");
+    ruta.innerHTML = `<div class="uppmaning">${T("avlasVila")}</div>`;
+    placeraAvlas();
+  }
+  const esc2 = t => String(t == null ? "" : t).replace(/[&<>"]/g,
+    c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // Låg skärm: rutan skulle hamna under vykanten. Då hänger den ovanför kortet
+  // i stället — höjden är stabil för ett givet seriepar, så den fladdrar inte.
+  function placeraAvlas() {
+    if (getComputedStyle(ruta).position !== "absolute") return;
+    ruta.classList.remove("over");
+    if (ruta.getBoundingClientRect().bottom > innerHeight - 8) ruta.classList.add("over");
+  }
 
   /* Kvoten mellan de två serierna. Delar de samma nämnare — båda "per person"
      eller båda "per km²" — tar den ut sig och kvarstår som en meningsfull
@@ -505,8 +526,8 @@
     const e = kvotEnhet(ea, eb);
     if (e.taljare === "×") {
       const v = Math.abs(q);
-      return { tal: (v >= 100 ? Math.round(q) : v >= 1 ? q.toFixed(2) : q.toFixed(3))
-                    .toString().replace(".", ","), enhet: "×", val: null };
+      return { tal: v >= 100 ? Math.round(q).toLocaleString(lokal())
+                              : dec(q, v >= 1 ? 2 : 3), enhet: "×", val: null };
     }
     if (!e.taljare) return { tal: fmtTal(q), enhet: e.namnare, val: null };
     if (!e.namnare) return { tal: fmtTal(q), enhet: e.taljare, val: null };
@@ -538,12 +559,17 @@
     const d = kvotDelar(q, ea, eb);
     return d.tal + " " + d.enhet;
   }
+  // Decimaltecknet är komma på svenska och punkt på engelska. Ett hårdkodat
+  // komma gav "136,6" mitt i en engelsk sida.
+  function dec(v, d) {
+    return v.toLocaleString(lokal(), { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
   function fmtTal(v) {
     const a = Math.abs(v);
     if (a >= 1000) return Math.round(v).toLocaleString(lokal());
-    if (a >= 10) return v.toFixed(1).replace(".", ",");
-    if (a >= 1) return v.toFixed(2).replace(".", ",");
-    if (a >= 0.001) return v.toFixed(4).replace(".", ",");
+    if (a >= 10) return dec(v, 1);
+    if (a >= 1) return dec(v, 2);
+    if (a >= 0.001) return dec(v, 4);
     return v.toExponential(2);
   }
 
@@ -568,38 +594,45 @@
         if (Math.abs(dx) + Math.abs(dy) > 3) dras.flyttad = true;
         yaw = dras.y0 + dx * 0.006;
         pitch = Math.max(-1.4, Math.min(1.4, dras.p0 + dy * 0.006));
-        ruta.style.display = "none";
+        vila();
         return;
       }
       if (!p.glob) return;
       const r = canvas.getBoundingClientRect();
       const uv = p.glob.plockaUV((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
-      if (!uv) { ruta.style.display = "none"; doljMarkorer(); return; }
+      if (!uv) { vila(); doljMarkorer(); return; }
       const G = lander.fin;
       const j = Math.max(0, Math.min(G.ny - 1, Math.floor(uv.v * G.ny)));
       const i = (((Math.floor(uv.u * G.nx) % G.nx) + G.nx) % G.nx);
       const k = G.kod[j * G.nx + i];
       const arLand = k !== 65535 && lander.namn[k];
       const aktiva = paneler.filter(q => q.glob);
-      let html = `<b>${arLand ? lander.namn[k] : T("havText")}</b>`;
+      let html = `<div class="land">${arLand ? lander.namn[k] : T("havText")}</div>`;
       if (arLand) {
-        const varden = aktiva.map(q => {
+        // Serienamnen står redan i stort ovanför varje glob — att upprepa dem
+        // här gjorde rutan tre gånger så hög som den behövde vara. Rutan
+        // hänger mellan globerna, så en pil åt vardera hållet räcker för att
+        // säga vilket värde som hör till vilken.
+        const pilar = aktiva.length === 2 ? ["◀", "▶"] : [""];
+        const varden = aktiva.map((q, ix) => {
           const m = q.glob.meta, v = landvarde(m, k, arNu);
-          html += `<br><span class="tips-t">${m.titel.replace(/\s*\(\d{4}\)\s*$/, "")}</span> ` +
-                  (v ? q.glob.fysisktVarde(v.n) : T("ingenData2"));
+          const namn = esc2(m.titel.replace(/\s*\(\d{4}\)\s*$/, ""));
+          html += `<div class="post p${ix}" title="${namn}"><span class="pil">${pilar[ix] || ""}</span>` +
+                  `<span class="tal">${v ? q.glob.fysisktVarde(v.n) : T("ingenData2")}</span></div>`;
           return v;
         });
         // Kvoten: bara när båda finns och nämnaren inte är noll
         if (aktiva.length === 2 && varden[0] && varden[1] && Math.abs(varden[1].tal) > 1e-12) {
-          const q = varden[0].tal / varden[1].tal;
-          html += `<br><span class="tips-kvot">${T("kvot")} ` +
-                  `${kvotText(q, aktiva[0].glob.meta.enhet, aktiva[1].glob.meta.enhet)}</span>`;
+          const d = kvotDelar(varden[0].tal / varden[1].tal,
+                              aktiva[0].glob.meta.enhet, aktiva[1].glob.meta.enhet, kvotSkala);
+          html += `<div class="post kvot"><span class="serie">${T("kvot")}</span>` +
+                  `<span class="tal">${d.tal}</span>` +
+                  (kvotSkala ? "" : `<span class="enhet">${d.enhet}</span>`) + `</div>`;
         }
       }
       ruta.innerHTML = html;
-      ruta.style.display = "block";
-      ruta.style.left = (e.clientX + 16) + "px";
-      ruta.style.top = (e.clientY + 16) + "px";
+      ruta.classList.remove("vilar");
+      placeraAvlas();
       // samma lat/lon på ALLA glober
       aktiva.forEach((q, ix) => {
         const mk = markor(ix);
@@ -610,7 +643,7 @@
         mk.style.top = pr.sy + "px";
       });
     });
-    canvas.addEventListener("pointerleave", () => { ruta.style.display = "none"; doljMarkorer(); });
+    canvas.addEventListener("pointerleave", () => { vila(); doljMarkorer(); });
     const slapp = () => { dras = null; };
     canvas.addEventListener("pointerup", slapp);
     canvas.addEventListener("pointercancel", slapp);
@@ -757,13 +790,17 @@
     return {
       varlden: varldenTal === null ? null : d1.tal,
       median: varldenTal === null ? d1.tal : d2.tal,
-      enhet: d1.enhet,
+      enhet: d1.enhet, val: d1.val,
     };
   }
 
+  // Kortets val av enhet och tiopotens, delat med avläsningsrutan: står samma
+  // kvot i samma skala går Frankrikes 131,2 att jämföra med världens 244,8
+  // direkt, och enheten behöver bara skrivas ut en gång — i kortet.
+  let kvotSkala = null;
   function uppdateraKorr(ar) {
     const p = paneler.filter(q => q.glob);
-    if (p.length < 2) { korrEl.className = "tom"; return; }
+    if (p.length < 2) { korrEl.className = "tom"; kvotSkala = null; return; }
     const [A, B] = p, ma = A.glob.meta, mb = B.glob.meta;
     const la = lagerVid(ma, ar), lb = lagerVid(mb, ar);
     // Ligger året UTANFÖR en series spann tar närmaste-år-sökningen seriens
@@ -776,6 +813,7 @@
     if (nyckel === korrEl.dataset.nyckel) return;
     korrEl.dataset.nyckel = nyckel;
     if (!okA || !okB) {
+      kvotSkala = null;
       const saknas = !okA && !okB ? `${ma.titel} · ${mb.titel}` : (!okA ? ma.titel : mb.titel);
       korrEl.className = "";
       korrEl.innerHTML =
@@ -804,11 +842,12 @@
     const r = pearson(x, y);
     const rho = pearson(rangera(x), rangera(y));
     const glob = globalKvot(ma, mb, la.t, lb.t, ma.ar[la.t]);
+    kvotSkala = glob ? glob.val : null;
     const abs = Math.abs(r);
     const styrka = abs >= 0.7 ? T("korrStark") : abs >= 0.4 ? T("korrMedel")
                  : abs >= 0.2 ? T("korrSvagt") : T("korrInget");
     const tecken = abs < 0.2 ? "" : " " + (r > 0 ? T("korrPos") : T("korrNeg"));
-    const fmt = v => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2).replace(".", ",");
+    const fmt = v => (v >= 0 ? "+" : "−") + dec(Math.abs(v), 2);
     const arA = ma.ar[la.t], arB = mb.ar[lb.t];
     const arNot = (la.avstand > 0 || lb.avstand > 0) ? `<br>${arA} / ${arB}` : "";
     korrEl.innerHTML =
@@ -1052,7 +1091,11 @@
 
   /* ── start ── */
   const A = skapaPanel(0), B = skapaPanel(1);
-  behallare.insertBefore(korrEl, B.el);      // mitt emellan globerna
+  const mitt = document.createElement("div");
+  mitt.id = "mitt";
+  mitt.append(korrEl, ruta);                 // sambandet överst, avläsningen under
+  behallare.insertBefore(mitt, B.el);        // mitt emellan globerna
+  vila();
   const hash = new URLSearchParams(location.hash.slice(1));
   let start = [["life-expectancy", null, null], ["gdp-per-capita-worldbank", null, null]];
   if (hash.get("s")) {
@@ -1129,7 +1172,16 @@
       if (tit.textContent !== txt) tit.textContent = txt;
     }
     uppdateraKorr(arNu);
-    const b = synliga <= 1 ? "62vw" : "46vw";
+    // Mittkolumnen tar 168 px plus luft. Utan avdraget summerade två 46vw-glober
+    // plus kolumnen till mer än fönstret på en vanlig 1440-skärm, och den högra
+    // globen wrappade ner under den vänstra.
+    // Mittkolumnen (168 px) plus gap och padding tar ~250 px. Utan avdraget
+    // summerade två 46vw-glober plus kolumnen till mer än fönstret på en vanlig
+    // 1440-skärm, och den högra globen wrappade ner under den vänstra. Golvet
+    // på 40vw håller de små skärmarna oförändrade — där lägger sig kolumnen
+    // ändå på egen rad.
+    const b = synliga <= 1 ? "62vw"
+            : "max(40vw, min(46vw, calc((100vw - 250px) / 2)))";
     if (b !== bredd) { bredd = b; document.documentElement.style.setProperty("--globbredd", b); }
     requestAnimationFrame(loop);
   }

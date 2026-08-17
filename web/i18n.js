@@ -39,7 +39,7 @@ const SPRAK = {
             andel: "andel av landytan" },
     nollAr: "aktuellt år", nollStart: "startåret {ar}", nollSlut: "slutåret {ar}", nollNoll: "0",
     nollEtikett: "nollnivå", fargMot: "färg mot årets snitt",
-    kvot: "kvot", perOrd: "per", vand: "vänd", vandTitel: "byt plats på globerna — kvoten vänds", globalKvot: "Global kvot", kvotVarlden: "världen", kvotTypiskt: "typiskt land",
+    kvot: "kvot", avlasVila: "peka på ett land", perOrd: "per", vand: "vänd", vandTitel: "byt plats på globerna — kvoten vänds", globalKvot: "Global kvot", kvotVarlden: "världen", kvotTypiskt: "typiskt land",
     korrRubrik: "Samband", korrLander: "länder", korrRang: "rangkorr.",
     korrVarning: "Samvariation är inte orsak.", korrMer: "Vad siffran inte säger",
     korrMerText: "<p><b>Korrelation är inte kausalitet.</b> Att två serier följs åt betyder "
@@ -143,7 +143,7 @@ const SPRAK = {
             andel: "share of land area" },
     nollAr: "current year", nollStart: "start year {ar}", nollSlut: "end year {ar}", nollNoll: "0",
     nollEtikett: "zero level", fargMot: "colour vs this year's mean",
-    kvot: "ratio", perOrd: "per", vand: "swap", vandTitel: "swap the globes — the ratio flips", globalKvot: "Global ratio", kvotVarlden: "the world", kvotTypiskt: "typical country",
+    kvot: "ratio", avlasVila: "point at a country", perOrd: "per", vand: "swap", vandTitel: "swap the globes — the ratio flips", globalKvot: "Global ratio", kvotVarlden: "the world", kvotTypiskt: "typical country",
     korrRubrik: "Relationship", korrLander: "countries", korrRang: "rank corr.",
     korrVarning: "Covariation is not cause.", korrMer: "What the number does not say",
     korrMerText: "<p><b>Correlation is not causation.</b> Two series moving together does not "

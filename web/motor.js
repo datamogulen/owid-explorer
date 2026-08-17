@@ -5,7 +5,7 @@
    finns, hur gränssnittet ser ut — bor i respektive sidas egen app-fil.
 
    Kräver att i18n.js laddats först: T(), lokal(), ENHETTEXT() och LANG. */
-const VERSION = "42";
+const VERSION = "43";
 /* Cache-bust bara över http(s) (webben). I appen laddas allt via file://
    där ?v= skulle bryta fil-URL:erna → tom sträng där. */
 const CB = (typeof location !== "undefined" && location.protocol === "file:") ? "" : "?v=" + VERSION;
@@ -944,20 +944,24 @@ class Glob {
   }
 
   fysisktVarde(norm) {
+    // toFixed ger alltid engelsk punkt och aldrig tusentalsavgränsare. På en
+    // svensk sida stod "8.8 ton" bredvid "244,8" i samma ruta.
+    const tal = (x, d) => x.toLocaleString(lokal(),
+      { minimumFractionDigits: d, maximumFractionDigits: d });
     const m = this.meta;
     const enhet = ENHETTEXT(m.enhet.replace(/ *\(log-skala\)/, ""));
     const overTak = norm > 0.999 && m.oppetTak;   // mättad mot öppet tak → "≥"
     if (m.skala === "log10") {
       if (norm < 0.02) return T("nara0") + " " + enhet;
       const f = Math.pow(10, m.vmin + norm * (m.vmax - m.vmin));
-      const s = f < 1 ? f.toFixed(2) : f < 10 ? f.toFixed(1) : Math.round(f).toLocaleString(lokal());
+      const s = tal(f, f < 1 ? 2 : f < 10 ? 1 : 0);
       return (overTak ? "≥ " : "") + s + " " + enhet;
     }
     const v = m.vmin + norm * (m.vmax - m.vmin);
     const spann = m.vmax - m.vmin;
     const dec = spann >= 100 ? 0 : spann >= 10 ? 1 : 2;
     const tecken = (m.vmin < 0 && v > 0) ? "+" : "";
-    return (overTak ? "≥ " : tecken) + v.toFixed(dec) + " " + enhet;
+    return (overTak ? "≥ " : tecken) + tal(v, dec) + " " + enhet;
   }
 }
 

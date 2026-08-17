@@ -169,7 +169,8 @@
 
   /* Två landdataglober bredvid varandra är en jämförelse — då är sambandet
      mellan dem en siffra man vill se, inte något man ska räkna ut i huvudet. */
-  #korr { align-self: center; flex: 0 0 auto; width: 150px; text-align: center;
+  #mitt { align-self: center; flex: 0 0 auto; width: 182px; position: relative; }
+  #korr { text-align: center;
           background: var(--yta); border: 1px solid var(--linje); border-radius: 12px;
           padding: 14px 12px; box-shadow: 0 1px 4px rgba(80,66,40,.10); }
   #korr.tom { display: none; }
@@ -206,7 +207,11 @@
   .korrPop h3 { margin: 0 0 8px; font-size: 14px; }
   .korrPop p { margin: 8px 0; font-size: 12.5px; line-height: 1.55; color: var(--text); }
   .korrPop b { color: var(--text); }
-  @media (max-width: 760px) { #korr { width: auto; flex-basis: 100%; order: 3; } }
+  @media (max-width: 760px) {
+    #mitt { width: auto; flex-basis: 100%; order: 3; }
+    /* Smal skärm: globerna ligger på rad, ingen tom yta att hänga i */
+    #avlas { position: static; margin-top: 10px; }
+  }
 
   /* Seriväljaren */
   #valjare { position: fixed; inset: 0; background: rgba(58,48,30,.42); z-index: 90;
@@ -258,14 +263,31 @@
   .markor { position: fixed; z-index: 78; display: none; pointer-events: none;
             transform: translate(-50%, -50%);
             filter: drop-shadow(0 0 2px rgba(0,0,0,.55)); }
-  #tips .tips-t { color: var(--svag); }
-  #tips .tips-kvot { display: inline-block; margin-top: 3px; padding-top: 3px;
-                     border-top: 1px solid var(--linje); color: var(--markera);
-                     font-weight: 600; }
-  #tips { position: fixed; z-index: 80; display: none; pointer-events: none;
-          background: var(--yta); border: 1px solid var(--linje); border-radius: 7px;
-          padding: 6px 11px; font-size: 13px; white-space: nowrap; line-height: 1.5;
-          box-shadow: 0 4px 14px rgba(80,66,40,.22); }
+  /* Avläsningen: fast plats under sambandskortet, aldrig under muspekaren */
+  /* Hänger under kortet i stället för att ligga i flödet: annars växer
+     mittkolumnen när man pekar på ett land, och kortet hoppar uppåt vid varje
+     hovring. Ytan under kortet är ändå tom. */
+  #avlas { position: absolute; top: calc(100% + 10px); left: 0; right: 0;
+           background: var(--yta); border: 1px solid var(--linje); border-radius: 12px;
+           padding: 11px 12px; font-size: 12px; line-height: 1.4;
+           box-shadow: 0 1px 4px rgba(80,66,40,.10); }
+  #avlas .land { font-weight: 700; font-size: 13.5px; margin-bottom: 3px;
+                 overflow-wrap: anywhere; }
+  #avlas .post { display: flex; align-items: baseline; gap: 6px; margin-top: 6px;
+                 padding-top: 5px; border-top: 1px solid var(--linje); }
+  #avlas .pil { color: var(--svag); font-size: 10px; flex: none; }
+  #avlas .post.p1 { flex-direction: row-reverse; }   /* höger glob, höger kant */
+  #avlas .tal { font-weight: 600; color: var(--dov); font-size: 12.5px;
+                font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  #avlas .kvot { display: block; }
+  #avlas .kvot .serie { color: var(--svag); font-size: 10px; letter-spacing: .04em;
+                        text-transform: uppercase; }
+  #avlas .kvot .tal { display: block; color: var(--markera); font-size: 15px; }
+  #avlas .kvot .enhet { display: block; color: var(--svag); font-size: 10px;
+                        line-height: 1.3; }
+  #avlas.over { top: auto; bottom: calc(100% + 10px); }
+  #avlas .uppmaning { color: var(--svag); font-size: 11px; text-align: center;
+                      line-height: 1.4; }
   #om { position: fixed; inset: 0; background: rgba(58,48,30,.42); z-index: 95;
         display: none; align-items: flex-start; justify-content: center;
         padding: 40px 16px; overflow-y: auto; }
@@ -369,8 +391,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=34"></script>
-<script src="motor.js?v=42"></script>
-<script src="explorer.js?v=34"></script>
+<script src="i18n.js?v=36"></script>
+<script src="motor.js?v=43"></script>
+<script src="explorer.js?v=42"></script>
 </body>
 </html>
