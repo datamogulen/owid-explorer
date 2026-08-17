@@ -455,22 +455,72 @@
   /* Kvoten mellan de två serierna. Delar de samma nämnare — båda "per person"
      eller båda "per km²" — tar den ut sig och kvarstår som en meningsfull
      intensitet: CO₂ per person delat med BNP per person är CO₂ per krona. */
-  /* Enheten för kvoten, förkortad där den går. \"tonnes\" delat med
-     \"tonnes per km²\" är km² — det är landytan, inte något obegripligt. */
-  function kvotEnhet(ea, eb) {
+  /* ── Kvoten, uttryckt så att den går att läsa ──────────────────────────────
+     6,10e−5 ton CO₂ per international dollar säger ingenting. Samma tal är
+     6,1 kg per 100 int-$, och det säger något. Sökningen provar två saker:
+     att byta täljarens enhet uppåt eller nedåt i sin trappa (ton → kg → g), och
+     att räkna per 10, 100, 1 000 … av nämnaren. Den kombination som lägger
+     talet närmast intervallet 1–1 000 vinner, med rabatt för att låta enheten
+     och nämnaren vara som de är. */
+  const TRAPPOR = [
+    { test: /\btonn?e?s?\b|\bton\b/i, steg: [["t", 1], ["kg", 1e3], ["g", 1e6]] },
+    { test: /\bkilograms?\b|\bkg\b/i, steg: [["t", 1e-3], ["kg", 1], ["g", 1e3]] },
+    { test: /\bgrams?\b/i,             steg: [["kg", 1e-3], ["g", 1], ["mg", 1e3]] },
+    { test: /\bTWh\b/i, steg: [["TWh", 1], ["GWh", 1e3], ["MWh", 1e6], ["kWh", 1e9]] },
+    { test: /\bGWh\b/i, steg: [["TWh", 1e-3], ["GWh", 1], ["MWh", 1e3], ["kWh", 1e6]] },
+    { test: /\bkWh\b/i, steg: [["TWh", 1e-9], ["GWh", 1e-6], ["MWh", 1e-3], ["kWh", 1]] },
+  ];
+  const NAMNARE = [1, 10, 100, 1e3, 1e4, 1e5, 1e6];
+
+  function kvotEnhet(ea, eb) {            // → { taljare, namnare } eller null
     let a = (ea || "").trim(), b = (eb || "").trim();
     const l = a.toLowerCase(), r = b.toLowerCase();
-    if (l === r) return "×";                                   // dimensionslös
+    if (l === r) return { taljare: "×", namnare: "" };
     const per = /^(.*?)\s+per\s+(.+)$/;
     const ma = l.match(per), mb = r.match(per);
-    if (mb && mb[1] === l) return b.slice(-mb[2].length);       // X ÷ (X per Y) = Y
-    if (ma && ma[1] === r) return "1 / " + a.slice(-ma[2].length);
-    if (ma && mb && ma[2] === mb[2]) {                          // samma nämnare tar ut sig
+    if (mb && mb[1] === l) return { taljare: "", namnare: b.slice(-mb[2].length) };
+    if (ma && ma[1] === r) return { taljare: "1", namnare: a.slice(-ma[2].length) };
+    if (ma && mb && ma[2] === mb[2]) {    // samma nämnare tar ut sig
       a = a.slice(0, a.length - ma[2].length).replace(/\s+per\s*$/i, "").trim();
       b = b.slice(0, b.length - mb[2].length).replace(/\s+per\s*$/i, "").trim();
     }
-    return (a || "?") + " / " + (b || "?");
+    return { taljare: a || "?", namnare: b || "?" };
   }
+
+  function kvotText(q, ea, eb) {
+    const e = kvotEnhet(ea, eb);
+    if (e.taljare === "×") {              // dimensionslös: bara ett tal
+      const v = Math.abs(q);
+      return (v >= 100 ? Math.round(q) : v >= 1 ? q.toFixed(2) : q.toFixed(3))
+             .toString().replace(".", ",") + " ×";
+    }
+    if (!e.taljare) return fmtTal(q) + " " + e.namnare;   // X ÷ (X per Y) = Y
+    if (!e.namnare) return fmtTal(q) + " " + e.taljare;
+    const trappa = TRAPPOR.find(t => t.test.test(e.taljare));
+    const steg = trappa ? trappa.steg : [[e.taljare, 1]];
+    let bast = null;
+    for (const [namn, f] of steg) for (const n of NAMNARE) {
+      const v = Math.abs(q * f * n);
+      if (!(v > 0) || !isFinite(v)) continue;
+      // avstånd till läsbart intervall, plus rabatt för orörd enhet/nämnare
+      const straff = (v >= 1 && v < 1000 ? 0 : Math.abs(Math.log10(v) - 1.2) * 2)
+                   + (f === 1 ? 0 : 0.35) + (n === 1 ? 0 : 0.5);
+      if (!bast || straff < bast.straff) bast = { straff, namn, f, n, v: q * f * n };
+    }
+    if (!bast) return q.toExponential(2) + " " + e.taljare + " / " + e.namnare;
+    const namnTxt = bast.n === 1 ? e.namnare
+      : `${bast.n.toLocaleString(lokal())} ${e.namnare}`;
+    return `${fmtTal(bast.v)} ${bast.namn} ${T("perOrd")} ${namnTxt}`;
+  }
+  function fmtTal(v) {
+    const a = Math.abs(v);
+    if (a >= 1000) return Math.round(v).toLocaleString(lokal());
+    if (a >= 10) return v.toFixed(1).replace(".", ",");
+    if (a >= 1) return v.toFixed(2).replace(".", ",");
+    if (a >= 0.001) return v.toFixed(4).replace(".", ",");
+    return v.toExponential(2);
+  }
+
   function landvarde(m, k, ar) {          // → {n, fys} eller null
     let t = -1, d = 1e9;
     m.ar.forEach((a, i) => { const q = Math.abs(a - ar); if (q < d) { d = q; t = i; } });
@@ -516,12 +566,8 @@
         // Kvoten: bara när båda finns och nämnaren inte är noll
         if (aktiva.length === 2 && varden[0] && varden[1] && Math.abs(varden[1].tal) > 1e-12) {
           const q = varden[0].tal / varden[1].tal;
-          const abs = Math.abs(q);
-          const txt = abs >= 1000 ? Math.round(q).toLocaleString(lokal())
-                    : abs >= 1 ? q.toFixed(2) : abs >= 0.001 ? q.toFixed(4)
-                    : q.toExponential(2);
-          html += `<br><span class="tips-kvot">${T("kvot")} ${txt} ` +
-                  `${kvotEnhet(aktiva[0].glob.meta.enhet, aktiva[1].glob.meta.enhet)}</span>`;
+          html += `<br><span class="tips-kvot">${T("kvot")} ` +
+                  `${kvotText(q, aktiva[0].glob.meta.enhet, aktiva[1].glob.meta.enhet)}</span>`;
         }
       }
       ruta.innerHTML = html;
@@ -598,6 +644,21 @@
     }
     return r;
   }
+  /* Kvoten är alltid vänster ÷ höger, så att byta plats på serierna är samma
+     sak som att vända kvoten. Då hör knappen hemma på sambandskortet. */
+  async function vandGlober() {
+    const p = paneler.filter(q => q.glob);
+    if (p.length < 2) return;
+    const [A, B] = p;
+    const a = { id: A.id, skala: A.skala, noll: A.nollLage, man: A.nollManuell };
+    const b = { id: B.id, skala: B.skala, noll: B.nollLage, man: B.nollManuell };
+    A.skala = b.skala; A.nollLage = b.noll; A.nollManuell = b.man;
+    B.skala = a.skala; B.nollLage = a.noll; B.nollManuell = a.man;
+    korrEl.dataset.nyckel = "";
+    await visa(A, b.id);
+    await visa(B, a.id);
+  }
+
   function uppdateraKorr(ar) {
     const p = paneler.filter(q => q.glob);
     if (p.length < 2) { korrEl.className = "tom"; return; }
@@ -654,8 +715,10 @@
        <div class="rad2">${T("korrRang")} <b>${fmt(rho)}</b><br>
          <b>${x.length}</b> ${T("korrLander")}${arNot}</div>
        <div class="varn">${T("korrVarning")}
-         <button class="korrMer" type="button">${T("korrMer")} ›</button></div>`;
+         <button class="korrMer" type="button">${T("korrMer")} ›</button></div>
+       <button class="vand" type="button" title="${T("vandTitel")}">⇄ ${T("vand")}</button>`;
     korrEl.append(korrPop);          // innerHTML ovan slänger den annars
+    korrEl.querySelector(".vand").onclick = () => vandGlober();
     korrEl.querySelector(".korrMer").onclick = e => {
       e.stopPropagation();
       korrPop.innerHTML = `<h3>${T("korrMer")}</h3>${T("korrMerText")}`;
