@@ -1,0 +1,15 @@
+# OWID-utforskaren på hedin.it
+#
+# HTML får aldrig cachas: skripten är versionsmärkta (?v=NN), så en gammal
+# index.html pekar på gamla filer och sidan ser oförändrad ut efter en deploy.
+# Samma läxa som rainmap och climate-globes.
+#
+# Katalogen och serierna byts bara vid omexport och får cachas länge.
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(bin|json)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>

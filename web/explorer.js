@@ -26,7 +26,7 @@
     arktis:   { lat: 78, lon: 10, zoom: 3.4 },
   };
 
-  let arNu = 2020, spelar = false, yaw = 0.6, pitch = 0.25, senast = 0, dras = null;
+  let arNu = 2020, arValt = false, spelar = false, yaw = 0.6, pitch = 0.25, senast = 0, dras = null;
 
   /* ── grunddata: gränsgrid + katalog. Laddas en gång, delas av alla serier ── */
   let lander = null, katalog = null, kust = null;
@@ -134,7 +134,8 @@
     const el = document.createElement("div");
     el.className = "panel";
     el.innerHTML = `
-      <h2><button class="serieknapp" type="button"><span class="titel"></span>
+      <div class="bytrad"></div>
+      <h2><button class="serieknapp" type="button" title="${T("byt")}"><span class="titel"></span>
         <span class="pil">▾</span></button><button class="logflagga" type="button"></button></h2>
       <div class="saknas"></div>
       <canvas class="glob" width="1120" height="1120" style="display:none"></canvas>
@@ -153,6 +154,7 @@
       </div>`;
     el.querySelector(".titel").textContent = T("valjSerie");
     el.querySelector(".saknas").textContent = T("valjSerie");
+    el.querySelector(".bytrad").textContent = T("byt");
     behallare.append(el);
     p.el = el;
     el.querySelector(".serieknapp").onclick = () => oppnaValjare(p);
@@ -552,6 +554,14 @@
     tidslinje.min = Math.min(...g.map(p => p.glob.meta.ar[0]));
     tidslinje.max = Math.max(...g.map(p => p.glob.meta.ar.at(-1)));
     tidslinje.step = 0.02;
+    // Öppna på seriens startår: senaste året med i stort sett full landtäckning.
+    // Det allra sista året är ofta glest rapporterat, och det är dessutom det
+    // här året reliefen är kalibrerad på.
+    if (!arValt) {
+      const s = g.map(p => p.glob.meta.startAr).filter(x => typeof x === "number");
+      arNu = s.length ? Math.max(...s) : +tidslinje.max;
+      arValt = true;
+    }
     arNu = Math.min(Math.max(arNu, +tidslinje.min), +tidslinje.max);
     tidslinje.value = arNu;
   }
@@ -627,7 +637,7 @@
       .map(b => b.split("~"));
     if (bitar.length) start = bitar;
   }
-  if (hash.get("ar")) arNu = +hash.get("ar");
+  if (hash.get("ar")) { arNu = +hash.get("ar"); arValt = true; }
   if (hash.get("fav")) {          // favoriter från en delad länk läggs till
     decodeURIComponent(hash.get("fav")).split(",").filter(Boolean).forEach(x => favoriter.add(x));
     sparaFav();

@@ -79,11 +79,28 @@
   .panel.stor canvas.glob, .panel.stor .saknas { width: min(94vw, 78vh); height: min(94vw, 78vh); }
   .panel.stor canvas.bar { width: min(94vw, 78vh); }
   .panel h2 { margin: 4px 0 6px; }
-  .serieknapp { background: none; border: 0; padding: 4px 8px; border-radius: 7px;
-                font: 600 15px/1.3 inherit; color: var(--text); max-width: min(46vw, 560px);
-                display: inline-flex; align-items: baseline; gap: 7px; }
-  .serieknapp:hover { background: var(--yta2); }
-  .serieknapp .pil { color: var(--svag); font-size: 11px; }
+  /* Seriväljaren ÄR sidans huvudkontroll — hela poängen är att man byter serie.
+     Som naken text såg den ut som en rubrik man inte kan röra. Nu är den en
+     synlig knapp med ram, hover-lyft och en pil som säger att den öppnar något. */
+  .serieknapp { background: var(--yta); border: 1px solid var(--linje);
+                padding: 7px 12px 7px 15px; border-radius: 9px;
+                font: 600 15px/1.3 inherit; color: var(--text);
+                max-width: min(46vw, 560px); cursor: pointer;
+                display: inline-flex; align-items: center; gap: 9px;
+                box-shadow: 0 1px 3px rgba(80,66,40,.10);
+                transition: border-color .14s, background .14s, box-shadow .14s; }
+  .serieknapp:hover { background: var(--markera-yta); border-color: var(--markera);
+                      box-shadow: 0 2px 8px rgba(80,66,40,.18); }
+  .serieknapp .titel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .serieknapp .pil { color: var(--markera); font-size: 10px; flex: none;
+                     background: var(--markera-yta); border-radius: 50%;
+                     width: 18px; height: 18px; display: inline-flex;
+                     align-items: center; justify-content: center; }
+  .serieknapp:hover .pil { background: var(--markera); color: var(--yta); }
+  :root[data-tema="mork"] .serieknapp:hover .pil { color: #14161a; }
+  /* en diskret ledtext ovanför, som försvinner så fort man valt något */
+  .bytrad { font-size: 11px; color: var(--svag); margin: 0 0 3px;
+            letter-spacing: .04em; text-transform: uppercase; }
   /* Att skalan är logaritmisk hör hemma i bilden, inte i inställningarna */
   .logflagga { background: var(--bar-yta); color: var(--bar); border: 1px solid transparent;
                border-radius: 10px; padding: 3px 9px; margin-left: 2px; cursor: pointer;
@@ -286,6 +303,6 @@
 </script>
 <script src="i18n.js?v=13"></script>
 <script src="motor.js?v=9"></script>
-<script src="explorer.js?v=13"></script>
+<script src="explorer.js?v=16"></script>
 </body>
 </html>

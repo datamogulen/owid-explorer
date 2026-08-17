@@ -292,8 +292,51 @@ def mat_variant(per_ar, ar_lista, varld, enhet, titel, kod, ix, yta, folk, NL):
     if len(n_alla):
         n_alla = (n_alla - 1) / 65534.0
         spann_n = float(np.percentile(n_alla, 95) - np.percentile(n_alla, 5))
-    MAL_MM, S_MM, REGLAGE = 12.0, 50.0, 0.9
-    relieffaktor = (MAL_MM / (spann_n * REGLAGE * S_MM)) if spann_n > 1e-6 else 0.9
+    # ── Reliefen kalibreras på SISTA ÅRET, med broms för historien ──────────
+    # Skalan är densamma genom hela serien — annars går utvecklingen inte att
+    # läsa. Men kalibrerar man den på alla år tillsammans blir det år man
+    # faktiskt tittar på spikrakt: barnadödligheten spände 3,3–35,5 år 1950 och
+    # bara 0,2–7,6 år 2024, så det moderna året fick 3,2 mm relief mot 14,2.
+    #
+    # Därför siktar sista året på full amplitud. Rakt av hade 1950 då blivit
+    # 60 mm på ett klot med 50 mm radie, så en broms håller det HÖGSTA året
+    # under taket. För mått som energi per person är det tvärtom — spridningen
+    # är störst i dag — och då slår bromsen aldrig till.
+    S_MM, REGLAGE = 50.0, 0.9
+    MAL_SISTA_MM, TAK_HISTORIA_MM = 13.0, 26.0
+
+    def spann_ar(t):
+        rv = kub[t][kub[t] > 0].astype(np.float64)
+        if len(rv) < 5:
+            return 0.0
+        rn = (rv - 1) / 65534.0
+        return float(np.percentile(rn, 95) - np.percentile(rn, 5))
+
+    # STARTÅRET är inte nödvändigtvis det allra sista: det sista året är ofta
+    # glest rapporterat. Ta senaste året som har minst 90 % av seriens bästa
+    # landtäckning — det är det året man ska mötas av, och det reliefen
+    # kalibreras på.
+    tackning = [int((kub[t] > 0).sum()) for t in range(len(ar_lista))]
+    basta = max(tackning) if tackning else 0
+    t_start = len(ar_lista) - 1
+    for t in range(len(ar_lista) - 1, -1, -1):
+        if basta and tackning[t] >= 0.9 * basta:
+            t_start = t
+            break
+    startAr = int(ar_lista[t_start])
+    sp_sista = spann_ar(t_start) or next(
+        (x for x in (spann_ar(t) for t in range(len(ar_lista) - 1, -1, -1)) if x > 1e-6), 0.0)
+    sp_max = max((spann_ar(t) for t in range(len(ar_lista))), default=0.0)
+    if sp_sista > 1e-6:
+        relieffaktor = MAL_SISTA_MM / (sp_sista * REGLAGE * S_MM)
+        if sp_max > 1e-6:
+            hogsta = sp_max * relieffaktor * REGLAGE * S_MM
+            if hogsta > TAK_HISTORIA_MM:
+                relieffaktor *= TAK_HISTORIA_MM / hogsta
+    elif spann_n > 1e-6:
+        relieffaktor = MAL_SISTA_MM / (spann_n * REGLAGE * S_MM)
+    else:
+        relieffaktor = 0.9
     relieffaktor = float(np.clip(relieffaktor, 0.15, 6.0))
 
     # Ett ensamt land långt över alla andra blir ett tunt spröt i utskriften och
@@ -336,7 +379,7 @@ def mat_variant(per_ar, ar_lista, varld, enhet, titel, kod, ix, yta, folk, NL):
         if berak:
             metod += f", räknat snitt {berak} av {len(ar_lista)} år"
     return (kub, rep, round(vmin, 8), round(vmax, 8), gmedel, metod,
-            round(relieffaktor, 3), round(tak, 4))
+            round(relieffaktor, 3), round(tak, 4), startAr)
 
 
 def bearbeta(post, ix, yta, folk, NL):
@@ -375,7 +418,7 @@ def bearbeta(post, ix, yta, folk, NL):
                         post["titel"], kod, ix, yta, folk, NL)
         if not m:
             continue
-        kub, rep, vmin, vmax, gmedel, metod, relieffaktor, tak = m
+        kub, rep, vmin, vmax, gmedel, metod, relieffaktor, tak, startAr = m
         lander = sorted({s for a in ar_v for s in data[a]})
         ut.append((kod, kub, dict(
             id=post["slug"] + ("" if kod == "abs" else "__" + kod),
@@ -386,6 +429,7 @@ def bearbeta(post, ix, yta, folk, NL):
             topics=post.get("topics", []), kategori=post.get("kategori", ""),
             ar=[int(a) for a in ar_v], nland=NL, nlander=len(lander),
             vmin=vmin, vmax=vmax, linjarGainHojd=tak, relieffaktor=relieffaktor,
+            startAr=startAr,
             globalmedel=gmedel, medelMetod=metod,
             **{k: rep[k] for k in ("arketyp", "skala", "nollLage", "ramp", "regel")})))
     if not ut:
