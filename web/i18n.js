@@ -40,8 +40,21 @@ const SPRAK = {
     nollAr: "aktuellt år", nollStart: "startåret {ar}", nollSlut: "slutåret {ar}", nollNoll: "0",
     nollEtikett: "nollnivå", fargMot: "färg mot årets snitt",
     korrRubrik: "Samband", korrLander: "länder", korrRang: "rangkorr.",
-    korrVarning: "Samvariation är inte orsak. Två serier kan följas åt för att båda "
-      + "följer något tredje — oftast hur rikt landet är.",
+    korrVarning: "Samvariation är inte orsak.", korrMer: "Vad siffran inte säger",
+    korrMerText: "<p><b>Korrelation är inte kausalitet.</b> Att två serier följs åt betyder "
+      + "inte att den ena orsakar den andra. Det kan lika gärna vara tvärtom, eller ingetdera.</p>"
+      + "<p><b>Nästan allt korrelerar med välstånd.</b> Bland världens länder samvarierar "
+      + "utbildning, hälsa, energianvändning, internettillgång och hundratals andra mått — "
+      + "för att de alla hänger ihop med hur rikt landet är. Ett starkt r mellan två sådana "
+      + "mått säger ofta mer om den gemensamma bakgrunden än om något samband dem emellan.</p>"
+      + "<p><b>Länder är inte människor.</b> Ett samband mellan länder gäller inte "
+      + "nödvändigtvis mellan individer. Att länder med mer av X har mer av Y betyder inte "
+      + "att personer med mer av X har mer av Y — det kallas ekologiskt felslut.</p>"
+      + "<p><b>Ett land är en observation.</b> Här väger Kina lika mycket som Tuvalu, och "
+      + "siffran gäller ett enskilt år tvärs över länder — inte hur måtten utvecklats "
+      + "över tid.</p>"
+      + "<p>Rangkorrelationen bryr sig bara om ländernas ordning. Skiljer den sig mycket "
+      + "från r är det några få extremvärden som driver sambandet.</p>",
     korrStark: "starkt", korrMedel: "måttligt", korrSvagt: "svagt", korrInget: "inget",
     korrPos: "positivt", korrNeg: "negativt", korrFa: "för få gemensamma länder",
     nollAret: "snitt det året", nollFast: "snitt {ar}",
@@ -123,8 +136,20 @@ const SPRAK = {
     nollAr: "current year", nollStart: "start year {ar}", nollSlut: "end year {ar}", nollNoll: "0",
     nollEtikett: "zero level", fargMot: "colour vs this year's mean",
     korrRubrik: "Relationship", korrLander: "countries", korrRang: "rank corr.",
-    korrVarning: "Covariation is not cause. Two series can move together because both "
-      + "follow a third thing — usually how rich the country is.",
+    korrVarning: "Covariation is not cause.", korrMer: "What the number does not say",
+    korrMerText: "<p><b>Correlation is not causation.</b> Two series moving together does not "
+      + "mean one causes the other. It may be the reverse, or neither.</p>"
+      + "<p><b>Almost everything correlates with prosperity.</b> Across countries, education, "
+      + "health, energy use, internet access and hundreds of other measures move together — "
+      + "because they all track how rich the country is. A strong r between two such measures "
+      + "often says more about that shared background than about any link between them.</p>"
+      + "<p><b>Countries are not people.</b> A relationship between countries need not hold "
+      + "between individuals. That countries with more X have more Y does not mean people with "
+      + "more X have more Y — this is the ecological fallacy.</p>"
+      + "<p><b>One country, one observation.</b> China counts as much as Tuvalu here, and the "
+      + "number is for a single year across countries — not how the measures changed over time.</p>"
+      + "<p>Rank correlation only cares about the order of countries. If it differs a lot from "
+      + "r, a few extreme values are driving the relationship.</p>",
     korrStark: "strong", korrMedel: "moderate", korrSvagt: "weak", korrInget: "no",
     korrPos: "positive", korrNeg: "negative", korrFa: "too few shared countries",
     nollAret: "mean that year", nollFast: "mean {ar}",

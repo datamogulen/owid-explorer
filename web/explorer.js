@@ -493,6 +493,11 @@
      skalvalet — skiljer de sig mycket är det extremvärden som driver r. */
   const korrEl = document.createElement("div");
   korrEl.id = "korr"; korrEl.className = "tom";
+  // Varningen om kausalitet får inte bli en rad man skummar förbi: den korta
+  // meningen står på kortet, resonemanget bakom öppnas här.
+  const korrPop = document.createElement("div");
+  korrPop.className = "korrPop pop";
+  korrEl.append(korrPop);
 
   function lagerVid(m, ar) {
     let b = 0, d = Infinity;
@@ -563,7 +568,15 @@
        <div class="styrka">${styrka}${tecken}</div>
        <div class="rad2">${T("korrRang")} <b>${fmt(rho)}</b><br>
          <b>${x.length}</b> ${T("korrLander")}${arNot}</div>
-       <div class="varn">${T("korrVarning")}</div>`;
+       <div class="varn">${T("korrVarning")}
+         <button class="korrMer" type="button">${T("korrMer")} ›</button></div>`;
+    korrEl.append(korrPop);          // innerHTML ovan slänger den annars
+    korrEl.querySelector(".korrMer").onclick = e => {
+      e.stopPropagation();
+      korrPop.innerHTML = `<h3>${T("korrMer")}</h3>${T("korrMerText")}`;
+      const o = korrPop.classList.toggle("open");
+      if (o) stangPop(korrPop);
+    };
   }
 
   /* ── Favoriter ───────────────────────────────────────────────────────────

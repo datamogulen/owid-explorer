@@ -181,7 +181,16 @@
   #korr .rad2 { font-size: 11px; color: var(--svag); margin-top: 8px;
                 border-top: 1px solid var(--linje); padding-top: 7px; }
   #korr .rad2 b { font-weight: 600; color: var(--dov); font-variant-numeric: tabular-nums; }
+  #korr { position: relative; }
   #korr .varn { font-size: 10.5px; color: var(--svag); margin-top: 7px; line-height: 1.4; }
+  #korr .korrMer { display: block; margin: 5px auto 0; background: none; border: 0;
+                   padding: 2px 4px; font-size: 10.5px; color: var(--markera);
+                   cursor: pointer; text-decoration: underline; }
+  .korrPop { top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+             width: min(380px, 86vw); max-height: 60vh; overflow-y: auto; text-align: left; }
+  .korrPop h3 { margin: 0 0 8px; font-size: 14px; }
+  .korrPop p { margin: 8px 0; font-size: 12.5px; line-height: 1.55; color: var(--text); }
+  .korrPop b { color: var(--text); }
   @media (max-width: 760px) { #korr { width: auto; flex-basis: 100%; order: 3; } }
 
   /* Seriväljaren */
@@ -338,8 +347,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=24"></script>
+<script src="i18n.js?v=26"></script>
 <script src="motor.js?v=22"></script>
-<script src="explorer.js?v=25"></script>
+<script src="explorer.js?v=26"></script>
 </body>
 </html>
