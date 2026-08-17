@@ -37,7 +37,18 @@ const SPRAK = {
     matt: "mått", nollniva: "nollnivå", skala: "skala",
     norm: { abs: "totalt", capita: "per person", km2: "per km²",
             andel: "andel av landytan" },
+    nollAr: "aktuellt år", nollStart: "startåret {ar}", nollSlut: "slutåret {ar}", nollNoll: "0",
+    nollEtikett: "nollnivå", fargMot: "färg mot årets snitt",
+    korrRubrik: "Samband", korrLander: "länder", korrRang: "rangkorr.",
+    korrVarning: "Samvariation är inte orsak. Två serier kan följas åt för att båda "
+      + "följer något tredje — oftast hur rikt landet är.",
+    korrStark: "starkt", korrMedel: "måttligt", korrSvagt: "svagt", korrInget: "inget",
+    korrPos: "positivt", korrNeg: "negativt", korrFa: "för få gemensamma länder",
     nollAret: "snitt det året", nollFast: "snitt {ar}",
+    nollAuto: "Under uppspelning låses nollnivån vid den ände där världssnittet är lägst, "
+      + "så att en ökning syns som en ökning. Står bilden still ligger nollnivån vid "
+      + "aktuellt år, vilket visar vem som ligger över och under snittet just då. "
+      + "Välj själv i ⋯ om du vill låsa den.",
     log: "log", linjar: "linjär", reliefKort: "relief", tak: "tak",
     reliefTitel: "sänk reliefen för just denna glob",
     takTitel: "värdet där topparna når full höjd",
@@ -109,7 +120,17 @@ const SPRAK = {
     matt: "measure", nollniva: "zero level", skala: "scale",
     norm: { abs: "total", capita: "per person", km2: "per km²",
             andel: "share of land area" },
+    nollAr: "current year", nollStart: "start year {ar}", nollSlut: "end year {ar}", nollNoll: "0",
+    nollEtikett: "zero level", fargMot: "colour vs this year's mean",
+    korrRubrik: "Relationship", korrLander: "countries", korrRang: "rank corr.",
+    korrVarning: "Covariation is not cause. Two series can move together because both "
+      + "follow a third thing — usually how rich the country is.",
+    korrStark: "strong", korrMedel: "moderate", korrSvagt: "weak", korrInget: "no",
+    korrPos: "positive", korrNeg: "negative", korrFa: "too few shared countries",
     nollAret: "mean that year", nollFast: "mean {ar}",
+    nollAuto: "While playing, the zero level is locked to whichever end has the lower world "
+      + "mean, so a rise reads as a rise. When the view is still, the zero level sits at the "
+      + "current year, showing who is above and below the mean right then. Choose it yourself in ⋯.",
     log: "log", linjar: "linear", reliefKort: "relief", tak: "cap",
     reliefTitel: "lower the relief for this globe only",
     takTitel: "the value at which peaks reach full height",

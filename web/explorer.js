@@ -136,7 +136,7 @@
     el.innerHTML = `
       <div class="bytrad"></div>
       <h2><button class="serieknapp" type="button" title="${T("byt")}"><span class="titel"></span>
-        <span class="pil">▾</span></button><button class="logflagga" type="button"></button></h2>
+        <span class="pil">▾</span></button><button class="logflagga" type="button"></button><span class="nollflagga"></span></h2>
       <div class="saknas"></div>
       <canvas class="glob" width="1120" height="1120" style="display:none"></canvas>
       <canvas class="bar" width="1120" height="102" style="display:none"></canvas>
@@ -148,9 +148,10 @@
           <select><option value="log">${T("log")}</option>
                   <option value="lin">${T("linjar")}</option></select></label>
         <label class="nollval"><span>${T("nollniva")}</span>
-          <select><option value="noll">0</option>
-                  <option value="medel">${T("nollAret")}</option>
-                  <option value="fast">${T("nollFast")}</option></select></label>
+          <select><option value="ar">${T("nollAr")}</option>
+                  <option value="start"></option>
+                  <option value="slut"></option>
+                  <option value="noll">0</option></select></label>
       </div>`;
     el.querySelector(".titel").textContent = T("valjSerie");
     el.querySelector(".saknas").textContent = T("valjSerie");
@@ -163,7 +164,11 @@
       p.glob.lin = p.glob.meta.skala === "log10" && p.skala === "lin";
       sattLogflagga(p); ritaBarFor(p);
     };
-    el.querySelector(".nollval select").onchange = e => { p.nollLage = e.target.value; visa(p); };
+    el.querySelector(".nollval select").onchange = e => {
+      p.nollLage = e.target.value;
+      p.nollManuell = true;      // eget val vinner över automatiken vid Play
+      visa(p);
+    };
     // Att skalan är logaritmisk måste synas i BILDEN. Björn läste avskogningen
     // som "är det inte mer i Indonesien?" — för att log klämmer ihop toppen och
     // ingenting sa att den gjorde det. Klick byter till linjärt.
@@ -190,14 +195,10 @@
     if (!p.id) return;
     const meta = await laddaSerie(p.id);
     if (!meta) return;
-    // Default är FAST nollnivå: höjden ska betyda samma sak varje år, annars
-    // läser man uppspelningen fel. Den rörliga ("snitt det året") finns kvar
-    // som val — den svarar på en annan fråga: vem ligger över snittet just nu.
-    // Höjden mäts från NOLL som default. Fast nollnivå vid startåret löste att
-    // ökningar såg ut som minskningar, men gjorde 1900 till en skål 26 mm djup —
-    // hela världen låg under 2023 års snitt. Från noll stiger höjden med värdet
-    // och ingenting hamnar under havsytan.
-    if (p.nollLage === null) p.nollLage = meta.nollLage || "noll";
+    // Signerade mått (negativa värden förekommer) har 0 som enda vettiga
+    // nollnivå. Övriga börjar statiskt vid aktuellt år.
+    const arkTyp = (serieAv[p.id] || {}).k;
+    if (p.nollLage === null) p.nollLage = arkTyp === "signerad" ? "noll" : "ar";
     if (p.skala === null) p.skala = meta.standardSkala;
     const el = p.el;
     const canvas = el.querySelector("canvas.glob"), bar = el.querySelector("canvas.bar");
@@ -210,23 +211,10 @@
     const ramp = "energi_div";
     p.glob = new Glob(canvas, meta, ramp, kust, true);
     p.glob.sattLandmask({ nx: lander.mesh.nx, ny: lander.mesh.ny, data: lander.mesh.andel });
-    // "fast" låser nollnivån vid STARTÅRETS världssnitt. Följer den året i
-    // stället stiger planet under uppspelning, och ett land som förbättras kan
-    // SJUNKA: Sverige hade 80,5 år 2004 och 82,4 år 2019, men världssnittet
-    // steg mer — så globen visade en minskning där datan visar en ökning.
-    const iStart = Math.max(0, meta.ar.indexOf(meta.startAr ?? meta.ar.at(-1)));
-    p.glob.nollMedel =
-      p.nollLage === "medel" ? meta.globalmedel
-      : p.nollLage === "fast" ? meta.globalmedel.map(() => meta.globalmedel[iStart])
-      : null;
-    // FÄRGEN följer alltid årets världssnitt, även när höjden står still. Då
-    // syns båda sakerna samtidigt: att Sverige stiger (höjd mot fast nollnivå)
-    // och att världen kommer ikapp (färgen glider mot mitten). Att tvinga in
-    // båda i höjden går inte — det var därför en ökning kunde se ut som en
-    // minskning.
-    // Färgen mäts alltid mot ÅRETS världssnitt, oavsett var höjden har sin
+    p.glob.nollMedel = nollSerie(meta, p.nollLage);
+    // FÄRGEN mäts alltid mot årets världssnitt, oavsett var höjden har sin
     // nollnivå. Höjden svarar "hur mycket", färgen "hur ligger det till nu".
-    p.glob.nollMedelF = (p.nollLage === "medel") ? null : meta.globalmedel;
+    p.glob.nollMedelF = meta.globalmedel;
     // Skalväljaren gäller bara data som LAGRATS logaritmiskt. Shaderns lin-läge
     // är 10^((v−1)·SPAN), alltså av-logaritmering — kör man den på redan linjär
     // data med SPAN 54 (t.ex. medellivslängd 30–84 år) blir varje höjd 10⁻²⁷ och
@@ -247,7 +235,8 @@
     sk.style.display = meta.skala === "log10" ? "" : "none";
     sk.querySelector("select").value = p.skala;
     const nv = el.querySelector(".nollval").querySelector("select");
-    nv.options[2].text = T("nollFast").replace("{ar}", meta.startAr ?? meta.ar.at(-1));
+    nv.options[1].text = T("nollStart").replace("{ar}", meta.ar[0]);
+    nv.options[2].text = T("nollSlut").replace("{ar}", meta.ar.at(-1));
     nv.value = p.nollLage;
     const esc = t => String(t == null ? "" : t)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -269,18 +258,55 @@
       `</p><p class="und-fot">${T("undersokFot")}</p>`;
     el.querySelector(".regel").innerHTML =
       `${meta.enhet ? `<b>${meta.enhet}</b> · ` : ""}${meta.kalla || ""}` +
-      `<br>${meta.regel.replace(/nollnivå = världssnittet|nollnivå = världsandelen/,
-          p.nollLage === "fast"
-            ? `höjd mot världssnittet ${meta.startAr ?? meta.ar.at(-1)} (fast) · färg mot snittet det året`
-            : p.nollLage === "noll" ? "höjd från 0 · färg mot årets världssnitt"
-            : p.nollLage === "medel" ? "nollnivå = världssnittet det året"
-            : "nollnivå = 0")} · ${meta.medelMetod}`;
+      `<br>${meta.regel.replace(/, höjd från 0[^·]*/, "")}` +
+      `<br>${T("nollEtikett")} = ${nollText(p)} · ${T("fargMot")} · ${meta.medelMetod}`;
     byggReglage(p);
     byggKnappar(p);
     sattLogflagga(p);
+    sattNollflagga(p);
     ritaBarFor(p);
     uppdateraTid();
     laggTillDelning();
+  }
+
+  /* ── Nollnivån ─────────────────────────────────────────────────────────────
+     Fyra lägen, och LÄGET avgör vilket som är förvalt:
+
+       ar     aktuellt år  — vem ligger över och under snittet just nu
+       start  startårets snitt   } fasta, så att en ökning syns som en ökning
+       slut   slutårets snitt    } när man spelar upp
+       noll   0
+
+     Statiskt är "aktuellt år" rimligt. Under uppspelning är det inte det: då
+     stiger planet under fötterna på länderna och en förbättring kan se ut som
+     en försämring. Därför låses nollnivån vid den ände där världssnittet är
+     LÄGST — startåret för medellivslängd, slutåret för barnadödlighet — så att
+     utvecklingen växer uppåt ur havet i båda fallen. */
+  function nollSerie(meta, lage) {
+    const gm = meta.globalmedel;
+    if (lage === "noll") return null;
+    if (lage === "ar") return gm;
+    const i = lage === "start" ? 0 : gm.length - 1;
+    return gm.map(() => gm[i]);
+  }
+  function fastAnde(meta) {          // den ände som har LÄGST världssnitt
+    const gm = meta.globalmedel;
+    return gm[0] <= gm[gm.length - 1] ? "start" : "slut";
+  }
+  function nollText(p) {
+    const m = p.glob && p.glob.meta; if (!m) return "";
+    const gm = m.globalmedel;
+    if (p.nollLage === "noll") return T("nollNoll");
+    if (p.nollLage === "ar") return T("nollAr");
+    return T(p.nollLage === "start" ? "nollStart" : "nollSlut")
+      .replace("{ar}", p.nollLage === "start" ? m.ar[0] : m.ar.at(-1));
+  }
+  function sattNollflagga(p) {
+    const f = p.el.querySelector(".nollflagga");
+    if (!f || !p.glob) return;
+    f.textContent = `${T("nollEtikett")}: ${nollText(p)}`;
+    f.title = T("nollAuto");
+    f.classList.toggle("last", p.nollLage !== "ar");
   }
 
   function sattLogflagga(p) {
@@ -455,6 +481,91 @@
     }, { passive: false });
   }
 
+  /* ── Samband mellan de två globerna ────────────────────────────────────────
+     Två landdataglober sida vid sida ÄR en jämförelse, så sambandet mellan dem
+     hör hemma i bilden. Det räknas om för varje år, så siffran vandrar när man
+     spelar upp — sambandet mellan t.ex. barnadödlighet och medellivslängd är
+     inte detsamma 1950 som 2023.
+
+     r räknas i SAMMA rymd som globen visar (logaritmisk där skalan är log), så
+     siffran hör ihop med det man ser. Rangkorrelationen följer med som kontroll:
+     den bryr sig bara om ordningen mellan länderna och påverkas därför inte av
+     skalvalet — skiljer de sig mycket är det extremvärden som driver r. */
+  const korrEl = document.createElement("div");
+  korrEl.id = "korr"; korrEl.className = "tom";
+
+  function lagerVid(m, ar) {
+    let b = 0, d = Infinity;
+    for (let i = 0; i < m.ar.length; i++) {
+      const q = Math.abs(m.ar[i] - ar);
+      if (q < d) { d = q; b = i; }
+    }
+    return { t: b, avstand: d };
+  }
+  function pearson(x, y) {
+    const n = x.length;
+    let sx = 0, sy = 0;
+    for (let i = 0; i < n; i++) { sx += x[i]; sy += y[i]; }
+    const mx = sx / n, my = sy / n;
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i = 0; i < n; i++) {
+      const a = x[i] - mx, b = y[i] - my;
+      sxy += a * b; sxx += a * a; syy += b * b;
+    }
+    return (sxx > 0 && syy > 0) ? sxy / Math.sqrt(sxx * syy) : NaN;
+  }
+  function rangera(v) {                     // medelrang vid lika värden
+    const idx = v.map((x, i) => i).sort((a, b) => v[a] - v[b]);
+    const r = new Array(v.length);
+    for (let i = 0; i < idx.length; ) {
+      let j = i;
+      while (j + 1 < idx.length && v[idx[j + 1]] === v[idx[i]]) j++;
+      const medel = (i + j) / 2 + 1;
+      for (let k = i; k <= j; k++) r[idx[k]] = medel;
+      i = j + 1;
+    }
+    return r;
+  }
+  function uppdateraKorr(ar) {
+    const p = paneler.filter(q => q.glob);
+    if (p.length < 2) { korrEl.className = "tom"; return; }
+    const [A, B] = p, ma = A.glob.meta, mb = B.glob.meta;
+    const la = lagerVid(ma, ar), lb = lagerVid(mb, ar);
+    const nyckel = `${A.id}|${B.id}|${la.t}|${lb.t}`;
+    if (nyckel === korrEl.dataset.nyckel) return;
+    korrEl.dataset.nyckel = nyckel;
+    const fysA = n => ma.vmin + n * (ma.vmax - ma.vmin);   // log-rymd när skalan är log
+    const fysB = n => mb.vmin + n * (mb.vmax - mb.vmin);
+    const x = [], y = [];
+    for (let k = 0; k < ma.nland; k++) {
+      const a = ma.landvarden[la.t * ma.nland + k], b = mb.landvarden[lb.t * mb.nland + k];
+      if (!a || !b) continue;
+      x.push(fysA((a - 1) / 65534)); y.push(fysB((b - 1) / 65534));
+    }
+    korrEl.className = "";
+    if (x.length < 15) {
+      korrEl.innerHTML = `<div class="rubrik">${T("korrRubrik")}</div>
+        <div class="styrka">${T("korrFa")}</div>`;
+      return;
+    }
+    const r = pearson(x, y);
+    const rho = pearson(rangera(x), rangera(y));
+    const abs = Math.abs(r);
+    const styrka = abs >= 0.7 ? T("korrStark") : abs >= 0.4 ? T("korrMedel")
+                 : abs >= 0.2 ? T("korrSvagt") : T("korrInget");
+    const tecken = abs < 0.2 ? "" : " " + (r > 0 ? T("korrPos") : T("korrNeg"));
+    const fmt = v => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2).replace(".", ",");
+    const arA = ma.ar[la.t], arB = mb.ar[lb.t];
+    const arNot = (la.avstand > 0 || lb.avstand > 0) ? `<br>${arA} / ${arB}` : "";
+    korrEl.innerHTML =
+      `<div class="rubrik">${T("korrRubrik")}</div>
+       <div class="varde">r = ${fmt(r)}</div>
+       <div class="styrka">${styrka}${tecken}</div>
+       <div class="rad2">${T("korrRang")} <b>${fmt(rho)}</b><br>
+         <b>${x.length}</b> ${T("korrLander")}${arNot}</div>
+       <div class="varn">${T("korrVarning")}</div>`;
+  }
+
   /* ── Favoriter ───────────────────────────────────────────────────────────
      Ligger i webbläsaren (localStorage) och kräver inget konto. Vill man ta
      dem med sig till en annan dator följer de med i delningslänken. */
@@ -597,7 +708,21 @@
     spelar = !spelar;
     if (spelar && arNu >= parseFloat(tidslinje.max) - 0.01) arNu = parseFloat(tidslinje.min);
     spela.textContent = spelar ? T("paus") : T("spela");
+    vaxlaNollForLage();
   };
+  /* LÄGET avgör nollnivån. Statiskt är "aktuellt år" rimligt — då ser man vem
+     som ligger över och under snittet just då. Under uppspelning är det inte
+     rimligt: planet stiger under fötterna på länderna och en förbättring kan se
+     ut som en försämring. Då låses nollnivån vid den ände där världssnittet är
+     lägst, så utvecklingen växer uppåt ur havet. Har man valt själv i ⋯ rör vi
+     inte valet. */
+  function vaxlaNollForLage() {
+    for (const p of paneler) {
+      if (!p.glob || p.nollManuell || p.nollLage === "noll") continue;
+      const onskad = spelar ? fastAnde(p.glob.meta) : "ar";
+      if (p.nollLage !== onskad) { p.nollLage = onskad; visa(p); }
+    }
+  }
   tidslinje.oninput = () => { arNu = parseFloat(tidslinje.value); };
   vyval.onchange = e => sattVy(e.target.value);
   function sattVy(namn) {
@@ -658,6 +783,7 @@
 
   /* ── start ── */
   const A = skapaPanel(0), B = skapaPanel(1);
+  behallare.insertBefore(korrEl, B.el);      // mitt emellan globerna
   const hash = new URLSearchParams(location.hash.slice(1));
   let start = [["life-expectancy", null, null], ["gdp-per-capita-worldbank", null, null]];
   if (hash.get("s")) {
@@ -712,7 +838,8 @@
     if (spelar) {
       arNu += dt * parseFloat(fart.value);
       const max = parseFloat(tidslinje.max);
-      if (arNu >= max) { arNu = max; spelar = false; spela.textContent = T("spela"); }
+      if (arNu >= max) { arNu = max; spelar = false; spela.textContent = T("spela");
+                         vaxlaNollForLage(); }
       tidslinje.value = arNu;
     }
     if (rotera.checked && !dras) yaw += dt * 0.06;
@@ -732,6 +859,7 @@
       const txt = iTid ? m.titel : `${m.titel} (${Math.round(ar)})`;
       if (tit.textContent !== txt) tit.textContent = txt;
     }
+    uppdateraKorr(arNu);
     const b = synliga <= 1 ? "62vw" : "46vw";
     if (b !== bredd) { bredd = b; document.documentElement.style.setProperty("--globbredd", b); }
     requestAnimationFrame(loop);
