@@ -341,7 +341,10 @@ class Glob {
     this.kanaler = meta.kanaler || 1;   // 1 = R8, 2 = RG8 (bivariat)
     this.reliefMul = 1;                  // per-glob relief-multiplikator (befolkning-reglage)
     this.gainHojd = meta.linjarGainHojd || meta.linjarGain || 1;   // höjdtak (befolkning-reglage)
-    this.gl = canvas.getContext("webgl2", { antialias: true });
+    // preserveDrawingBuffer: utan den rensas bufferten efter varje bildruta och
+    // canvasen går inte att läsa ut — previewbilden blev tom. Kostar en aning
+    // prestanda, men gör att globen alltid går att fånga som bild.
+    this.gl = canvas.getContext("webgl2", { antialias: true, preserveDrawingBuffer: true });
     if (!this.gl) throw new Error("WebGL2 saknas i webbläsaren");
     // Kamerans avstånd. 5,2 lämnade en bred svart ram runt klotet; 4,8 fyller
     // rutan bättre och håller ändå högsta reliefen (r≈1,4) innanför bildvinkeln.
