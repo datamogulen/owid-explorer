@@ -42,6 +42,26 @@ EJ_LAND = re.compile(
 VARLD = {"World", "OWID_WRL"}
 
 
+def owid_lankar(slug):
+    """Globen väcker frågan — svaret finns hos OWID. originUrl pekar på den
+    ÄMNESSIDA diagrammet hörde till, alltså texten som faktiskt förklarar
+    varför Sverige slaktar tio gånger fler djur per person än Brasilien
+    (kyckling väger lite, så det går många per kilo kött)."""
+    graf = f"https://ourworldindata.org/grapher/{slug}"
+    amne = None
+    try:
+        with open(os.path.join(HER, "cache", "config.json", slug + ".json"),
+                  encoding="utf-8") as f:
+            u = (json.load(f) or {}).get("originUrl") or ""
+        if u.startswith("/"):
+            amne = "https://ourworldindata.org" + u
+        elif u.startswith("http"):
+            amne = u
+    except Exception:
+        pass
+    return graf, amne
+
+
 def las_csv(slug):
     p = os.path.join(CSV_CACHE, slug + ".csv")
     if not os.path.exists(p):
@@ -345,6 +365,7 @@ def bearbeta(post, ix, yta, folk, NL):
     if len(ar_lista) < MIN_AR:
         return None, f"bara {len(ar_lista)} år med ≥{MIN_LANDER} länder"
 
+    lankar = owid_lankar(post["slug"])
     ut = []
     for kod, enhet, suffix, data in varianter_av(per_ar, ar_lista, post, ix, yta, folk):
         ar_v = sorted(a for a in ar_lista if a in data and len(data[a]) >= MIN_LANDER)
@@ -361,6 +382,7 @@ def bearbeta(post, ix, yta, folk, NL):
             bas=post["slug"], norm=kod, suffix=suffix,
             titel=post["titel"] + suffix, enhet=enhet,
             kalla=post.get("kalla", ""), beskr=post.get("beskr", ""),
+            owidUrl=lankar[0], amnesUrl=lankar[1],
             topics=post.get("topics", []), kategori=post.get("kategori", ""),
             ar=[int(a) for a in ar_v], nland=NL, nlander=len(lander),
             vmin=vmin, vmax=vmax, linjarGainHojd=tak, relieffaktor=relieffaktor,

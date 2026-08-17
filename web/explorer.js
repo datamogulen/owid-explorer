@@ -140,6 +140,7 @@
       <canvas class="glob" width="1120" height="1120" style="display:none"></canvas>
       <canvas class="bar" width="1120" height="102" style="display:none"></canvas>
       <div class="regel"></div>
+      <div class="undPop pop"></div>
       <div class="globPop pop">
         <label class="normval"><span>${T("matt")}</span><select></select></label>
         <label class="skalval"><span>${T("skala")}</span>
@@ -224,6 +225,22 @@
     const nv = el.querySelector(".nollval").querySelector("select");
     nv.options[2].text = T("nollFast").replace("{ar}", meta.ar[0]);
     nv.value = p.nollLage;
+    const esc = t => String(t == null ? "" : t)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    el.querySelector(".undPop").innerHTML =
+      `<h3>${esc(meta.titel)}</h3>` +
+      // OWID:s egen text om den underliggande kolumnen. Den är ibland svårtolkad
+      // i globens sammanhang ("Population by country" för slaktade landdjur
+      // betyder djurpopulation), så den märks upp i stället för att presenteras
+      // som en bildtext till globen.
+      (meta.beskr ? `<p class="und-beskr"><span class="und-etikett">${T("owidOm")}</span>
+        ${esc(meta.beskr)}</p>` : "") +
+      `<p class="und-meta"><b>${esc(meta.enhet || "–")}</b><br>${esc(meta.kalla || "")}</p>` +
+      `<p class="und-meta">${esc(meta.regel)}<br>${esc(meta.medelMetod)}</p>` +
+      `<p class="und-lank">` +
+      (meta.amnesUrl ? `<a href="${esc(meta.amnesUrl)}" target="_blank" rel="noopener">${T("lasAmne")} ↗</a>` : "") +
+      (meta.owidUrl ? `<a href="${esc(meta.owidUrl)}" target="_blank" rel="noopener">${T("lasDiagram")} ↗</a>` : "") +
+      `</p><p class="und-fot">${T("undersokFot")}</p>`;
     el.querySelector(".regel").innerHTML =
       `${meta.enhet ? `<b>${meta.enhet}</b> · ` : ""}${meta.kalla || ""}` +
       `<br>${meta.regel} · ${meta.medelMetod}`;
@@ -315,6 +332,17 @@
         mer.classList.toggle("pa", opp);
         if (opp) stangPop(pop);
       };
+      const und = document.createElement("button");
+      und.className = "merKnapp undKnapp";
+      und.innerHTML = `? <span class="txt">${T("undersok")}</span>`;
+      und.title = T("undersokTitel");
+      const undPop = p.el.querySelector(".undPop");
+      und.onclick = e => {
+        e.stopPropagation();
+        const o = undPop.classList.toggle("open");
+        und.classList.toggle("pa", o);
+        if (o) stangPop(undPop);
+      };
       const max = document.createElement("button");
       max.className = "maxKnapp";
       max.innerHTML = `⛶ <span class="txt">${T("maximera")}</span>`;
@@ -324,7 +352,7 @@
         max.querySelector(".txt").textContent = T(stor ? "atergaVy" : "maximera");
         document.body.style.overflow = stor ? "hidden" : "";
       };
-      rad.append(mer, max); wrap.append(rad, pop);
+      rad.append(und, mer, max); wrap.append(rad, pop, undPop);
       bindInteraktion(p, cv);
     }
   }
