@@ -19,6 +19,9 @@ const SPRAK = {
     sok: "Sök bland alla serier …", inga: "Inga träffar",
     alla: "Alla ämnen", serier: "serier", lander: "länder",
     favoriter: "Favoriter", favorit: "spara som favorit",
+    logflagga: "log-skala", logflaggaTitel: "Höjd och färg är logaritmiska — "
+      + "avståndet mellan 1 och 10 är lika stort som mellan 10 och 100. Klicka för linjär skala.",
+    bakgrund: "Bakgrund", temaBeige: "beige", temaLjus: "ljus", temaMork: "mörk",
     matt: "mått", nollniva: "nollnivå", skala: "skala",
     norm: { abs: "totalt", capita: "per person", km2: "per km²",
             andel: "andel av landytan" },
@@ -76,6 +79,9 @@ const SPRAK = {
     sok: "Search all series …", inga: "No matches",
     alla: "All topics", serier: "series", lander: "countries",
     favoriter: "Favourites", favorit: "save as favourite",
+    logflagga: "log scale", logflaggaTitel: "Height and colour are logarithmic — "
+      + "the step from 1 to 10 is as wide as from 10 to 100. Click for a linear scale.",
+    bakgrund: "Background", temaBeige: "beige", temaLjus: "light", temaMork: "dark",
     matt: "measure", nollniva: "zero level", skala: "scale",
     norm: { abs: "total", capita: "per person", km2: "per km²",
             andel: "share of land area" },

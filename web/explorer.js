@@ -85,7 +85,7 @@
       // motorn, som annars ritar klimatglobernas mörka.
       // Havet måste vara tydligt SVALARE och mörkare än landramperna, annars
       // flyter land och hav ihop till en urtvättad gröt på den ljusa sidan.
-      havFarg: [0.60, 0.60, 0.585], kustFarg: [0.26, 0.24, 0.20], ljusMin: 0.56,
+      havFarg: TEMAN[tema].hav, kustFarg: TEMAN[tema].kust, ljusMin: TEMAN[tema].ljus,
       // Reliefen är normaliserad per serie i exporten: p5–p95 siktar på ~12 mm.
       relieffaktor: tung.relieffaktor ?? 0.9,
       linjarGain: tung.skala === "log10" ? 1.0 : 0,
@@ -95,9 +95,37 @@
     return meta;
   }
 
-  // färgskalans etiketter måste bytas till mörka — ljus text på beige syns inte
-  Object.assign(BAR_STIL, { text: "#3c352a", dim: "#8d8371", etikett: "#2a251d",
-                            markering: "#2a251d", markeringKant: "#fbf8f1" });
+  /* ── Bakgrund ────────────────────────────────────────────────────────────
+     Havet och kustlinjen på globen är shaderkonstanter, så ett temabyte måste
+     bygga om globerna — det är därför visa() körs om, inte bara CSS byts. */
+  const TEMAN = {
+    beige: { hav: [0.60, 0.60, 0.585], kust: [0.26, 0.24, 0.20], ljus: 0.56,
+             bar: { text: "#3c352a", dim: "#8d8371", etikett: "#2a251d",
+                    markering: "#2a251d", markeringKant: "#fbf8f1" } },
+    ljus:  { hav: [0.66, 0.68, 0.70], kust: [0.24, 0.25, 0.27], ljus: 0.58,
+             bar: { text: "#31363c", dim: "#7c848d", etikett: "#1d2126",
+                    markering: "#1d2126", markeringKant: "#ffffff" } },
+    mork:  { hav: [0.13, 0.15, 0.19], kust: [0.42, 0.44, 0.48], ljus: 0.38,
+             bar: { text: "#c9cdd3", dim: "#7f8894", etikett: "#dfe3e8",
+                    markering: "#f2f4f7", markeringKant: "#0d0f13" } },
+  };
+  let tema = (() => {
+    try { return localStorage.getItem("owidx_tema") || "beige"; } catch (e) { return "beige"; }
+  })();
+  function sattTema(namn, byggOm = true) {
+    if (!TEMAN[namn]) namn = "beige";
+    tema = namn;
+    try { localStorage.setItem("owidx_tema", namn); } catch (e) { /* privat läge */ }
+    document.documentElement.dataset.tema = namn;
+    Object.assign(BAR_STIL, TEMAN[namn].bar);
+    for (const id in cache) {           // metan bär färgerna → töm och bygg om
+      cache[id].havFarg = TEMAN[namn].hav;
+      cache[id].kustFarg = TEMAN[namn].kust;
+      cache[id].ljusMin = TEMAN[namn].ljus;
+    }
+    if (byggOm) paneler.forEach(p => { if (p.id) visa(p); });
+  }
+  sattTema(tema, false);
 
   /* ── panelerna ── */
   const paneler = [];
@@ -107,7 +135,7 @@
     el.className = "panel";
     el.innerHTML = `
       <h2><button class="serieknapp" type="button"><span class="titel"></span>
-        <span class="pil">▾</span></button></h2>
+        <span class="pil">▾</span></button><button class="logflagga" type="button"></button></h2>
       <div class="saknas"></div>
       <canvas class="glob" width="1120" height="1120" style="display:none"></canvas>
       <canvas class="bar" width="1120" height="102" style="display:none"></canvas>
@@ -130,9 +158,19 @@
     el.querySelector(".skalval select").onchange = e => {
       p.skala = e.target.value;
       p.glob.lin = p.glob.meta.skala === "log10" && p.skala === "lin";
-      ritaBarFor(p);
+      sattLogflagga(p); ritaBarFor(p);
     };
     el.querySelector(".nollval select").onchange = e => { p.nollLage = e.target.value; visa(p); };
+    // Att skalan är logaritmisk måste synas i BILDEN. Björn läste avskogningen
+    // som "är det inte mer i Indonesien?" — för att log klämmer ihop toppen och
+    // ingenting sa att den gjorde det. Klick byter till linjärt.
+    el.querySelector(".logflagga").onclick = () => {
+      if (!p.glob || p.glob.meta.skala !== "log10") return;
+      p.skala = p.skala === "log" ? "lin" : "log";
+      p.glob.lin = p.skala === "lin";
+      p.el.querySelector(".skalval select").value = p.skala;
+      sattLogflagga(p); ritaBarFor(p);
+    };
     // Normaliseringen är ett MÅTTVAL, inte en ny serie: samma sak mätt per
     // person, per km² eller i absoluta tal. Därför byts den här och inte i
     // väljaren, som annars skulle lista samma serie tre gånger.
@@ -191,9 +229,18 @@
       `<br>${meta.regel} · ${meta.medelMetod}`;
     byggReglage(p);
     byggKnappar(p);
+    sattLogflagga(p);
     ritaBarFor(p);
     uppdateraTid();
     laggTillDelning();
+  }
+
+  function sattLogflagga(p) {
+    const f = p.el.querySelector(".logflagga");
+    const log = p.glob && p.glob.meta.skala === "log10" && !p.glob.lin;
+    f.style.display = log ? "" : "none";
+    f.textContent = T("logflagga");
+    f.title = T("logflaggaTitel");
   }
 
   function ritaBarFor(p, ar = arNu) {
@@ -495,10 +542,15 @@
     // annars snurrar globen bort från världsdelen man just valde
     if (namn !== "varlden" && rotera.checked) rotera.checked = false;
   }
+  const temaval = $("#temaval");
+  if (temaval) { temaval.value = tema; temaval.onchange = e => sattTema(e.target.value); }
   $("#instknapp").onclick = e => {
     e.stopPropagation();
-    const o = $("#instpanel").classList.toggle("open");
-    if (o) stangPop(null);
+    const panel = $("#instpanel");
+    const o = panel.classList.toggle("open");
+    // stangPop(null) stängde ALLA popovers — och #instpanel är själv en .pop,
+    // så panelen slog igen i samma klick som öppnade den.
+    if (o) stangPop(panel);
   };
   document.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;

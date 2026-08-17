@@ -126,10 +126,25 @@ def valj_representation(v, enhet):
                     vmin=0.0, vmax=100.0,
                     regel="andel som spänner hela skalan → fast 0–100 %, "
                           "nollnivå = världsandelen")
+    # Log är svårt att läsa och ska bara användas när linjärt VERKLIGEN inte går.
+    # Gamla regeln (p99/p5 > 25) satte barnadödlighet på log fast dess linjära
+    # kvartilavstånd är 0,59 — enorm spridning. Frågan är inte hur lång svansen
+    # är utan om mittfältet drunknar: ryms halva världen inom 4 % av skalan,
+    # eller ligger nio av tio i skalans nedersta tjugondel, syns ingenting alls.
+    lo, hi = float(np.percentile(v, 0.5)), float(np.percentile(v, 99.5))
+    if hi - lo > 1e-12 and len(v[v > 0]):
+        linj = np.clip((v - lo) / (hi - lo), 0, 1)
+        iqr = float(np.percentile(linj, 75) - np.percentile(linj, 25))
+        i_botten = float((linj < 0.05).mean())
+        if iqr < 0.04 or i_botten > 0.90:
+            return dict(arketyp="tungsvans", skala="log10", nollLage="medel", ramp="div",
+                        regel=f"linjärt drunknar mittfältet (halva världen ryms i "
+                              f"{iqr*100:.1f} % av skalan) → logaritmisk höjd och färg, "
+                              f"nollnivå = världssnittet")
     if svans > 25 and len(v[v > 0]):
-        return dict(arketyp="tungsvans", skala="log10", nollLage="medel", ramp="div",
-                    regel=f"stor spännvidd (p99/p5 = {svans:.0f}) → logaritmisk höjd och "
-                          f"färg, inget tak, nollnivå = världssnittet")
+        return dict(arketyp="tungsvans", skala="linjar", nollLage="medel", ramp="div",
+                    regel=f"lång svans (p99/p5 = {svans:.0f}) men linjärt räcker "
+                          f"— nollnivå = världssnittet")
     mn = float(v.min())
     varfor = (f"noll förekommer inte i datan (min {mn:.4g})" if mn > 0
               else f"jämn spännvidd (p99/p5 = {svans:.1f})")
