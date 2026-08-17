@@ -33,5 +33,12 @@ mirror -R $TORR --only-newer --parallel=4 --exclude-glob .DS_Store . .;
 bye"
 
 echo "→ $USER@$HOST:$FJARR ${TORR:+(TORRKÖRNING)}"
-lftp -c "$skript" 2>&1 | grep -viE "^chmod|GetPass|^mkdir" | tail -15
+# cPanel nekar chmod över SFTP. Filerna går upp, men lftp returnerar ändå 1 —
+# och med set -e dog skriptet tyst före kvittensen, som om deployen misslyckats.
+# Sortera bort chmod-bruset och avgör på vad som faktiskt blev fel.
+utdata="$(lftp -c "$skript" 2>&1 | grep -viE "^chmod|GetPass|^mkdir" || true)"
+echo "$utdata" | tail -15
+if echo "$utdata" | grep -qiE "fatal|permission denied|no such file|login failed"; then
+  echo "✗ deployen gick inte igenom"; exit 1
+fi
 echo "✓ klart"
