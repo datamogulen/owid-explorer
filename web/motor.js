@@ -724,21 +724,24 @@ class Glob {
   pivotNu(arVarde) {
     const m = this.meta;
     const bas = { h: m.nollpunkt, f: (this.kanaler === 2 ? m.nollpunktF : m.nollpunkt) };
-    if (!this.nollMedel) return bas;
+    if (!this.nollMedel && !this.nollMedelF) return bas;
     const ar = arVarde ?? (this._param ? this._param.arVarde : m.ar[0]);
     const lag = this.arTillLager(ar);
     const l0 = Math.floor(lag), l1 = Math.min(l0 + 1, m.ar.length - 1);
     const vid = s => s[l0] + (s[l1] - s[l0]) * (lag - l0);
-    const mv = vid(this.nollMedel);
+    // Höjden och färgen får ha var sin serie — och var sin FRÅNVARO av serie.
+    // Utan detta gick färgen inte att låta följa året när höjden mäts från noll.
+    const mv = this.nollMedel ? vid(this.nollMedel) : 0;
     const mvF = this.nollMedelF ? vid(this.nollMedelF) : mv;
-    if (!(mv > 0)) return bas;
+    if (!(mv > 0) && !(mvF > 0)) return bas;
     const SPAN = m.vmax - m.vmin;
     const klam = x => Math.max(0, Math.min(1, x));
     let h, f;
     if (m.skala === "log10") {
-      const logP = Math.min((Math.log10(mv) - m.vmin) / SPAN,
-                            1 - Math.log10(this.gainHojd) / SPAN);     // samma tak som höjden
-      h = klam(this.lin ? mv / Math.pow(10, m.vmax) * this.gainHojd : logP);
+      const logP = mv > 0 ? Math.min((Math.log10(mv) - m.vmin) / SPAN,
+                            1 - Math.log10(this.gainHojd) / SPAN) : m.nollpunkt;   // samma tak som höjden
+      h = (mv > 0) ? klam(this.lin ? mv / Math.pow(10, m.vmax) * this.gainHojd : logP)
+                   : m.nollpunkt;
       // FÄRGEN stannar i log-rymd på kapade fält (linjarGain) — pivoten måste
       // räknas i SAMMA rymd, annars hamnar snittet fel när höjden är linjär
       const logF = mvF > 0 ? Math.min((Math.log10(mvF) - m.vmin) / SPAN,
@@ -746,8 +749,8 @@ class Glob {
       f = klam(m.linjarGain ? logF
                             : (this.lin ? mvF / Math.pow(10, m.vmax) * (m.linjarGain || 1) : logF));
     } else {
-      h = klam((mv - m.vmin) / SPAN);
-      f = klam((mvF - m.vmin) / SPAN);
+      h = this.nollMedel ? klam((mv - m.vmin) / SPAN) : m.nollpunkt;
+      f = this.nollMedelF || this.nollMedel ? klam((mvF - m.vmin) / SPAN) : m.nollpunkt;
     }
     return { h, f };
   }

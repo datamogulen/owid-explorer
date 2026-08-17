@@ -193,16 +193,21 @@
     // Default är FAST nollnivå: höjden ska betyda samma sak varje år, annars
     // läser man uppspelningen fel. Den rörliga ("snitt det året") finns kvar
     // som val — den svarar på en annan fråga: vem ligger över snittet just nu.
-    if (p.nollLage === null)
-      p.nollLage = (meta.nollLage === "medel") ? "fast" : (meta.nollLage || "fast");
+    // Höjden mäts från NOLL som default. Fast nollnivå vid startåret löste att
+    // ökningar såg ut som minskningar, men gjorde 1900 till en skål 26 mm djup —
+    // hela världen låg under 2023 års snitt. Från noll stiger höjden med värdet
+    // och ingenting hamnar under havsytan.
+    if (p.nollLage === null) p.nollLage = meta.nollLage || "noll";
     if (p.skala === null) p.skala = meta.standardSkala;
     const el = p.el;
     const canvas = el.querySelector("canvas.glob"), bar = el.querySelector("canvas.bar");
     const gammalZoom = p.glob ? p.glob.zoom : null;
     if (p.glob) { p.glob.dispose(); p.glob = null; }
     el.querySelector(".titel").textContent = meta.titel;
-    // divergerande ramp så fort det finns en nollnivå att divergera KRING
-    const ramp = p.nollLage === "noll" ? "energi" : "energi_div";
+    // Färgen har ALLTID en nollnivå att divergera kring — årets världssnitt —
+    // även när höjden mäts från noll. Rampen valdes förr på höjdens nollnivå
+    // och slog över till den sekventiella så fort höjden nollställdes.
+    const ramp = "energi_div";
     p.glob = new Glob(canvas, meta, ramp, kust, true);
     p.glob.sattLandmask({ nx: lander.mesh.nx, ny: lander.mesh.ny, data: lander.mesh.andel });
     // "fast" låser nollnivån vid STARTÅRETS världssnitt. Följer den året i
@@ -219,7 +224,9 @@
     // och att världen kommer ikapp (färgen glider mot mitten). Att tvinga in
     // båda i höjden går inte — det var därför en ökning kunde se ut som en
     // minskning.
-    p.glob.nollMedelF = (p.nollLage === "fast") ? meta.globalmedel : null;
+    // Färgen mäts alltid mot ÅRETS världssnitt, oavsett var höjden har sin
+    // nollnivå. Höjden svarar "hur mycket", färgen "hur ligger det till nu".
+    p.glob.nollMedelF = (p.nollLage === "medel") ? null : meta.globalmedel;
     // Skalväljaren gäller bara data som LAGRATS logaritmiskt. Shaderns lin-läge
     // är 10^((v−1)·SPAN), alltså av-logaritmering — kör man den på redan linjär
     // data med SPAN 54 (t.ex. medellivslängd 30–84 år) blir varje höjd 10⁻²⁷ och
@@ -265,6 +272,7 @@
       `<br>${meta.regel.replace(/nollnivå = världssnittet|nollnivå = världsandelen/,
           p.nollLage === "fast"
             ? `höjd mot världssnittet ${meta.startAr ?? meta.ar.at(-1)} (fast) · färg mot snittet det året`
+            : p.nollLage === "noll" ? "höjd från 0 · färg mot årets världssnitt"
             : p.nollLage === "medel" ? "nollnivå = världssnittet det året"
             : "nollnivå = 0")} · ${meta.medelMetod}`;
     byggReglage(p);
@@ -286,8 +294,7 @@
   function ritaBarFor(p, ar = arNu) {
     if (!p.glob) return;
     const g = p.glob;
-    ritaBar(p.el.querySelector("canvas.bar"), g.meta,
-            p.nollLage === "noll" ? "energi" : "energi_div", !!g.lin,
+    ritaBar(p.el.querySelector("canvas.bar"), g.meta, "energi_div", !!g.lin,
             g.nollMedel ? g.pivotNu(ar).f : null, g.statistik(ar), g);
     p._barLager = Math.round(g.arTillLager(ar));
   }

@@ -142,10 +142,10 @@ def valj_representation(v, enhet):
                     regel=f"negativa värden förekommer → linjär skala, nollnivå 0, "
                           f"divergerande färg kring noll")
     if "%" in (enhet or "") and float(np.percentile(v, 95)) > 40:
-        return dict(arketyp="andel", skala="linjar", nollLage="medel", ramp="div",
+        return dict(arketyp="andel", skala="linjar", nollLage="noll", ramp="div",
                     vmin=0.0, vmax=100.0,
                     regel="andel som spänner hela skalan → fast 0–100 %, "
-                          "nollnivå = världsandelen")
+                          "höjd från 0, färg mot årets världsandel")
     # Log är svårt att läsa och ska bara användas när linjärt VERKLIGEN inte går.
     # Gamla regeln (p99/p5 > 25) satte barnadödlighet på log fast dess linjära
     # kvartilavstånd är 0,59 — enorm spridning. Frågan är inte hur lång svansen
@@ -157,19 +157,19 @@ def valj_representation(v, enhet):
         iqr = float(np.percentile(linj, 75) - np.percentile(linj, 25))
         i_botten = float((linj < 0.05).mean())
         if iqr < 0.04 or i_botten > 0.90:
-            return dict(arketyp="tungsvans", skala="log10", nollLage="medel", ramp="div",
+            return dict(arketyp="tungsvans", skala="log10", nollLage="noll", ramp="div",
                         regel=f"linjärt drunknar mittfältet (halva världen ryms i "
                               f"{iqr*100:.1f} % av skalan) → logaritmisk höjd och färg, "
-                              f"nollnivå = världssnittet")
+                              f"höjd från 0, färg mot årets världssnitt")
     if svans > 25 and len(v[v > 0]):
-        return dict(arketyp="tungsvans", skala="linjar", nollLage="medel", ramp="div",
+        return dict(arketyp="tungsvans", skala="linjar", nollLage="noll", ramp="div",
                     regel=f"lång svans (p99/p5 = {svans:.0f}) men linjärt räcker "
-                          f"— nollnivå = världssnittet")
+                          f"— höjd från 0, färg mot årets världssnitt")
     mn = float(v.min())
     varfor = (f"noll förekommer inte i datan (min {mn:.4g})" if mn > 0
               else f"jämn spännvidd (p99/p5 = {svans:.1f})")
-    return dict(arketyp="intervall", skala="linjar", nollLage="medel", ramp="div",
-                regel=f"{varfor} → linjär skala, nollnivå = världssnittet")
+    return dict(arketyp="intervall", skala="linjar", nollLage="noll", ramp="div",
+                regel=f"{varfor} → linjär skala, höjd från 0, färg mot årets världssnitt")
 
 
 def viktat_varldssnitt(per_land, ar, folk, yta, ix, vikt):
@@ -339,6 +339,17 @@ def mat_variant(per_ar, ar_lista, varld, enhet, titel, kod, ix, yta, folk, NL):
         relieffaktor = 0.9
     relieffaktor = float(np.clip(relieffaktor, 0.15, 6.0))
 
+    # Nollnivån ligger vid 0, så höjden ÄR värdet. Då måste hela seriens
+    # spännvidd rymmas i modellen: med relief kalibrerad enbart på ett års
+    # spridning nådde medellivslängden +32 mm och globen sprängde bildvinkeln.
+    HELA_MM = 24.0
+    n_max = float(np.percentile(n_alla, 99.5)) if len(n_alla) else 1.0
+    if n_max > 1e-6:
+        hogst = n_max * relieffaktor * REGLAGE * S_MM
+        if hogst > HELA_MM:
+            relieffaktor *= HELA_MM / hogst
+    relieffaktor = float(np.clip(relieffaktor, 0.05, 6.0))
+
     # Ett ensamt land långt över alla andra blir ett tunt spröt i utskriften och
     # tar all uppmärksamhet på skärmen. Taket läggs vid p99,5 när toppen sticker
     # upp mer än så — resten av globen behåller sin relief, och tooltipen visar
@@ -364,9 +375,9 @@ def mat_variant(per_ar, ar_lista, varld, enhet, titel, kod, ix, yta, folk, NL):
             if (rep["skala"] != "log10" or gmedel[len(gmedel)//2] > 0) else 0.0
     if rep["nollLage"] == "medel" and not (0.08 < pivot < 0.92):
         rep = dict(rep, nollLage="noll",
-                   regel=rep["regel"].replace("nollnivå = världssnittet",
+                   regel=rep["regel"].replace("höjd från 0, färg mot årets världssnitt",
                        f"världssnittet hamnar i skalans kant ({pivot:.2f}) → nollnivå 0")
-                     .replace("nollnivå = världsandelen",
+                     .replace("höjd från 0, färg mot årets världsandel",
                        f"världsandelen hamnar i skalans kant ({pivot:.2f}) → nollnivå 0"))
 
     if berak >= len(ar_lista):
