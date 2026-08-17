@@ -39,7 +39,8 @@ const SPRAK = {
             andel: "andel av landytan" },
     nollAr: "aktuellt år", nollStart: "startåret {ar}", nollSlut: "slutåret {ar}", nollNoll: "0",
     nollEtikett: "nollnivå", fargMot: "färg mot årets snitt",
-    kvot: "kvot", perOrd: "per", vand: "vänd", vandTitel: "byt plats på globerna — kvoten vänds", korrRubrik: "Samband", korrLander: "länder", korrRang: "rangkorr.",
+    kvot: "kvot", perOrd: "per", vand: "vänd", vandTitel: "byt plats på globerna — kvoten vänds", globalKvot: "Global kvot", kvotVarlden: "världen", kvotTypiskt: "typiskt land",
+    korrRubrik: "Samband", korrLander: "länder", korrRang: "rangkorr.",
     korrVarning: "Samvariation är inte orsak.", korrMer: "Vad siffran inte säger",
     korrMerText: "<p><b>Korrelation är inte kausalitet.</b> Att två serier följs åt betyder "
       + "inte att den ena orsakar den andra. Det kan lika gärna vara tvärtom, eller ingetdera.</p>"
@@ -53,6 +54,13 @@ const SPRAK = {
       + "<p><b>Ett land är en observation.</b> Här väger Kina lika mycket som Tuvalu, och "
       + "siffran gäller ett enskilt år tvärs över länder — inte hur måtten utvecklats "
       + "över tid.</p>"
+      + "<p><b>Två globala kvoter, två frågor.</b> \"Världen\" är summan av täljarna delad "
+      + "med summan av nämnarna — jorden behandlad som ett land. Det är den sanna globala "
+      + "intensiteten, men den domineras av Kina, Indien och USA, vilket är en egenskap och "
+      + "inte ett fel. \"Typiskt land\" är medianen av ländernas kvoter: ett land en röst. "
+      + "Skiljer de sig mycket ligger de stora länderna åt ena hållet — och den skillnaden "
+      + "är i sig en upplysning. Per-capita-serier vägs med befolkningen, per-km²-serier med "
+      + "landytan; går ingetdera visas bara medianen.</p>"
       + "<p>Rangkorrelationen bryr sig bara om ländernas ordning. Skiljer den sig mycket "
       + "från r är det några få extremvärden som driver sambandet.</p>",
     korrUtanfor: "saknar data det året", korrStark: "starkt", korrMedel: "måttligt", korrSvagt: "svagt", korrInget: "inget",
@@ -135,7 +143,8 @@ const SPRAK = {
             andel: "share of land area" },
     nollAr: "current year", nollStart: "start year {ar}", nollSlut: "end year {ar}", nollNoll: "0",
     nollEtikett: "zero level", fargMot: "colour vs this year's mean",
-    kvot: "ratio", perOrd: "per", vand: "swap", vandTitel: "swap the globes — the ratio flips", korrRubrik: "Relationship", korrLander: "countries", korrRang: "rank corr.",
+    kvot: "ratio", perOrd: "per", vand: "swap", vandTitel: "swap the globes — the ratio flips", globalKvot: "Global ratio", kvotVarlden: "the world", kvotTypiskt: "typical country",
+    korrRubrik: "Relationship", korrLander: "countries", korrRang: "rank corr.",
     korrVarning: "Covariation is not cause.", korrMer: "What the number does not say",
     korrMerText: "<p><b>Correlation is not causation.</b> Two series moving together does not "
       + "mean one causes the other. It may be the reverse, or neither.</p>"
@@ -148,6 +157,13 @@ const SPRAK = {
       + "more X have more Y — this is the ecological fallacy.</p>"
       + "<p><b>One country, one observation.</b> China counts as much as Tuvalu here, and the "
       + "number is for a single year across countries — not how the measures changed over time.</p>"
+      + "<p><b>Two global ratios, two questions.</b> \"The world\" is the sum of numerators "
+      + "over the sum of denominators — Earth treated as one country. That is the true global "
+      + "intensity, but it is dominated by China, India and the US, which is a property and not "
+      + "a fault. \"Typical country\" is the median of country ratios: one country, one vote. "
+      + "A large gap between them means the big countries sit to one side — and that gap is "
+      + "itself informative. Per-capita series are weighted by population, per-km² series by "
+      + "land area; if neither applies only the median is shown.</p>"
       + "<p>Rank correlation only cares about the order of countries. If it differs a lot from "
       + "r, a few extreme values are driving the relationship.</p>",
     korrUtanfor: "no data that year", korrStark: "strong", korrMedel: "moderate", korrSvagt: "weak", korrInget: "no",

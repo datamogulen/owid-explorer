@@ -29,7 +29,7 @@
   let arNu = 2020, arValt = false, spelar = false, yaw = 0.6, pitch = 0.25, senast = 0, dras = null;
 
   /* ── grunddata: gränsgrid + katalog. Laddas en gång, delas av alla serier ── */
-  let lander = null, katalog = null, kust = null;
+  let lander = null, katalog = null, kust = null, folkmangd = null;
   const status = t => { const e = $("#status"); if (e) e.textContent = t; };
   try {
     status(T("laddar"));
@@ -50,6 +50,11 @@
                       kod: new Uint16Array(mb), andel: new Uint8Array(ma) };
     } catch (e) { /* samma grid för geometri och färg */ }
     katalog = await hamta(`data/katalog.json${CB}`, "json");
+    try {   // behövs för den GLOBALA kvoten: per-capita-tal går inte att summera
+      const bj = await hamta(`data/befolkning.json${CB}`, "json");
+      const bb = await hamta(`data/befolkning.bin${CB}`, "arraybuffer");
+      folkmangd = Object.assign({}, bj, { v: new Float32Array(bb) });
+    } catch (e) { folkmangd = null; }
     try { kust = await hamta(`data/kust.bin${CB}`, "arraybuffer"); } catch (e) { kust = null; }
   } catch (e) {
     status("Kunde inte ladda grunddata: " + e.message);
@@ -78,6 +83,11 @@
     const G = lander.fin, M = lander.mesh || G;
     const meta = Object.assign({}, tung, {
       titel: lat.t, enhet: lat.e, nland: tung.nland,
+      // Vilken normalisering serien är, och om grundstorheten alls är
+      // extensiv (bara extensiva fick capita/km²-varianter i exporten).
+      // Avgör om en global kvot går att summera fram — se globalKvot().
+      norm: ((lat.v || []).find(x => x.id === id) || {}).n || "abs",
+      extensiv: (lat.v || []).some(x => x.n === "capita" || x.n === "km2"),
       varden, landvarden: raw, kodGrid: G, meshGrid: M, ra: null,
       ny: M.ny, nx: M.nx, lat0: -89.5, lon0: -179.5, platta: true,
       nollpunkt: 0, medel: false, landdata: true,
@@ -487,30 +497,46 @@
     return { taljare: a || "?", namnare: b || "?" };
   }
 
-  function kvotText(q, ea, eb) {
+  /* Talet och enheten var för sig, så att två kvoter kan visas under samma
+     enhetsrad — och, viktigare, TVINGAS till samma skala. Väljer de var sitt
+     steg blir "244,8 g per $" och "0,2 kg per $" omöjliga att jämföra med
+     ögat, fast de står bredvid varandra. `fast` är valet från den första. */
+  function kvotDelar(q, ea, eb, fast) {
     const e = kvotEnhet(ea, eb);
-    if (e.taljare === "×") {              // dimensionslös: bara ett tal
+    if (e.taljare === "×") {
       const v = Math.abs(q);
-      return (v >= 100 ? Math.round(q) : v >= 1 ? q.toFixed(2) : q.toFixed(3))
-             .toString().replace(".", ",") + " ×";
+      return { tal: (v >= 100 ? Math.round(q) : v >= 1 ? q.toFixed(2) : q.toFixed(3))
+                    .toString().replace(".", ","), enhet: "×", val: null };
     }
-    if (!e.taljare) return fmtTal(q) + " " + e.namnare;   // X ÷ (X per Y) = Y
-    if (!e.namnare) return fmtTal(q) + " " + e.taljare;
-    const trappa = TRAPPOR.find(t => t.test.test(e.taljare));
-    const steg = trappa ? trappa.steg : [[e.taljare, 1]];
-    let bast = null;
-    for (const [namn, f] of steg) for (const n of NAMNARE) {
-      const v = Math.abs(q * f * n);
-      if (!(v > 0) || !isFinite(v)) continue;
-      // avstånd till läsbart intervall, plus rabatt för orörd enhet/nämnare
-      const straff = (v >= 1 && v < 1000 ? 0 : Math.abs(Math.log10(v) - 1.2) * 2)
-                   + (f === 1 ? 0 : 0.35) + (n === 1 ? 0 : 0.5);
-      if (!bast || straff < bast.straff) bast = { straff, namn, f, n, v: q * f * n };
+    if (!e.taljare) return { tal: fmtTal(q), enhet: e.namnare, val: null };
+    if (!e.namnare) return { tal: fmtTal(q), enhet: e.taljare, val: null };
+    let bast = fast;
+    if (!bast) {
+      const trappa = TRAPPOR.find(t => t.test.test(e.taljare));
+      const steg = trappa ? trappa.steg : [[e.taljare, 1]];
+      for (const [namn, f] of steg) for (const n of NAMNARE) {
+        const v = Math.abs(q * f * n);
+        if (!(v > 0) || !isFinite(v)) continue;
+        const straff = (v >= 1 && v < 1000 ? 0 : Math.abs(Math.log10(v) - 1.2) * 2)
+                     + (f === 1 ? 0 : 0.35) + (n === 1 ? 0 : 0.5);
+        if (!bast || straff < bast.straff) bast = { straff, namn, f, n };
+      }
     }
-    if (!bast) return q.toExponential(2) + " " + e.taljare + " / " + e.namnare;
-    const namnTxt = bast.n === 1 ? e.namnare
+    if (!bast) return { tal: q.toExponential(2), enhet: e.taljare + " / " + e.namnare, val: null };
+    const namnTxt = bast.n === 1 ? ental(e.namnare)
       : `${bast.n.toLocaleString(lokal())} ${e.namnare}`;
-    return `${fmtTal(bast.v)} ${bast.namn} ${T("perOrd")} ${namnTxt}`;
+    return { tal: fmtTal(q * bast.f * bast.n),
+             enhet: `${bast.namn} ${T("perOrd")} ${namnTxt}`, val: bast };
+  }
+  // "per people" är inte engelska. Nämnaren står i ental när n = 1.
+  const ENTAL = { people: "person", personer: "person", deaths: "death",
+                  dödsfall: "dödsfall", cases: "case", fall: "fall",
+                  animals: "animal", djur: "djur", births: "birth" };
+  const ental = e => ENTAL[(e || "").toLowerCase()] || e;
+
+  function kvotText(q, ea, eb) {
+    const d = kvotDelar(q, ea, eb);
+    return d.tal + " " + d.enhet;
   }
   function fmtTal(v) {
     const a = Math.abs(v);
@@ -659,6 +685,82 @@
     await visa(B, a.id);
   }
 
+  /* ── Global kvot ───────────────────────────────────────────────────────────
+     Två sätt att summera, och de svarar på olika frågor:
+
+       VÄRLDEN   Σ(täljare) / Σ(nämnare). Behandlar jorden som ett land. Det är
+                 den sanna globala intensiteten — men den domineras av de stora
+                 länderna, vilket är en egenskap och inte ett fel.
+       TYPISKT   medianen av ländernas kvoter. Ett land en röst, Tuvalu lika
+                 mycket som Kina. Säger något om det typiska LANDET, inte om
+                 världen.
+
+     Skiljer de sig mycket ligger de stora länderna åt ena hållet — och den
+     skillnaden är i sig en upplysning.
+
+     Serierna är PER PERSON, så att summera dem rakt av vore meningslöst; de
+     vägs med befolkningen. Är båda per km² vägs de med landytan. Går ingetdera
+     visas bara medianen. */
+  /* Vad ska en summa vägas med? OWID:s egna per-capita-serier ligger hos oss
+     som "abs" (de var redan intensiva och fick därför inga egna varianter), så
+     normaliseringen räcker inte — enheten avslöjar de flesta, och för sådana
+     som "GDP per capita", vars enhet bara är "international-$", får titeln
+     avgöra. Hellre nekas en världssiffra än summera fel storheter. */
+  const PER_PERSON = /\bper\s+(\d[\d\s,.]*)?(capita|person|people|personer|inhabitant|invånare)\b/i;
+  const PER_YTA = /\bper\s+(\d[\d\s,.]*)?(km²|square kilomet|hectare|hektar)\b/i;
+  function sortAv(m) {
+    if (m.norm === "capita") return "person";
+    if (m.norm === "km2" || m.norm === "andel") return "yta";
+    const s = (m.enhet || "") + " · " + (m.titel || "");
+    if (PER_PERSON.test(s)) return "person";
+    if (PER_YTA.test(s)) return "yta";
+    if (m.norm === "abs" && m.extensiv) return "sum";   // ton, dödsfall, dollar
+    return null;                                        // index, betyg, °C, %
+  }
+  function vikterFor(ma, mb, ar) {
+    const sa = sortAv(ma);
+    if (!sa || sa !== sortAv(mb)) return null;          // äpplen och päron
+    if (sa === "sum") return () => 1;                   // ren summa
+    if (sa === "person") {                              // Σ(x·folk)/Σ(y·folk)
+      if (!folkmangd) return null;
+      const t = Math.round(ar) - folkmangd.ar0;
+      if (t < 0 || t > folkmangd.ar1 - folkmangd.ar0) return null;
+      return k => folkmangd.v[t * folkmangd.nland + k] || 0;
+    }
+    if (!lander.yta) return null;
+    return k => lander.yta[k] || 0;
+  }
+  function globalKvot(ma, mb, ta, tb, ar) {
+    const fysA = n => { const v = ma.vmin + n * (ma.vmax - ma.vmin);
+                        return ma.skala === "log10" ? Math.pow(10, v) : v; };
+    const fysB = n => { const v = mb.vmin + n * (mb.vmax - mb.vmin);
+                        return mb.skala === "log10" ? Math.pow(10, v) : v; };
+    const vikt = vikterFor(ma, mb, ar);
+    let sx = 0, sy = 0;
+    const kvoter = [];
+    for (let k = 0; k < ma.nland; k++) {
+      const a = ma.landvarden[ta * ma.nland + k], b = mb.landvarden[tb * mb.nland + k];
+      if (!a || !b) continue;
+      const x = fysA((a - 1) / 65534), y = fysB((b - 1) / 65534);
+      if (Math.abs(y) > 1e-12) kvoter.push(x / y);
+      if (vikt) { const w = vikt(k); if (w > 0) { sx += x * w; sy += y * w; } }
+    }
+    if (!kvoter.length) return null;
+    kvoter.sort((p, q) => p - q);
+    const m = kvoter.length % 2 ? kvoter[(kvoter.length - 1) / 2]
+            : (kvoter[kvoter.length / 2 - 1] + kvoter[kvoter.length / 2]) / 2;
+    const varldenTal = (vikt && Math.abs(sy) > 1e-12) ? sx / sy : null;
+    // Skalan väljs på världssiffran och tvingas på medianen — annars blir de
+    // två talen uttryckta i olika enheter och går inte att jämföra med ögat.
+    const d1 = kvotDelar(varldenTal ?? m, ma.enhet, mb.enhet);
+    const d2 = kvotDelar(m, ma.enhet, mb.enhet, d1.val);
+    return {
+      varlden: varldenTal === null ? null : d1.tal,
+      median: varldenTal === null ? d1.tal : d2.tal,
+      enhet: d1.enhet,
+    };
+  }
+
   function uppdateraKorr(ar) {
     const p = paneler.filter(q => q.glob);
     if (p.length < 2) { korrEl.className = "tom"; return; }
@@ -701,6 +803,7 @@
     }
     const r = pearson(x, y);
     const rho = pearson(rangera(x), rangera(y));
+    const glob = globalKvot(ma, mb, la.t, lb.t, ma.ar[la.t]);
     const abs = Math.abs(r);
     const styrka = abs >= 0.7 ? T("korrStark") : abs >= 0.4 ? T("korrMedel")
                  : abs >= 0.2 ? T("korrSvagt") : T("korrInget");
@@ -714,6 +817,11 @@
        <div class="styrka">${styrka}${tecken}</div>
        <div class="rad2">${T("korrRang")} <b>${fmt(rho)}</b><br>
          <b>${x.length}</b> ${T("korrLander")}${arNot}</div>
+       ${glob ? `<div class="rad2 globkvot">
+         <span class="und-etikett">${T("globalKvot")}</span>
+         ${glob.varlden ? `<span class="kvotrad"><i>${T("kvotVarlden")}</i><b>${glob.varlden}</b></span>` : ""}
+         <span class="kvotrad"><i>${T("kvotTypiskt")}</i><b>${glob.median}</b></span>
+         <span class="kvotenhet">${glob.enhet}</span></div>` : ""}
        <div class="varn">${T("korrVarning")}
          <button class="korrMer" type="button">${T("korrMer")} ›</button></div>
        <button class="vand" type="button" title="${T("vandTitel")}">⇄ ${T("vand")}</button>`;

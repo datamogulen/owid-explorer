@@ -100,9 +100,16 @@ EXTENSIV_ENHET = re.compile(
     r"migrants?|births?|deaths?|cases?|patients?|children|students?|workers?|"
     r"employees?|tonnes?|tons?|kg|kilograms?|grams?|pounds?|"
     r"kwh|mwh|gwh|twh|joules?|barrels?|litres?|liters?|m³|cubic|"
-    r"dollars?|int-\$|us\$|\$|euros?|"
+    r"dollars?|euros?|"
     r"hectares?|km²|km2|acres?|square kilometres?|sq\.? ?km|"
     r"units?|animals?|head|vehicles?|aircraft|ships?|number)\b", re.I)
+# Valutor skrivs som "international-$ in 2021 prices", "2011$", "current US$" —
+# ett \b före $ kräver ett ordtecken alldeles innan, och där står ett bindestreck
+# eller en siffra. De föll därför ur listan ovan och fick inga per-varianter.
+VALUTA_ENHET = re.compile(r"\$|\beuros?\b|\bdollars?\b", re.I)
+# ... men OWID:s egna per-capita-serier bär ofta bara "constant 2015 US$" som
+# enhet och avslöjar sig först i titeln. De är redan intensiva.
+REDAN_PER = re.compile(r"\bper\s+(capita|person|head|worker|employee|hour|adult)\b", re.I)
 # Enheter som ALDRIG ska normaliseras, hur de än ser ut i övrigt
 EJ_NORMALISERA = re.compile(r"index|score|rank|rating|\bper\b|%|percent|\brate\b|"
                             r"ratio|years?|age|°c|kelvin|scale|share", re.I)
@@ -194,7 +201,8 @@ def varianter_av(per_ar, ar_lista, post, ix, yta, folk):
     # Normalisera BARA det som är en additiv mängd, och bara när varken enhet
     # eller titel avslöjar att måttet redan är relativt.
     if (not e or "/" in e or EJ_NORMALISERA.search(e) or EJ_NORMALISERA.search(tit)
-            or not EXTENSIV_ENHET.search(e)):
+            or REDAN_PER.search(tit)
+            or not (EXTENSIV_ENHET.search(e) or VALUTA_ENHET.search(e))):
         return ut
     yf = ytfaktor_km2(post["enhet"])
     if yf:

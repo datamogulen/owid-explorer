@@ -5,7 +5,7 @@
    finns, hur gränssnittet ser ut — bor i respektive sidas egen app-fil.
 
    Kräver att i18n.js laddats först: T(), lokal(), ENHETTEXT() och LANG. */
-const VERSION = "41";
+const VERSION = "42";
 /* Cache-bust bara över http(s) (webben). I appen laddas allt via file://
    där ?v= skulle bryta fil-URL:erna → tom sträng där. */
 const CB = (typeof location !== "undefined" && location.protocol === "file:") ? "" : "?v=" + VERSION;

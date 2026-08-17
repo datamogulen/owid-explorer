@@ -184,6 +184,15 @@
   #korr .rad2 b { font-weight: 600; color: var(--dov); font-variant-numeric: tabular-nums; }
   #korr { position: relative; }
   #korr .varn { font-size: 10.5px; color: var(--svag); margin-top: 7px; line-height: 1.4; }
+  #korr .globkvot { text-align: left; }
+  #korr .globkvot .kvotrad { display: flex; justify-content: space-between; gap: 8px;
+        align-items: baseline; }
+  #korr .globkvot .kvotrad i { font-style: normal; color: var(--svag); }
+  #korr .globkvot .kvotenhet { display: block; text-align: right; color: var(--svag);
+        font-size: 10px; margin-top: 1px; }
+  #korr .globkvot .und-etikett { display: block; font-size: 9.5px; font-weight: 600;
+        letter-spacing: .05em; text-transform: uppercase; color: var(--svag);
+        margin-bottom: 3px; }
   #korr .vand { display: block; width: 100%; margin-top: 10px; padding: 6px 8px;
                 font-size: 12px; background: var(--yta2); border: 1px solid var(--linje);
                 border-radius: 7px; color: var(--dov); }
@@ -360,8 +369,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=31"></script>
-<script src="motor.js?v=22"></script>
-<script src="explorer.js?v=31"></script>
+<script src="i18n.js?v=34"></script>
+<script src="motor.js?v=42"></script>
+<script src="explorer.js?v=34"></script>
 </body>
 </html>
