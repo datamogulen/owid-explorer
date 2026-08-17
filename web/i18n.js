@@ -55,7 +55,7 @@ const SPRAK = {
       + "över tid.</p>"
       + "<p>Rangkorrelationen bryr sig bara om ländernas ordning. Skiljer den sig mycket "
       + "från r är det några få extremvärden som driver sambandet.</p>",
-    korrStark: "starkt", korrMedel: "måttligt", korrSvagt: "svagt", korrInget: "inget",
+    korrUtanfor: "saknar data det året", korrStark: "starkt", korrMedel: "måttligt", korrSvagt: "svagt", korrInget: "inget",
     korrPos: "positivt", korrNeg: "negativt", korrFa: "för få gemensamma länder",
     nollAret: "snitt det året", nollFast: "snitt {ar}",
     nollAuto: "Under uppspelning låses nollnivån vid den ände där världssnittet är lägst, "
@@ -150,7 +150,7 @@ const SPRAK = {
       + "number is for a single year across countries — not how the measures changed over time.</p>"
       + "<p>Rank correlation only cares about the order of countries. If it differs a lot from "
       + "r, a few extreme values are driving the relationship.</p>",
-    korrStark: "strong", korrMedel: "moderate", korrSvagt: "weak", korrInget: "no",
+    korrUtanfor: "no data that year", korrStark: "strong", korrMedel: "moderate", korrSvagt: "weak", korrInget: "no",
     korrPos: "positive", korrNeg: "negative", korrFa: "too few shared countries",
     nollAret: "mean that year", nollFast: "mean {ar}",
     nollAuto: "While playing, the zero level is locked to whichever end has the lower world "

@@ -178,6 +178,7 @@
   #korr .varde { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums;
                  line-height: 1.1; }
   #korr .styrka { font-size: 11.5px; color: var(--dov); margin-top: 2px; }
+  #korr .varde.tomt { color: var(--svag); }
   #korr .rad2 { font-size: 11px; color: var(--svag); margin-top: 8px;
                 border-top: 1px solid var(--linje); padding-top: 7px; }
   #korr .rad2 b { font-weight: 600; color: var(--dov); font-variant-numeric: tabular-nums; }
@@ -347,8 +348,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=26"></script>
+<script src="i18n.js?v=27"></script>
 <script src="motor.js?v=22"></script>
-<script src="explorer.js?v=26"></script>
+<script src="explorer.js?v=27"></script>
 </body>
 </html>

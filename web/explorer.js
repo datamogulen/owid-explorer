@@ -536,9 +536,27 @@
     if (p.length < 2) { korrEl.className = "tom"; return; }
     const [A, B] = p, ma = A.glob.meta, mb = B.glob.meta;
     const la = lagerVid(ma, ar), lb = lagerVid(mb, ar);
-    const nyckel = `${A.id}|${B.id}|${la.t}|${lb.t}`;
+    // Ligger året UTANFÖR en series spann tar närmaste-år-sökningen seriens
+    // första (eller sista) år. Då jämförs 1900 med 1921 och kallas 1900 —
+    // extrapolation maskerad som mätning. Hellre streck än en siffra som inte
+    // betyder vad den utger sig för.
+    const inom = (m, l) => ar >= m.ar[0] - 0.5 && ar <= m.ar.at(-1) + 0.5 && l.avstand <= 3;
+    const okA = inom(ma, la), okB = inom(mb, lb);
+    const nyckel = `${A.id}|${B.id}|${la.t}|${lb.t}|${okA}${okB}`;
     if (nyckel === korrEl.dataset.nyckel) return;
     korrEl.dataset.nyckel = nyckel;
+    if (!okA || !okB) {
+      const saknas = !okA && !okB ? `${ma.titel} · ${mb.titel}` : (!okA ? ma.titel : mb.titel);
+      korrEl.className = "";
+      korrEl.innerHTML =
+        `<div class="rubrik">${T("korrRubrik")}</div>
+         <div class="varde tomt">–</div>
+         <div class="styrka">${T("korrUtanfor")}</div>
+         <div class="rad2">${saknas.length > 60 ? saknas.slice(0, 59) + "…" : saknas}<br>
+           <b>${Math.round(ar)}</b></div>`;
+      korrEl.append(korrPop);
+      return;
+    }
     const fysA = n => ma.vmin + n * (ma.vmax - ma.vmin);   // log-rymd när skalan är log
     const fysB = n => mb.vmin + n * (mb.vmax - mb.vmin);
     const x = [], y = [];
