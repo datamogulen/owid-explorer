@@ -22,7 +22,14 @@ const SPRAK = {
     logflagga: "log-skala", logflaggaTitel: "Höjd och färg är logaritmiska — "
       + "avståndet mellan 1 och 10 är lika stort som mellan 10 och 100. Klicka för linjär skala.",
     bakgrund: "Bakgrund", temaBeige: "beige", temaLjus: "ljus", temaMork: "mörk",
-    owidOm: "OWID om måttet:", undersok: "Undersök", undersokTitel: "Vad mäter den här serien, och var kan jag läsa mer?",
+    owidOm: "OWID om måttet:",
+    vadArMedel: "Vad är medelvärdet?",
+    vadArMedelText: "\"Världssnittet\" är OWID:s World-rad, som är BEFOLKNINGSVIKTAD: "
+      + "den genomsnittliga människans värde, inte det genomsnittliga landets. "
+      + "Kina och Indien väger tungt, Island knappt alls. Globen ritar däremot länder, "
+      + "så ett land kan ligga under snittet fast de flesta LÄNDER ligger lägre. "
+      + "Höjden mäts mot startårets snitt och står still över tid, så en ökning ser ut "
+      + "som en ökning; färgen mäts mot årets snitt, så man ser världen komma ikapp.", undersok: "Undersök", undersokTitel: "Vad mäter den här serien, och var kan jag läsa mer?",
     lasAmne: "Läs om ämnet hos OWID", lasDiagram: "Diagram, data och alla källor",
     undersokFot: "Ser något oväntat ut är svaret oftast i måttets definition — "
       + "\"antal slaktade landdjur\" domineras t.ex. av kyckling, som väger lite och "
@@ -87,7 +94,14 @@ const SPRAK = {
     logflagga: "log scale", logflaggaTitel: "Height and colour are logarithmic — "
       + "the step from 1 to 10 is as wide as from 10 to 100. Click for a linear scale.",
     bakgrund: "Background", temaBeige: "beige", temaLjus: "light", temaMork: "dark",
-    owidOm: "OWID on the measure:", undersok: "Investigate", undersokTitel: "What does this series measure, and where can I read more?",
+    owidOm: "OWID on the measure:",
+    vadArMedel: "What is the mean?",
+    vadArMedelText: "The \"world mean\" is OWID's World row, which is POPULATION-WEIGHTED: "
+      + "the value for the average person, not the average country. China and India weigh "
+      + "heavily, Iceland barely at all. The globe draws countries, so a country can sit "
+      + "below the mean even though most COUNTRIES are lower. Height is measured against "
+      + "the start year's mean and stays fixed over time, so a rise looks like a rise; "
+      + "colour is measured against each year's mean, so you see the world catching up.", undersok: "Investigate", undersokTitel: "What does this series measure, and where can I read more?",
     lasAmne: "Read about the topic at OWID", lasDiagram: "Chart, data and full sources",
     undersokFot: "When something looks surprising the answer is usually in how the measure "
       + "is defined — \"land animals slaughtered\", for instance, is dominated by chickens, "

@@ -214,6 +214,12 @@
       p.nollLage === "medel" ? meta.globalmedel
       : p.nollLage === "fast" ? meta.globalmedel.map(() => meta.globalmedel[iStart])
       : null;
+    // FÄRGEN följer alltid årets världssnitt, även när höjden står still. Då
+    // syns båda sakerna samtidigt: att Sverige stiger (höjd mot fast nollnivå)
+    // och att världen kommer ikapp (färgen glider mot mitten). Att tvinga in
+    // båda i höjden går inte — det var därför en ökning kunde se ut som en
+    // minskning.
+    p.glob.nollMedelF = (p.nollLage === "fast") ? meta.globalmedel : null;
     // Skalväljaren gäller bara data som LAGRATS logaritmiskt. Shaderns lin-läge
     // är 10^((v−1)·SPAN), alltså av-logaritmering — kör man den på redan linjär
     // data med SPAN 54 (t.ex. medellivslängd 30–84 år) blir varje höjd 10⁻²⁷ och
@@ -248,6 +254,8 @@
         ${esc(meta.beskr)}</p>` : "") +
       `<p class="und-meta"><b>${esc(meta.enhet || "–")}</b><br>${esc(meta.kalla || "")}</p>` +
       `<p class="und-meta">${esc(meta.regel)}<br>${esc(meta.medelMetod)}</p>` +
+      `<p class="und-meta"><span class="und-etikett">${T("vadArMedel")}</span>
+        ${esc(T("vadArMedelText"))}</p>` +
       `<p class="und-lank">` +
       (meta.amnesUrl ? `<a href="${esc(meta.amnesUrl)}" target="_blank" rel="noopener">${T("lasAmne")} ↗</a>` : "") +
       (meta.owidUrl ? `<a href="${esc(meta.owidUrl)}" target="_blank" rel="noopener">${T("lasDiagram")} ↗</a>` : "") +
@@ -256,7 +264,7 @@
       `${meta.enhet ? `<b>${meta.enhet}</b> · ` : ""}${meta.kalla || ""}` +
       `<br>${meta.regel.replace(/nollnivå = världssnittet|nollnivå = världsandelen/,
           p.nollLage === "fast"
-            ? `nollnivå = världssnittet ${meta.startAr ?? meta.ar.at(-1)}, fast över tid`
+            ? `höjd mot världssnittet ${meta.startAr ?? meta.ar.at(-1)} (fast) · färg mot snittet det året`
             : p.nollLage === "medel" ? "nollnivå = världssnittet det året"
             : "nollnivå = 0")} · ${meta.medelMetod}`;
     byggReglage(p);

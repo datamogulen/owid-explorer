@@ -716,6 +716,11 @@ class Glob {
 
   /* Pivot ("nollnivå") för höjd och färg. Fast ur metadatan, eller — när
      nollMedel är satt — det globala snittet för året, som ändras med tiden. */
+  /* Höjdens och färgens nollnivå behöver INTE vara samma. Låser man höjden vid
+     ett fast år läser man tillväxt rätt (ett land som förbättras stiger), och
+     låter man färgen följa året ser man världssnittet vandra genom länderna
+     under uppspelningen. nollMedelF sätter färgens serie separat; utan den
+     används samma som höjden, precis som förut. */
   pivotNu(arVarde) {
     const m = this.meta;
     const bas = { h: m.nollpunkt, f: (this.kanaler === 2 ? m.nollpunktF : m.nollpunkt) };
@@ -723,7 +728,9 @@ class Glob {
     const ar = arVarde ?? (this._param ? this._param.arVarde : m.ar[0]);
     const lag = this.arTillLager(ar);
     const l0 = Math.floor(lag), l1 = Math.min(l0 + 1, m.ar.length - 1);
-    const mv = this.nollMedel[l0] + (this.nollMedel[l1] - this.nollMedel[l0]) * (lag - l0);
+    const vid = s => s[l0] + (s[l1] - s[l0]) * (lag - l0);
+    const mv = vid(this.nollMedel);
+    const mvF = this.nollMedelF ? vid(this.nollMedelF) : mv;
     if (!(mv > 0)) return bas;
     const SPAN = m.vmax - m.vmin;
     const klam = x => Math.max(0, Math.min(1, x));
@@ -734,9 +741,14 @@ class Glob {
       h = klam(this.lin ? mv / Math.pow(10, m.vmax) * this.gainHojd : logP);
       // FÄRGEN stannar i log-rymd på kapade fält (linjarGain) — pivoten måste
       // räknas i SAMMA rymd, annars hamnar snittet fel när höjden är linjär
-      f = klam(m.linjarGain ? logP
-                            : (this.lin ? mv / Math.pow(10, m.vmax) * (m.linjarGain || 1) : logP));
-    } else h = f = klam((mv - m.vmin) / SPAN);
+      const logF = mvF > 0 ? Math.min((Math.log10(mvF) - m.vmin) / SPAN,
+                                      1 - Math.log10(this.gainHojd) / SPAN) : logP;
+      f = klam(m.linjarGain ? logF
+                            : (this.lin ? mvF / Math.pow(10, m.vmax) * (m.linjarGain || 1) : logF));
+    } else {
+      h = klam((mv - m.vmin) / SPAN);
+      f = klam((mvF - m.vmin) / SPAN);
+    }
     return { h, f };
   }
 
