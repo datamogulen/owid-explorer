@@ -190,7 +190,11 @@
     if (!p.id) return;
     const meta = await laddaSerie(p.id);
     if (!meta) return;
-    if (p.nollLage === null) p.nollLage = meta.nollLage || "medel";
+    // Default är FAST nollnivå: höjden ska betyda samma sak varje år, annars
+    // läser man uppspelningen fel. Den rörliga ("snitt det året") finns kvar
+    // som val — den svarar på en annan fråga: vem ligger över snittet just nu.
+    if (p.nollLage === null)
+      p.nollLage = (meta.nollLage === "medel") ? "fast" : (meta.nollLage || "fast");
     if (p.skala === null) p.skala = meta.standardSkala;
     const el = p.el;
     const canvas = el.querySelector("canvas.glob"), bar = el.querySelector("canvas.bar");
@@ -201,9 +205,14 @@
     const ramp = p.nollLage === "noll" ? "energi" : "energi_div";
     p.glob = new Glob(canvas, meta, ramp, kust, true);
     p.glob.sattLandmask({ nx: lander.mesh.nx, ny: lander.mesh.ny, data: lander.mesh.andel });
+    // "fast" låser nollnivån vid STARTÅRETS världssnitt. Följer den året i
+    // stället stiger planet under uppspelning, och ett land som förbättras kan
+    // SJUNKA: Sverige hade 80,5 år 2004 och 82,4 år 2019, men världssnittet
+    // steg mer — så globen visade en minskning där datan visar en ökning.
+    const iStart = Math.max(0, meta.ar.indexOf(meta.startAr ?? meta.ar.at(-1)));
     p.glob.nollMedel =
       p.nollLage === "medel" ? meta.globalmedel
-      : p.nollLage === "fast" ? meta.globalmedel.map(() => meta.globalmedel[0])
+      : p.nollLage === "fast" ? meta.globalmedel.map(() => meta.globalmedel[iStart])
       : null;
     // Skalväljaren gäller bara data som LAGRATS logaritmiskt. Shaderns lin-läge
     // är 10^((v−1)·SPAN), alltså av-logaritmering — kör man den på redan linjär
@@ -225,7 +234,7 @@
     sk.style.display = meta.skala === "log10" ? "" : "none";
     sk.querySelector("select").value = p.skala;
     const nv = el.querySelector(".nollval").querySelector("select");
-    nv.options[2].text = T("nollFast").replace("{ar}", meta.ar[0]);
+    nv.options[2].text = T("nollFast").replace("{ar}", meta.startAr ?? meta.ar.at(-1));
     nv.value = p.nollLage;
     const esc = t => String(t == null ? "" : t)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -245,7 +254,11 @@
       `</p><p class="und-fot">${T("undersokFot")}</p>`;
     el.querySelector(".regel").innerHTML =
       `${meta.enhet ? `<b>${meta.enhet}</b> · ` : ""}${meta.kalla || ""}` +
-      `<br>${meta.regel} · ${meta.medelMetod}`;
+      `<br>${meta.regel.replace(/nollnivå = världssnittet|nollnivå = världsandelen/,
+          p.nollLage === "fast"
+            ? `nollnivå = världssnittet ${meta.startAr ?? meta.ar.at(-1)}, fast över tid`
+            : p.nollLage === "medel" ? "nollnivå = världssnittet det året"
+            : "nollnivå = 0")} · ${meta.medelMetod}`;
     byggReglage(p);
     byggKnappar(p);
     sattLogflagga(p);
