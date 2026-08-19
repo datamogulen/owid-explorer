@@ -355,9 +355,18 @@
       `<label title="${T("takTitel")}"><span class="takTxt">${T("tak")}</span>
       <input type="range" class="pTak" min="0.05" max="1" step="0.01"
              value="${(p.glob.takNorm ?? 1).toFixed(2)}"></label>` +
+      // Måttet anges för den FÄRDIGA globen, inte för STL:ens egen skala.
+      // STL:en är 100 mm i diameter men skrivs ut kring 250 — "2 mm" i
+      // exportfilen hade betytt 5 mm på bordet, och det säger ingen något.
+      `<label title="${T("minOTitel")}"><span>${T("minO")}</span>
+      <select class="pMinO">${[0, 2, 4, 8].map(v =>
+        `<option value="${v}"${v === (p.minOMm ?? 2) ? " selected" : ""}>` +
+        `${v ? v + " mm" : T("minOAv")}</option>`).join("")}
+      </select></label>` +
       `<div class="stlRad"><button class="stlBtn" title="${T("stlTitel")}">${T("stlKnapp")}</button></div>`;
     pop.append(d);
     d.querySelector(".pRelief").oninput = e => { p.glob.reliefMul = +e.target.value; };
+    d.querySelector(".pMinO").onchange = e => { p.minOMm = +e.target.value; };
     {
       const takTxt = d.querySelector(".takTxt");
       const settTak = sl => {
@@ -1173,7 +1182,9 @@
   /* ── STL: samma motor som klimatgloberna, samma fyra filer ── */
   function exporteraSTL(p) {
     if (!p.glob) throw new Error("ingen glob");
-    exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id);
+    // p.minOMm är angivet för en 250 mm-glob; STL:en är 100 mm (S = 50).
+    exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id,
+                      null, (p.minOMm ?? 2) * (100 / 250));
   }
 
   /* ── start ── */

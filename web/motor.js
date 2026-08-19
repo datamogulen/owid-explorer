@@ -5,7 +5,7 @@
    finns, hur gränssnittet ser ut — bor i respektive sidas egen app-fil.
 
    Kräver att i18n.js laddats först: T(), lokal(), ENHETTEXT() och LANG. */
-const VERSION = "46";
+const VERSION = "47";
 /* Cache-bust bara över http(s) (webben). I appen laddas allt via file://
    där ?v= skulle bryta fil-URL:erna → tom sträng där. */
 const CB = (typeof location !== "undefined" && location.protocol === "file:") ? "" : "?v=" + VERSION;
@@ -1107,7 +1107,59 @@ function laddaNerBlob(blob, filnamn) {
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
 
-function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null) {
+/* Öar som blir för små för att överleva en utskrift ────────────────────────
+   En ö på några rutor blir en nål: den knäcks när man rensar stödmaterial,
+   eller redan när modellen bänds loss från plattan. Filtret mäter varje
+   sammanhängande landyta av SAMMA land och släcker de som är mindre än en
+   cirkel med diametern minMm vid den exporterade storleken.
+
+   Sammanhängande = 4-grannskap med varv runt longituden, annars skulle Fiji
+   och Tjuktjerhalvön klippas itu vid datumlinjen. Latituden varvar inte:
+   polerna är punkter, inte kanter. */
+function smaOarMask(G, S, minMm) {
+  const ny = G.ny, nx = G.nx, N = ny * nx, kod = G.kod;
+  const sedd = new Uint8Array(N);
+  const slack = new Uint8Array(N);          // 1 = för liten, uteslut ur exporten
+  const stack = new Int32Array(N);          // arbetsstack
+  const komp = new Int32Array(N);           // cellerna i den komponent som byggs
+  // Cellens area på enhetssfären beror bara på raden; × S² ger mm².
+  const radArea = new Float64Array(ny), dlon = 2 * Math.PI / nx;
+  for (let j = 0; j < ny; j++) {
+    const a = (j / ny) * Math.PI - Math.PI / 2, b = ((j + 1) / ny) * Math.PI - Math.PI / 2;
+    radArea[j] = dlon * (Math.sin(b) - Math.sin(a)) * S * S;
+  }
+  const minArea = Math.PI * (minMm / 2) * (minMm / 2);
+  let oar = 0, slackta = 0, slacktaCeller = 0;
+  for (let start = 0; start < N; start++) {
+    if (sedd[start] || kod[start] === 65535) continue;
+    const k = kod[start];
+    let sp = 0, nk = 0, area = 0;
+    stack[sp++] = start; sedd[start] = 1;
+    while (sp > 0) {
+      const c = stack[--sp];
+      komp[nk++] = c;
+      const j = (c / nx) | 0, i = c - j * nx;
+      area += radArea[j];
+      const g0 = j > 0 ? c - nx : -1;
+      const g1 = j < ny - 1 ? c + nx : -1;
+      const g2 = j * nx + (i === 0 ? nx - 1 : i - 1);
+      const g3 = j * nx + (i === nx - 1 ? 0 : i + 1);
+      for (const gi of [g0, g1, g2, g3]) {
+        if (gi < 0 || sedd[gi] || kod[gi] !== k) continue;
+        sedd[gi] = 1; stack[sp++] = gi;
+      }
+    }
+    oar++;
+    if (area < minArea) {
+      slackta++; slacktaCeller += nk;
+      for (let t = 0; t < nk; t++) slack[komp[t]] = 1;
+    }
+  }
+  return { slack, oar, slackta, slacktaCeller };
+}
+
+function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null,
+                           minOMm = 0) {
   const m = g.meta, G = lander.fin;
   if (!m.platta || !G) throw new Error("inte en platåglob");
   const S = 50, SPAN = m.vmax - m.vmin, gH = g.gainHojd;   // S: enhetsradie → 50 mm
@@ -1159,8 +1211,20 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
   }
   const HAVSYTA = 1.0;
   const rCore = Math.max(0.2, Math.min(minR, HAVSYTA) - 4 / S);   // tunnaste vägg ≥ 4 mm
+  // Öfiltret: körs en gång, före platåbygget, och släcker cellerna direkt i
+  // uppslaget. Då försvinner de ur BÅDA skalen och ur havet på samma gång —
+  // ett hål kvar i havet hade varit värre än ön.
+  let smaSlack = null;
+  if (minOMm > 0) {
+    const r = smaOarMask(G, S, minOMm);
+    smaSlack = r.slack;
+    console.log(`öfilter: ${r.slackta} av ${r.oar} landytor under Ø${minOMm} mm `
+              + `(${r.slacktaCeller} celler) utesluts ur utskriften`);
+  }
   const kodAt = (j, i) => {
-    const kk = G.kod[j * fnx2 + i];
+    const idx = j * fnx2 + i;
+    if (smaSlack && smaSlack[idx]) return -1;
+    const kk = G.kod[idx];
     return (kk !== 65535 && harData[kk]) ? kk : -1;
   };
   const HAV = 65534;                       // egen nyckel; negativa tal = hoppa över
