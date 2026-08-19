@@ -185,7 +185,11 @@
   #korr .rad2 b { font-weight: 600; color: var(--dov); font-variant-numeric: tabular-nums; }
   #korr { position: relative; }
   #korr .varn { font-size: 10.5px; color: var(--svag); margin-top: 7px; line-height: 1.4; }
-  #korr .globkvot { text-align: left; }
+  #korr .globkvot, #korr .partiell { text-align: left; }
+  #korr .partiell .kvotrad b { font-size: 13px; }
+  #korr .partiell.dott .kvotrad b { color: var(--svag); }
+  #korr .kvottolk { display: block; margin-top: 2px; font-size: 10px; line-height: 1.35;
+        color: var(--svag); }
   #korr .globkvot .kvotrad { display: flex; justify-content: space-between; gap: 8px;
         align-items: baseline; }
   #korr .globkvot .kvotrad i { font-style: normal; color: var(--svag); }
@@ -391,8 +395,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=36"></script>
-<script src="motor.js?v=44"></script>
-<script src="explorer.js?v=45"></script>
+<script src="i18n.js?v=47"></script>
+<script src="motor.js?v=45"></script>
+<script src="explorer.js?v=47"></script>
 </body>
 </html>

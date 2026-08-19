@@ -812,6 +812,68 @@
   // kvot i samma skala går Frankrikes 131,2 att jämföra med världens 244,8
   // direkt, och enheten behöver bara skrivas ut en gång — i kortet.
   let kvotSkala = null;
+  /* ── Håll välståndet konstant ───────────────────────────────────────────────
+     "Korrelation är inte kausalitet" är en slogan man kan rabbla utan att kunna
+     något. Det här gör den till en handling: nästan allt som mäter utveckling
+     följer BNP/person, så frågan är inte OM två mått samvarierar utan om något
+     blir kvar när man rensar bort det gemensamma välståndet.
+
+     Partiell korrelation, textboksformeln:  r_xy·z = (r_xy − r_xz·r_yz)
+                                                      / √((1−r_xz²)(1−r_yz²))
+     Den kontrollerar LINJÄRT för EN variabel och identifierar inga orsaker.
+     Den visar hur mycket av sambandet som överlever en bestämd kontroll — och
+     just den nyansen är hela poängen med att visa den. */
+  const BNP_SERIE = "gdp-per-capita-penn-world-table";
+  let bnpSerie = null, bnpLaddas = false;
+  async function bnp() {
+    if (bnpSerie || bnpLaddas) return bnpSerie;
+    bnpLaddas = true;
+    try { bnpSerie = await laddaSerie(BNP_SERIE); } catch (e) { bnpSerie = null; }
+    return bnpSerie;
+  }
+  // Serien får inte kontrollera bort sig själv: att hålla välståndet konstant
+  // när ena axeln ÄR välståndet lämnar bara brus kvar.
+  const arValstand = m => /gdp|gni|gross (domestic|national)|bnp|income per|välstånd/i
+                            .test(m.titel || "");
+
+  function partiellKorr(ma, mb, ta, tb, ar) {
+    const mz = bnpSerie;
+    if (!mz || arValstand(ma) || arValstand(mb)) return null;
+    const lz = lagerVid(mz, ar);
+    if (!lz || ar < mz.ar[0] - 0.5 || ar > mz.ar.at(-1) + 0.5 || lz.avstand > 3) return null;
+    const fys = (m, raw) => {
+      const v = m.vmin + ((raw - 1) / 65534) * (m.vmax - m.vmin);
+      return m.skala === "log10" ? v : v;      // log-rymd duger: monotont och linjärare
+    };
+    const x = [], y = [], z = [];
+    for (let k = 0; k < ma.nland; k++) {
+      const a = ma.landvarden[ta * ma.nland + k],
+            b = mb.landvarden[tb * mb.nland + k],
+            c = mz.landvarden[lz.t * mz.nland + k];
+      if (!a || !b || !c) continue;
+      x.push(fys(ma, a)); y.push(fys(mb, b));
+      // BNP/person i LOG-rymd: inkomsteffekter är multiplikativa, inte additiva
+      z.push(mz.skala === "log10" ? fys(mz, c) : Math.log10(Math.max(1e-9, fys(mz, c))));
+    }
+    if (x.length < 25) return null;            // för få länder för att kontrollera på
+    const rxy = pearson(x, y), rxz = pearson(x, z), ryz = pearson(y, z);
+    const n = (1 - rxz * rxz) * (1 - ryz * ryz);
+    if (!(n > 1e-6)) return null;
+    const rp = (rxy - rxz * ryz) / Math.sqrt(n);
+    if (!isFinite(rp)) return null;
+    return { r: rxy, rp, n: x.length, rxz, ryz };
+  }
+
+  // Kort, ärlig tolkning. Inte "alltså finns inget samband" — bara vad som
+  // hände med siffran när en bestämd sak hölls konstant.
+  function tolkPartiell(r, rp) {
+    const kvar = Math.abs(r) > 1e-9 ? Math.abs(rp) / Math.abs(r) : 0;
+    if (r * rp < 0 && Math.abs(rp) >= 0.2) return T("tolkVander");
+    if (kvar <= 0.30) return T("tolkForsvinner");
+    if (kvar <= 0.70) return T("tolkForsvagas");
+    return T("tolkStarKvar");
+  }
+
   function uppdateraKorr(ar) {
     const p = paneler.filter(q => q.glob);
     if (p.length < 2) { korrEl.className = "tom"; kvotSkala = null; return; }
@@ -857,6 +919,8 @@
     const rho = pearson(rangera(x), rangera(y));
     const glob = globalKvot(ma, mb, la.t, lb.t, ma.ar[la.t]);
     kvotSkala = glob ? glob.val : null;
+    const pk = partiellKorr(ma, mb, la.t, lb.t, ma.ar[la.t]);
+    if (!bnpSerie) bnp().then(() => { korrEl.dataset.nyckel = ""; });
     const abs = Math.abs(r);
     const styrka = abs >= 0.7 ? T("korrStark") : abs >= 0.4 ? T("korrMedel")
                  : abs >= 0.2 ? T("korrSvagt") : T("korrInget");
@@ -870,6 +934,10 @@
        <div class="styrka">${styrka}${tecken}</div>
        <div class="rad2">${T("korrRang")} <b>${fmt(rho)}</b><br>
          <b>${x.length}</b> ${T("korrLander")}${arNot}</div>
+       ${pk ? `<div class="rad2 partiell${Math.abs(pk.rp) < 0.2 ? " dott" : ""}">
+         <span class="und-etikett">${T("hallKonstant")}</span>
+         <span class="kvotrad"><i>${T("valstandKonst")}</i><b>${fmt(pk.rp)}</b></span>
+         <span class="kvottolk">${tolkPartiell(r, pk.rp)}</span></div>` : ""}
        ${glob ? `<div class="rad2 globkvot">
          <span class="und-etikett">${T("globalKvot")}</span>
          ${glob.varlden ? `<span class="kvotrad"><i>${T("kvotVarlden")}</i><b>${glob.varlden}</b></span>` : ""}

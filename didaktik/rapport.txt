@@ -1,0 +1,213 @@
+754 serier med ≥45 länder 2019 och känd BNP/person
+2 serier utesluts: för nära BNP/person (|r| ≥ 0,90) för att kunna partialiseras bort
+266484 par utvärderade
+
+========================================================================================================
+1. STORLEKSFÄLLAN — starkt i absoluta tal, borta när måttet blir per person  (1581 par)
+========================================================================================================
+  absolut r=+0.99  →  per person r=-0.07   n=164
+      People using at least a basic drinking water sourc [clean-water-sanitati]
+      Number of deaths — per person                      [global-health]
+  absolut r=+0.99  →  per person r=-0.18   n=171
+      Number of deaths — per person                      [global-health]
+      People using at least a basic drinking water sourc [clean-water-sanitati]
+  absolut r=+0.99  →  per person r=-0.07   n=163
+      People using at least basic sanitation facilities  [clean-water-sanitati]
+      Number of deaths — per person                      [global-health]
+  absolut r=+0.99  →  per person r=-0.01   n=164
+      People using at least a basic drinking water sourc [clean-water-sanitati]
+      Deaths from falls — per person                     [global-health]
+  absolut r=+0.99  →  per person r=-0.17   n=181
+      Population — per km²                               [population-growth]
+      Number of deaths — per person                      [global-health]
+  absolut r=+0.98  →  per person r=-0.09   n=170
+      Population — per km²                               [population-growth]
+      Number of deaths — per person                      [global-health]
+  absolut r=+0.98  →  per person r=-0.19   n=164
+      People using at least a basic drinking water sourc [clean-water-sanitati]
+      Deaths from road injuries — per person             [transport]
+  absolut r=+0.98  →  per person r=+0.00   n=163
+      People using at least basic sanitation facilities  [clean-water-sanitati]
+      Number of deaths from cardiovascular diseases — pe [cardiovascular-disea]
+  absolut r=+0.98  →  per person r=-0.18   n=169
+      Number of deaths — per person                      [global-health]
+      People using at least basic sanitation facilities  [clean-water-sanitati]
+  absolut r=+0.98  →  per person r=-0.00   n=164
+      People using at least a basic drinking water sourc [clean-water-sanitati]
+      Number of deaths from cardiovascular diseases — pe [cardiovascular-disea]
+  absolut r=+0.98  →  per person r=-0.13   n=170
+      Number of deaths — per person                      [global-health]
+      Deaths from road injuries — per person             [transport]
+  absolut r=+0.98  →  per person r=+0.14   n=156
+      Diarrheal disease deaths — per person              [diarrheal-diseases]
+      Number of people requiring treatment against negle [eradication-of-disea]
+  absolut r=+0.98  →  per person r=-0.01   n=163
+      People using at least basic sanitation facilities  [clean-water-sanitati]
+      Deaths from falls — per person                     [global-health]
+  absolut r=+0.98  →  per person r=-0.11   n=96
+      Sweet potato production — per person               [agricultural-product]
+      Consumption of ozone-depleting substances — per pe [ozone-layer]
+  absolut r=+0.98  →  per person r=+0.06   n=166
+      Number of people employed in agriculture — per km² [employment-in-agricu]
+      Deaths from drowning — per person                  [global-health]
+  absolut r=+0.98  →  per person r=-0.10   n=166
+      Number of people employed in agriculture — per km² [employment-in-agricu]
+      Deaths from road injuries — per person             [transport]
+
+========================================================================================================
+2. VÄLSTÅNDSFÄLLAN — starkt även per person, dör när BNP/person hålls konstant  (481 par)
+========================================================================================================
+  r=-0.81  →  välstånd konstant r=-0.19   n=125
+      Share of GDP from agriculture                      [employment-in-agricu]
+      Share using safely managed drinking water          [clean-water-sanitati]
+  r=+0.80  →  välstånd konstant r=+0.19   n=170
+      Share of the population with access to clean fuels [energy-access]
+      Minimum daily requirement of calories              [hunger-and-undernour]
+  r=-0.80  →  välstånd konstant r=-0.19   n=171
+      Minimum daily requirement of calories              [hunger-and-undernour]
+      Stillbirth rate                                    [fertility-rate]
+  r=-0.80  →  välstånd konstant r=-0.18   n=127
+      Youth dependency ratio                             [age-structure]
+      Share of the population that owns a mobile phone   [internet]
+  r=-0.80  →  välstånd konstant r=-0.06   n=73
+      Productivity: output per hour worked               [working-hours]
+      Share of male workers in informal employment       [(otaggad)]
+  r=+0.80  →  välstånd konstant r=+0.19   n=175
+      Life expectancy at age 15                          [life-expectancy]
+      Minimum daily requirement of calories              [hunger-and-undernour]
+  r=+0.80  →  välstånd konstant r=+0.20   n=175
+      Male life expectancy at birth                      [life-expectancy]
+      Minimum daily requirement of calories              [hunger-and-undernour]
+  r=+0.80  →  välstånd konstant r=+0.15   n=169
+      Youth dependency ratio                             [age-structure]
+      Share of workers in vulnerable employment          [work-employment]
+  r=-0.80  →  välstånd konstant r=-0.17   n=124
+      Productivity: output per hour worked               [working-hours]
+      Gender Inequality Index                            [economic-inequality-]
+  r=-0.80  →  välstånd konstant r=-0.20   n=169
+      Female life expectancy at birth                    [life-expectancy]
+      Share of workers in vulnerable employment          [work-employment]
+  r=+0.79  →  välstånd konstant r=+0.16   n=158
+      Share of workers in vulnerable employment          [work-employment]
+      Gender Inequality Index                            [economic-inequality-]
+  r=+0.79  →  välstånd konstant r=+0.19   n=169
+      Minimum daily requirement of calories              [hunger-and-undernour]
+      Life expectancy                                    [life-expectancy]
+  r=-0.79  →  välstånd konstant r=-0.17   n=87
+      Life expectancy                                    [time-use]
+      Share of male workers in informal employment       [(otaggad)]
+  r=-0.79  →  välstånd konstant r=-0.17   n=87
+      Life expectancy                                    [life-expectancy]
+      Share of male workers in informal employment       [(otaggad)]
+  r=-0.79  →  välstånd konstant r=-0.17   n=87
+      Life expectancy at birth                           [life-expectancy]
+      Share of male workers in informal employment       [(otaggad)]
+  r=-0.79  →  välstånd konstant r=-0.17   n=87
+      Life expectancy                                    [time-use]
+      Share of female workers in informal employment     [work-employment]
+
+========================================================================================================
+3. ÖVERLEVER — sambandet står kvar när välståndet hålls konstant  (1225 par)
+========================================================================================================
+  r=+0.94  →  välstånd konstant r=+0.96   n=52
+      Share of global CO₂ emissions from cement          [co2-and-greenhouse-g]
+      Number of new electric cars sold                   [transport]
+  r=+0.90  →  välstånd konstant r=+0.95   n=171
+      Prevalence rate of hypertension in women aged 30-7 [obesity]
+      Prevalence rate of hypertension in adults aged 30- [causes-of-death]
+  r=+0.93  →  välstånd konstant r=+0.95   n=53
+      Share of global CO₂ emissions from coal            [co2-and-greenhouse-g]
+      Number of new electric cars sold                   [transport]
+  r=+0.95  →  välstånd konstant r=+0.95   n=101
+      Share of global nitrous oxide emissions            [co2-and-greenhouse-g]
+      Number of people who are undernourished            [hunger-and-undernour]
+  r=+0.94  →  välstånd konstant r=+0.95   n=55
+      Share of global CO₂ emissions                      [co2-and-greenhouse-g]
+      Number of new electric cars sold                   [transport]
+  r=+0.95  →  välstånd konstant r=+0.95   n=170
+      Urban area over the long-term                      [(otaggad)]
+      Contribution to global mean surface temperature ri [co2-and-greenhouse-g]
+  r=+0.95  →  välstånd konstant r=+0.95   n=125
+      Female labor force participation rate              [female-labor-supply]
+      Female labor force participation rate              [work-employment]
+  r=+0.90  →  välstånd konstant r=+0.94   n=171
+      Prevalence rate of hypertension in men aged 30-79  [obesity]
+      Prevalence rate of hypertension in adults aged 30- [causes-of-death]
+  r=+0.95  →  välstånd konstant r=+0.94   n=170
+      Number of infants who die before age 1             [child-mortality]
+      Number of one-year-olds who are not vaccinated aga [vaccination]
+  r=+0.95  →  välstånd konstant r=+0.94   n=136
+      Share of the population living with HIV            [pandemics]
+      New infections of HIV per 1,000 people             [hiv-aids]
+  r=+0.94  →  välstånd konstant r=+0.94   n=101
+      Share of global cumulative CO₂ emissions from coal [co2-and-greenhouse-g]
+      Installed wind energy capacity                     [renewable-energy]
+  r=+0.94  →  välstånd konstant r=+0.94   n=68
+      Passenger-kilometers by rail                       [transport]
+      Total disease burden                               [burden-of-disease]
+  r=+0.94  →  välstånd konstant r=+0.94   n=104
+      Share of the population living with HIV            [pandemics]
+      Tuberculosis patients living with HIV receiving an [tuberculosis]
+  r=+0.93  →  välstånd konstant r=+0.94   n=60
+      Passenger-kilometers by rail                       [transport]
+      People not using safely managed sanitation facilit [sanitation]
+  r=+0.94  →  välstånd konstant r=+0.94   n=97
+      People not using improved sanitation facilities —  [sanitation]
+      People without basic handwashing facilities — per  [clean-water-sanitati]
+  r=+0.94  →  välstånd konstant r=+0.94   n=125
+      Female employment rate                             [female-labor-supply]
+      Female labor force participation rate              [work-employment]
+
+========================================================================================================
+4. VÄNDNING — sambandet byter tecken  (192 par)
+========================================================================================================
+  r=+0.47  →  välstånd konstant r=-0.59   n=73
+      Poverty: Share of population living on less than $ [(otaggad)]
+      Number of youth deaths — per person                [child-mortality]
+  r=+0.49  →  välstånd konstant r=-0.56   n=74
+      Number of neonatal deaths — per person             [child-mortality]
+      Poverty: Share of population living on less than $ [(otaggad)]
+  r=+0.59  →  välstånd konstant r=-0.46   n=127
+      Productivity: output per hour worked               [working-hours]
+      Share of population using at least a basic drinkin [clean-water-sanitati]
+  r=+0.46  →  välstånd konstant r=-0.58   n=73
+      Number of child deaths — per person                [child-mortality]
+      Poverty: Share of population living on less than $ [(otaggad)]
+  r=+0.57  →  välstånd konstant r=-0.46   n=74
+      Child mortality rate                               [child-mortality]
+      Poverty: Share of population living on less than $ [(otaggad)]
+  r=-0.65  →  välstånd konstant r=+0.38   n=129
+      Productivity: output per hour worked               [working-hours]
+      Youth dependency ratio                             [age-structure]
+  r=-0.49  →  välstånd konstant r=+0.54   n=73
+      Poverty: Share of population living on less than $ [(otaggad)]
+      Share of population using at least a basic drinkin [clean-water-sanitati]
+  r=-0.46  →  välstånd konstant r=+0.56   n=129
+      Productivity: output per hour worked               [working-hours]
+      Total dependency ratio                             [age-structure]
+  r=+0.48  →  välstånd konstant r=-0.55   n=73
+      Number of infant deaths — per person               [child-mortality]
+      Poverty: Share of population living on less than $ [(otaggad)]
+  r=+0.46  →  välstånd konstant r=-0.57   n=73
+      Number of child deaths per woman                   [child-mortality]
+      Poverty: Share of population living on less than $ [(otaggad)]
+  r=+0.43  →  välstånd konstant r=-0.57   n=72
+      Poverty: Share of population living on less than $ [(otaggad)]
+      Share of people who are undernourished             [hunger-and-undernour]
+  r=+0.58  →  välstånd konstant r=-0.42   n=73
+      Youth mortality rate                               [child-mortality]
+      Poverty: Share of population living on less than $ [(otaggad)]
+  r=+0.39  →  välstånd konstant r=-0.61   n=73
+      Poverty: Share of population living on less than $ [(otaggad)]
+      Deaths from meningitis — per person                [eradication-of-disea]
+  r=+0.39  →  välstånd konstant r=-0.61   n=73
+      Poverty: Share of population living on less than $ [(otaggad)]
+      Death rate from meningitis                         [eradication-of-disea]
+  r=+0.41  →  välstånd konstant r=-0.60   n=73
+      Poverty: Share of population living on less than $ [(otaggad)]
+      Tuberculosis death rate                            [tuberculosis]
+  r=+0.49  →  välstånd konstant r=-0.51   n=73
+      Number of neonatal deaths — per person             [child-mortality]
+      Poverty: Share of population living on less than $ [(otaggad)]
+
+skrev /Users/bjornh/Development/owid-explorer/didaktik/larpar.json

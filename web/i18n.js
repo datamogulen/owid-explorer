@@ -40,6 +40,11 @@ const SPRAK = {
     nollAr: "aktuellt år", nollStart: "startåret {ar}", nollSlut: "slutåret {ar}", nollNoll: "0",
     nollEtikett: "nollnivå", fargMot: "färg mot årets snitt",
     kvot: "kvot", avlasVila: "peka på ett land", perOrd: "per", vand: "vänd", vandTitel: "byt plats på globerna — kvoten vänds", globalKvot: "Global kvot", kvotVarlden: "världen", kvotTypiskt: "typiskt land",
+    hallKonstant: "Håll välståndet konstant", valstandKonst: "r utan BNP/person",
+    tolkForsvinner: "sambandet var till största delen välstånd",
+    tolkForsvagas: "en del var välstånd, en del något annat",
+    tolkStarKvar: "står kvar — välstånd förklarar det inte",
+    tolkVander: "vänder tecken när välståndet hålls konstant",
     korrRubrik: "Samband", korrLander: "länder", korrRang: "rangkorr.",
     korrVarning: "Samvariation är inte orsak.", korrMer: "Vad siffran inte säger",
     korrMerText: "<p><b>Korrelation är inte kausalitet.</b> Att två serier följs åt betyder "
@@ -54,6 +59,13 @@ const SPRAK = {
       + "<p><b>Ett land är en observation.</b> Här väger Kina lika mycket som Tuvalu, och "
       + "siffran gäller ett enskilt år tvärs över länder — inte hur måtten utvecklats "
       + "över tid.</p>"
+      + "<p><b>Att hålla välståndet konstant.</b> Nästan allt som mäter utveckling följer "
+      + "BNP per person. Raden visar vad som blir kvar av sambandet när den gemensamma "
+      + "välståndsnivån räknas bort — partiell korrelation, med BNP/person i log-rymd. "
+      + "Försvinner sambandet var det till stor del välstånd som syntes. Står det kvar "
+      + "finns något annat där. Men detta identifierar INGA orsaker: det kontrollerar "
+      + "linjärt för EN variabel, och det finns fler. Det är ett bättre ställe att börja "
+      + "fråga från, inte ett svar.</p>"
       + "<p><b>Två globala kvoter, två frågor.</b> \"Världen\" är summan av täljarna delad "
       + "med summan av nämnarna — jorden behandlad som ett land. Det är den sanna globala "
       + "intensiteten, men den domineras av Kina, Indien och USA, vilket är en egenskap och "
@@ -144,6 +156,11 @@ const SPRAK = {
     nollAr: "current year", nollStart: "start year {ar}", nollSlut: "end year {ar}", nollNoll: "0",
     nollEtikett: "zero level", fargMot: "colour vs this year's mean",
     kvot: "ratio", avlasVila: "point at a country", perOrd: "per", vand: "swap", vandTitel: "swap the globes — the ratio flips", globalKvot: "Global ratio", kvotVarlden: "the world", kvotTypiskt: "typical country",
+    hallKonstant: "Holding prosperity constant", valstandKonst: "r without GDP/person",
+    tolkForsvinner: "the link was mostly prosperity",
+    tolkForsvagas: "part prosperity, part something else",
+    tolkStarKvar: "it holds — prosperity does not explain it",
+    tolkVander: "flips sign when prosperity is held constant",
     korrRubrik: "Relationship", korrLander: "countries", korrRang: "rank corr.",
     korrVarning: "Covariation is not cause.", korrMer: "What the number does not say",
     korrMerText: "<p><b>Correlation is not causation.</b> Two series moving together does not "
@@ -157,6 +174,12 @@ const SPRAK = {
       + "more X have more Y — this is the ecological fallacy.</p>"
       + "<p><b>One country, one observation.</b> China counts as much as Tuvalu here, and the "
       + "number is for a single year across countries — not how the measures changed over time.</p>"
+      + "<p><b>Holding prosperity constant.</b> Almost everything that measures development "
+      + "tracks GDP per person. This row shows what survives once that shared prosperity is "
+      + "removed — partial correlation, with GDP per person in log space. If the link "
+      + "vanishes, what you saw was largely prosperity. If it holds, something else is "
+      + "there. But this identifies NO causes: it controls linearly for ONE variable, and "
+      + "there are more. It is a better place to start asking, not an answer.</p>"
       + "<p><b>Two global ratios, two questions.</b> \"The world\" is the sum of numerators "
       + "over the sum of denominators — Earth treated as one country. That is the true global "
       + "intensity, but it is dominated by China, India and the US, which is a property and not "

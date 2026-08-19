@@ -427,7 +427,10 @@ def bearbeta(post, ix, yta, folk, NL):
     if len(ar_lista) < MIN_AR:
         return None, f"bara {len(ar_lista)} år med ≥{MIN_LANDER} länder"
 
-    lankar = owid_lankar(post["slug"])
+    # Flerdimensionella vyer har en påhittad slug (energy-mix__metric-per_capita…)
+    # som inte finns hos OWID. Deras riktiga adresser följer med kandidaten.
+    lankar = ((post.get("grafUrl"), post.get("amneUrl")) if post.get("grafUrl")
+              else owid_lankar(post["slug"]))
     ut = []
     for kod, enhet, suffix, data in varianter_av(per_ar, ar_lista, post, ix, yta, folk):
         ar_v = sorted(a for a in ar_lista if a in data and len(data[a]) >= MIN_LANDER)
