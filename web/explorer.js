@@ -343,27 +343,32 @@
     // Taket kapar HÖJDEN på de få extremvärdena (stadsstater i täthetsmått) —
     // färgen behåller hela skalan, så de syns fortfarande, de tar bara inte
     // över hela reliefen.
-    const m = p.glob.meta, harTak = m.skala === "log10";
-    const CAPSPAN = 2.5, SPAN = m.vmax - m.vmin;
-    const gainTillSlider = g => 1 - Math.log10(g) / CAPSPAN;
+    // Taket ska finnas för ALLA serier, inte bara log-lagrade. Energi per
+    // person lagras linjärt, och just där behövs det som mest: Island och
+    // Qatar ligger så högt att övriga världen plattas till en matta. Extra
+    // viktigt för utskrifter, där reliefen är hela poängen.
+    const m = p.glob.meta;
+    const SPAN = m.vmax - m.vmin;
     d.innerHTML = `<label title="${T("reliefTitel")}"><span>${T("reliefKort")}</span>
       <input type="range" class="pRelief" min="0" max="2" step="0.02"
              value="${p.glob.reliefMul.toFixed(2)}"></label>` +
-      (harTak ? `<label title="${T("takTitel")}"><span class="takTxt">${T("tak")}</span>
-      <input type="range" class="pTak" min="0" max="1" step="0.02"
-             value="${gainTillSlider(p.glob.gainHojd).toFixed(2)}"></label>` : "") +
+      `<label title="${T("takTitel")}"><span class="takTxt">${T("tak")}</span>
+      <input type="range" class="pTak" min="0.05" max="1" step="0.01"
+             value="${(p.glob.takNorm ?? 1).toFixed(2)}"></label>` +
       `<div class="stlRad"><button class="stlBtn" title="${T("stlTitel")}">${T("stlKnapp")}</button></div>`;
     pop.append(d);
     d.querySelector(".pRelief").oninput = e => { p.glob.reliefMul = +e.target.value; };
-    if (harTak) {
+    {
       const takTxt = d.querySelector(".takTxt");
       const settTak = sl => {
-        const c = 1 - (1 - sl) * CAPSPAN / SPAN;          // takets läge på skalan
-        p.glob.gainHojd = Math.pow(10, (1 - Math.max(0, Math.min(1, c))) * SPAN);
-        takTxt.textContent = T("tak") + " " + p.glob.fysisktVarde(Math.max(0, Math.min(1, c)));
+        const c = Math.max(0.02, Math.min(1, sl));
+        p.glob.takNorm = c;
+        // Etiketten visar var taket ligger i seriens EGEN enhet, inte som en
+        // andel — "tak 120 000 kWh" säger något, "tak 0,58" ingenting.
+        takTxt.textContent = T("tak") + (c >= 0.999 ? " –" : " " + p.glob.fysisktVarde(c));
         ritaBarFor(p);
       };
-      settTak(gainTillSlider(p.glob.gainHojd));
+      settTak(p.glob.takNorm ?? 1);
       d.querySelector(".pTak").oninput = e => settTak(+e.target.value);
     }
     const sb = d.querySelector(".stlBtn");

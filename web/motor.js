@@ -5,7 +5,7 @@
    finns, hur gränssnittet ser ut — bor i respektive sidas egen app-fil.
 
    Kräver att i18n.js laddats först: T(), lokal(), ENHETTEXT() och LANG. */
-const VERSION = "45";
+const VERSION = "46";
 /* Cache-bust bara över http(s) (webben). I appen laddas allt via file://
    där ?v= skulle bryta fil-URL:erna → tom sträng där. */
 const CB = (typeof location !== "undefined" && location.protocol === "file:") ? "" : "?v=" + VERSION;
@@ -341,6 +341,12 @@ class Glob {
     this.kanaler = meta.kanaler || 1;   // 1 = R8, 2 = RG8 (bivariat)
     this.reliefMul = 1;                  // per-glob relief-multiplikator (befolkning-reglage)
     this.gainHojd = meta.linjarGainHojd || meta.linjarGain || 1;   // höjdtak (befolkning-reglage)
+    // Taket ovan är uttryckt som en GAIN och fungerar bara på serier som
+    // lagras i log-rymd. Energi per person lagras linjärt, och där blev
+    // log10(gain)/SPAN försumbart — reglaget gjorde ingenting, så det doldes.
+    // Det här taket ligger i stället i normaliserad rymd [0,1] och biter
+    // likadant i båda fallen. 1 = inget tak.
+    this.takNorm = 1.0;
     // preserveDrawingBuffer: utan den rensas bufferten efter varje bildruta och
     // canvasen går inte att läsa ut — previewbilden blev tom. Kostar en aning
     // prestanda, men gör att globen alltid går att fånga som bild.
@@ -409,7 +415,7 @@ class Glob {
     precision highp float; precision highp sampler2DArray;
     uniform sampler2DArray uData;
     uniform mat4 uProj, uRot;
-    uniform float uAr, uMaxLager, uRelief, uZoom, uLin, uLinGain, uLinGainH, uNollp;
+    uniform float uAr, uMaxLager, uRelief, uZoom, uLin, uLinGain, uLinGainH, uNollp, uTak;
     ${landdata ? "uniform sampler2D uLandTex;" : ""}
     ${platta ? "uniform sampler2D uKodTex, uVardeTex; uniform float uNland, uNar;" : ""}
     const float SPAN = ${(this.meta.vmax - this.meta.vmin).toFixed(3)};
@@ -444,7 +450,7 @@ class Glob {
       float v = samplaRaw(uv, lager);
       float logCap = min(v, 1.0 - log(uLinGainH) / (2.302585 * SPAN));   // logläge: kapa i log-rymd
       float linCap = min(pow(10.0, (v - 1.0) * SPAN) * uLinGainH, 1.0);  // linjärläge: proportionellt
-      return mix(logCap, linCap, uLin);
+      return min(mix(logCap, linCap, uLin), uTak);   // uTak: samma kapning oavsett lagringsform
     }`}
     vec3 riktning(vec2 uv) {
       float lat = radians(uv.y * 180.0 - 90.0);
@@ -553,7 +559,7 @@ class Glob {
     this.prog = p;
     this.u = {};
     for (const n of ["uProj","uRot","uAr","uMaxLager","uRelief","uZoom",
-                     "uData","uKustTex","uKust","uLin","uLinGain","uLinGainH","uPick",
+                     "uData","uKustTex","uKust","uLin","uLinGain","uLinGainH","uTak","uPick",
                      "uNollp","uNollpF","uLandTex","uKodTex","uKodTexF","uVardeTex","uNland","uNar"])
       this.u[n] = gl.getUniformLocation(p, n);
     this._byggPick(512);
@@ -796,6 +802,7 @@ class Glob {
     gl.uniform1f(this.u.uLin, this.lin ? 1.0 : 0.0);
     gl.uniform1f(this.u.uLinGain, m.linjarGain || 1.0);      // färgtak
     gl.uniform1f(this.u.uLinGainH, this.gainHojd);           // höjdtak (justerbart per glob)
+    gl.uniform1f(this.u.uTak, this.takNorm);                 // normaliserat tak
     gl.uniform1f(this.u.uPick, pick);
     const piv = this.pivotNu();
     gl.uniform1f(this.u.uNollp, piv.h);
@@ -901,8 +908,9 @@ class Glob {
     // stadigt ut mot randen: krysset gled ifrån muspekaren.
     const rv = this.samplaNorm(u, v, p.arVarde);
     const gH = this.gainHojd, SPAN = m.vmax - m.vmin;
-    const dispH = this.lin ? Math.min(Math.pow(10, (rv - 1) * SPAN) * gH, 1)
-                           : Math.min(rv, 1 - Math.log10(gH) / SPAN);
+    const dispH = Math.min(this.takNorm,
+                  this.lin ? Math.min(Math.pow(10, (rv - 1) * SPAN) * gH, 1)
+                           : Math.min(rv, 1 - Math.log10(gH) / SPAN));
     // Platåer: ingen data ligger på havsplanet, inte i botten (samma regel som
     // shadern). Kustdämpningen med landandelen gäller bara icke-platta
     // landdataglober, och där används ingen markör.
@@ -1138,8 +1146,12 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
     if (!a && !b) continue;
     harData[k] = 1;
     const n = ((!a || !b) ? Math.max(a, b) : a + (b - a) * fl) / 255;
-    const dispH = g.lin ? Math.min(Math.pow(10, (n - 1) * SPAN) * gH, 1)
-                        : Math.min(n, 1 - Math.log10(gH) / SPAN);
+    // Samma kapning som shadern, annars stämmer inte utskriften med skärmen —
+    // och det är just för UTSKRIFTER taket behövs: utan det äter Island och
+    // Qatar hela reliefen och alla andra länder blir en platt matta.
+    const dispH = Math.min(g.takNorm ?? 1,
+                  g.lin ? Math.min(Math.pow(10, (n - 1) * SPAN) * gH, 1)
+                        : Math.min(n, 1 - Math.log10(gH) / SPAN));
     let rr = 1 + (dispH - nollp) * relf;
     if (skrovliga && skrovliga.has(k)) rr += (hash(k, k * 7) - 0.5) * SKROV;
     rLand[k] = rr;
