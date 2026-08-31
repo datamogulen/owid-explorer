@@ -359,6 +359,8 @@
       // Utan avdelaren läses de som visningsinställningar, och de allra flesta
       // som öppnar panelen kommer aldrig att skriva ut någonting.
       `<hr class="stlDel"><div class="avdrub">${T("stlrubrik")}</div>` +
+      `<label title="${T("delaTitel")}"><span>${T("dela")}</span>
+      <input type="checkbox" class="pDela"${p.delaEkv ? " checked" : ""}></label>` +
       `<label title="${T("halTitel")}"><span>${T("halPa")}</span>
       <input type="checkbox" class="pHalPa"${p.halPa ? " checked" : ""}></label>` +
       // Måttet anges för den FÄRDIGA globen, inte för STL:ens egen skala.
@@ -378,6 +380,7 @@
     d.querySelector(".pRelief").oninput = e => { p.glob.reliefMul = +e.target.value; };
     d.querySelector(".pMinO").onchange = e => { p.minOMm = +e.target.value; };
     d.querySelector(".pHal").onchange = e => { p.halMm = +e.target.value; };
+    d.querySelector(".pDela").onchange = e => { p.delaEkv = e.target.checked; };
     d.querySelector(".pHalPa").onchange = e => {
       p.halPa = e.target.checked;
       const fal = d.querySelector(".pHal"), rad = d.querySelector(".halRad");
@@ -401,7 +404,8 @@
     sb.onclick = () => {
       sb.disabled = true; const gam = sb.textContent; sb.textContent = "…";
       setTimeout(() => {
-        try { exporteraSTL(p); sb.textContent = T("stlKlar"); }
+        try { const n = exporteraSTL(p) || 0;
+              sb.textContent = T("stlKlar").replace("{n}", n); }
         catch (e) { sb.textContent = "✗ " + e.message; }
         finally { setTimeout(() => { sb.textContent = gam; sb.disabled = false; }, 2500); }
       }, 20);
@@ -1200,9 +1204,10 @@
   function exporteraSTL(p) {
     if (!p.glob) throw new Error("ingen glob");
     // p.minOMm är angivet för en 250 mm-glob; STL:en är 100 mm (S = 50).
-    exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id,
+    return exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id,
                       null, (p.minOMm ?? 2) * (100 / 250),
-                      p.halPa ? (p.halMm ?? 20) : 0);      // av som förval
+                      p.halPa ? (p.halMm ?? 20) : 0,       // båda av som förval
+                      !!p.delaEkv);
   }
 
   /* ── start ── */

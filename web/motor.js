@@ -95,23 +95,35 @@ function halMask(nodeUnit, rCore, S, halDiameter, ny = null, nx = null) {
   const nod = (ny !== null && nx !== null)
     ? (j, i) => nodeUnit(Math.max(0, Math.min(ny, j)), ((i % nx) + nx) % nx)
     : nodeUnit;
+  // d[2] <= 0: hålet öppnar sig BARA vid sydpolen. Pinnen ska sitta i den
+  // södra halvan; ett hål rakt igenom hade lämnat en synlig öppning mitt i
+  // nordpolen på den färdiga globen. Villkoret kan aldrig slå fel nära
+  // ekvatorn — där är avståndet till polaxeln hela radien, långt utanför a.
   const inneI = (j, i) => {
     const d = nod(j, i);
-    return !!d && Math.hypot(d[0], d[1]) * rCore * S < a;   // avstånd till polaxeln
+    return !!d && d[2] <= 0 && Math.hypot(d[0], d[1]) * rCore * S < a;
   };
   return (j, i) => inneI(j, i) || inneI(j, i + 1)
                 || inneI(j + 1, i) || inneI(j + 1, i + 1);
 }
 
 
-function byggSkal(ny, nx, nodeUnit, topR, rCore, S, inSolid, iHal = null) {
+function byggSkal(ny, nx, nodeUnit, topR, rCore, S, inSolid, iHal = null, halva = null) {
   const tris = [];
   const P = (j, i, r) => { const d = nodeUnit(j, i); return [d[0]*r*S, d[1]*r*S, d[2]*r*S]; };
   const tri = (a, b, c) => tris.push(a[0],a[1],a[2], b[0],b[1],b[2], c[0],c[1],c[2]);
   const kvad = (a, b, c, d) => { tri(a, b, c); tri(a, c, d); };
   // Hålet läggs ovanpå den vanliga masken: en cell som ligger i hålet räknas
   // som frånvarande, och väggbyggandet nedan reser då hålets vägg åt oss.
-  const inne = iHal ? ((j, i) => inSolid(j, i) && !iHal(j, i)) : inSolid;
+  // Ekvatorsnittet får exakt samma behandling: utesluts allt norr om raden
+  // ny/2 reser väggbyggaren snittytan själv. Ekvatorn ÄR en rutnätslinje
+  // (ny är jämnt), så ingen cell ligger på tvären över snittet och ytan blir
+  // plan per konstruktion — inget behöver klippas i efterhand.
+  const jEkv = ny / 2;
+  const iHalva = halva === "syd"  ? (j => j <  jEkv)
+               : halva === "nord" ? (j => j >= jEkv) : null;
+  const inne = (j, i) =>
+    inSolid(j, i) && !(iHal && iHal(j, i)) && !(iHalva && !iHalva(j));
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
     if (!inne(j, i)) continue;
     const t00=P(j,i,topR(j,i)), t01=P(j,i+1,topR(j,i+1)), t11=P(j+1,i+1,topR(j+1,i+1)), t10=P(j+1,i,topR(j+1,i));
@@ -230,7 +242,7 @@ function byggPlatoer(ny, nx, dirF, nyckel, radieAv, rCore, S, B = 2) {
   }
   return tris;
 }
-function byggKarna(ny, nx, rCore, S, halDiameter = 0) {   // solid kärnsfär
+function byggKarna(ny, nx, rCore, S, halDiameter = 0, halva = null, djupAndel = 0.5) {
   const tris = [];
   const P = (j, i) => { const latR=(j/ny*180-90)*Math.PI/180, lonR=(i/nx*360-180)*Math.PI/180;
     const d = stlDir(latR, lonR); return [d[0]*rCore*S, d[1]*rCore*S, d[2]*rCore*S]; };
@@ -254,17 +266,26 @@ function byggKarna(ny, nx, rCore, S, halDiameter = 0) {   // solid kärnsfär
   // att kanalen aldrig blir smalare än beställt, och de två ringarna binds
   // ihop av en rak cylindervägg. Vattentätt av konstruktion.
   const R = rCore * S, aH = halDiameter / 2.0;
-  let jMin = 0, jMax = ny;
-  if (aH > 0 && aH < R) {
+  const harHal = aH > 0 && aH < R;
+  const jEkv = ny / 2;
+  // Bara SÖDRA polkalotten tas bort — hålet mynnar inte i norr.
+  let jMin = 0;
+  if (harHal) {
     const latG = Math.acos(Math.min(1, aH / R)) * 180 / Math.PI;   // grader från ekvatorn
     jMin = Math.ceil((90 - latG) / 180 * ny);
-    jMax = ny - jMin;
-    if (jMax <= jMin) return tris;
   }
-  for (let j = jMin; j < jMax; j++) for (let i = 0; i < nx; i++) {
+  const jFran = halva === "nord" ? jEkv : jMin;
+  const jTill = halva === "syd"  ? jEkv : ny;
+  if (jTill <= jFran) return tris;
+  // Hålet finns i den södra halvan (genomgående) och som blindhål uppåt i den
+  // norra. Delas globen inte alls blir det en enda kanal från sydpolen och
+  // förbi centrum — precis vad en pinne behöver, utan att gå ut i norr.
+  const halSyd  = harHal && halva !== "nord";
+  const halNord = harHal && halva !== "syd" && djupAndel > 0;
+  for (let j = jFran; j < jTill; j++) for (let i = 0; i < nx; i++) {
     const a=P(j,i), b=P(j,i+1), c=P(j+1,i+1), e=P(j+1,i); tri(a,b,c); tri(a,c,e);
   }
-  if (aH > 0 && aH < R) {
+  if (harHal) {
     // Raden jMin snappades utåt, så den ligger en bit UTANFÖR hålets rand och
     // hålet skulle bli några procent för vitt. Fyll i mellanrummet med ett
     // band ned till den EXAKTA randlatituden, där radien per definition är aH.
@@ -281,27 +302,56 @@ function byggKarna(ny, nx, rCore, S, halDiameter = 0) {   // solid kärnsfär
     // en spricka längs hela sömmen.
     const ring = (i, z, r) => { const lon = ((i % nx)/nx*360-180)*Math.PI/180;
       return [Math.cos(lon)*r, Math.sin(lon)*r, z]; };
-    for (const [j, zr, upp] of [[jMin, -zH, true], [jMax, zH, false]]) {
-      for (let i = 0; i < nx; i++) {
-        // Sfärens randrad tas med P — inte med ring() — så att hörnen blir
-        // BITIDENTISKA med sfärens egna. cos(lon)·(cos(lat)·R) och
-        // (cos(lat)·cos(lon))·R är samma tal i matematiken men inte i
-        // flyttal, och en ulps skillnad räcker för att en exakt hopslagning
-        // ska se två hörn där det ska vara ett.
-        const A = P(j, i), B = P(j, i+1);
-        const C = ring(i+1, zr, aH), D = ring(i, zr, aH);
-        // Bandet måste traversera sfärens randkant åt MOTSATT håll mot
-        // sfären själv, annars ligger båda ytorna med samma kantriktning och
-        // meshen är inte sluten. Det gav 720 obalanserade kanter — en per
-        // longitudsteg och rand — helt oberoende av hålets storlek, vilket
-        // var ledtråden: strukturellt, inte numeriskt.
-        if (upp) kvad(B, A, D, C); else kvad(A, B, C, D);
+    if (halSyd) for (let i = 0; i < nx; i++) {
+      // Sfärens randrad tas med P — inte med ring() — så att hörnen blir
+      // BITIDENTISKA med sfärens egna. cos(lon)·(cos(lat)·R) och
+      // (cos(lat)·cos(lon))·R är samma tal i matematiken men inte i
+      // flyttal, och en ulps skillnad räcker för att en exakt hopslagning
+      // ska se två hörn där det ska vara ett.
+      const A = P(jMin, i), B = P(jMin, i+1);
+      const C = ring(i+1, -zH, aH), D = ring(i, -zH, aH);
+      // Bandet måste traversera sfärens randkant åt MOTSATT håll mot
+      // sfären själv, annars ligger båda ytorna med samma kantriktning och
+      // meshen är inte sluten. Det gav 720 obalanserade kanter — en per
+      // longitudsteg och rand — helt oberoende av hålets storlek, vilket
+      // var ledtråden: strukturellt, inte numeriskt.
+      kvad(B, A, D, C);
+    }
+    // Kanalen: från randringen vid sydpolen upp till zTopp. Delas globen går
+    // den södra delen till snittplanet z=0 och den norra vidare till djupet.
+    const V = (i, z) => ring(i, z, aH);
+    const zBotten = halSyd ? -zH : 0;
+    const zTopp   = halNord ? djupAndel * R : 0;
+    if (zTopp > zBotten) for (let i = 0; i < nx; i++)
+      kvad(V(i, zBotten), V(i, zTopp), V(i+1, zTopp), V(i+1, zBotten));
+    // Blindhålets tak. Normalen pekar NEDÅT, ut ur solidet och in i hålet.
+    if (halNord) {
+      const mitt = [0, 0, zTopp];
+      for (let i = 0; i < nx; i++) tri(V(i+1, zTopp), V(i, zTopp), mitt);
+    }
+  }
+  // Snittytan vid ekvatorn. Ringen tas från P(jEkv, ·) så att den delar hörn
+  // exakt med sfären; hålet lämnar en ring-formad yta i stället för en hel
+  // skiva. Normalen pekar bort från materialet: uppåt för den södra halvan
+  // (som ligger under snittet) och nedåt för den norra.
+  if (halva) {
+    const upp = halva === "syd";
+    // Ringen ska bara vara öppen om kanalen FAKTISKT når snittplanet. Med
+    // djupAndel = 0 borras den norra halvan inte alls, och en ring där hade
+    // lämnat ett hål i den plana ytan utan något bakom sig.
+    const oppet = upp ? halSyd : halNord;
+    const ringE = i => { const lon = ((i % nx)/nx*360-180)*Math.PI/180;
+      return [Math.cos(lon)*aH, Math.sin(lon)*aH, 0]; };
+    for (let i = 0; i < nx; i++) {
+      const A = P(jEkv, i), B = P(jEkv, i+1);
+      if (oppet) {
+        const C = ringE(i+1), D = ringE(i);
+        if (upp) kvad(A, B, C, D); else kvad(D, C, B, A);
+      } else {
+        const mitt = [0, 0, 0];
+        if (upp) tri(A, B, mitt); else tri(B, A, mitt);
       }
     }
-    // cylinderväggen mellan de två exakta randringarna, normalen inåt hålet
-    const V = (i, z) => ring(i, z, aH);
-    for (let i = 0; i < nx; i++)
-      kvad(V(i, -zH), V(i, zH), V(i+1, zH), V(i+1, -zH));
   }
   return tris;
 }
@@ -1276,7 +1326,7 @@ function smaOarMask(G, S, minMm) {
 }
 
 function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null,
-                           minOMm = 0, halPrint = 0) {
+                           minOMm = 0, halPrint = 0, delaEkvatorn = false) {
   const m = g.meta, G = lander.fin;
   if (!m.platta || !G) throw new Error("inte en platåglob");
   const S = 50, SPAN = m.vmax - m.vmin, gH = g.gainHojd;   // S: enhetsradie → 50 mm
@@ -1352,22 +1402,55 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
   // som ö-filtrets minOMm använder — de två måtten ska betyda samma sak.
   const halE = halPrint > 0 ? halPrint * 100.0 / 250.0 : 0;
   const iHal = halMask(dirF2, rCore, S, halE, fny2, fnx2);
-  const skal = villkor => byggPlatoer(fny2, fnx2, dirF2,
-    (j, i) => { if (iHal && iHal(j, i)) return -1;
-                const kk = kodAt(j, i); return kk >= 0 && villkor(rLand[kk]) ? kk : -1; },
-    k => rLand[k], rCore, S);
-  const overT = skal(r => r >= HAVSYTA);
-  const underT = skal(r => r < HAVSYTA);
-  const havT = byggPlatoer(fny2, fnx2, dirF2,
-    (j, i) => ((iHal && iHal(j, i)) || kodAt(j, i) >= 0) ? -1 : HAV,
-    () => HAVSYTA, rCore, S);
-  const karna = byggKarna(90, 180, rCore, S, halE);
+  // Ekvatorsnittet läggs på precis som hålet: cellerna på fel sida blir
+  // "ingen data" och platåbyggaren reser sin vanliga vägg mot dem. Snittytan
+  // uppstår alltså av konstruktion — inget klipps i efterhand, och ekvatorn
+  // är en rutnätslinje så ingen cell ligger på tvären över den.
+  const bygg = halva => {
+    const jEkv = fny2 / 2;
+    const iHalva = halva === "syd"  ? (j => j <  jEkv)
+                 : halva === "nord" ? (j => j >= jEkv) : null;
+    const ute = (j, i) => (iHal && iHal(j, i)) || (iHalva && !iHalva(j));
+    const skal = villkor => byggPlatoer(fny2, fnx2, dirF2,
+      (j, i) => { if (ute(j, i)) return -1;
+                  const kk = kodAt(j, i); return kk >= 0 && villkor(rLand[kk]) ? kk : -1; },
+      k => rLand[k], rCore, S);
+    return { over: skal(r => r >= HAVSYTA), under: skal(r => r < HAVSYTA),
+             hav: byggPlatoer(fny2, fnx2, dirF2,
+                    (j, i) => (ute(j, i) || kodAt(j, i) >= 0) ? -1 : HAV,
+                    () => HAVSYTA, rCore, S),
+             karna: byggKarna(90, 180, rCore, S, halE, halva) };
+  };
+  /* Södra halvan vänds upp och ned så att snittytan möter byggplattan.
+     (x, y, z) → (x, −y, −z) är ett halvt varv kring x-axeln — en EGENTLIG
+     rotation med determinant +1, så trianglarnas lindning står kvar. Att
+     spegla bara z hade vänt alla normaler inåt. Snittet ligger redan i z = 0,
+     så halvan står på plattan utan förflyttning. */
+  const vandSyd = t => {
+    const ut = new Array(t.length);
+    for (let k = 0; k < t.length; k += 3) { ut[k] = t[k]; ut[k+1] = -t[k+1]; ut[k+2] = -t[k+2]; }
+    return ut;
+  };
   const bas = `${basnamn}_${Math.round(arVarde)}`;
-  laddaNerBlob(stlBlob(karna), `${bas}_karna.stl`);
-  setTimeout(() => laddaNerBlob(stlBlob(overT), `${bas}_over.stl`), 200);
-  setTimeout(() => laddaNerBlob(stlBlob(havT), `${bas}_hav.stl`), 400);
-  if (underT.length) setTimeout(() => laddaNerBlob(stlBlob(underT), `${bas}_under.stl`), 600);
-  console.log(`platå-STL ${bas}: över ${overT.length/9|0}, under ${underT.length/9|0}, ` +
-              `hav ${havT.length/9|0} trianglar vid ${(360/fnx2).toFixed(3)}°`);
-  return true;
+  const halvor = delaEkvatorn ? ["syd", "nord"] : [null];
+  // En halva i taget: båda på en gång hade hållit åtta trianguppsättningar
+  // i minnet samtidigt, och en finmaskad platåglob ligger på ~800 000
+  // trianglar per skal.
+  let perHalva = 0;                        // "under" saknas för en del serier
+  const nasta = hi => {
+    if (hi >= halvor.length) return;
+    const h = halvor[hi], d = bygg(h), suffix = h ? "_" + h : "";
+    const vand = h === "syd" ? vandSyd : (t => t);
+    const delar = [[d.karna, "karna"], [d.over, "over"], [d.hav, "hav"]];
+    if (d.under.length) delar.push([d.under, "under"]);
+    perHalva = Math.max(perHalva, delar.length);
+    delar.forEach(([tris, namn], k) => setTimeout(
+      () => laddaNerBlob(stlBlob(vand(tris)), `${bas}_${namn}${suffix}.stl`), k * 250));
+    console.log(`platå-STL ${bas}${suffix}: över ${d.over.length/9|0}, ` +
+                `under ${d.under.length/9|0}, hav ${d.hav.length/9|0} trianglar ` +
+                `vid ${(360/fnx2).toFixed(3)}°`);
+    setTimeout(() => nasta(hi + 1), delar.length * 250 + 250);
+  };
+  nasta(0);                                // första halvan byggs synkront
+  return halvor.length * perHalva;
 }
