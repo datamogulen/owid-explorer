@@ -355,12 +355,19 @@
       `<label title="${T("takTitel")}"><span class="takTxt">${T("tak")}</span>
       <input type="range" class="pTak" min="0.05" max="1" step="0.01"
              value="${(p.glob.takNorm ?? 1).toFixed(2)}"></label>` +
+      // Relief och tak gäller det man SER; hålet och ö-filtret bara STL:en.
+      // Utan avdelaren läses de som visningsinställningar, och de allra flesta
+      // som öppnar panelen kommer aldrig att skriva ut någonting.
+      `<hr class="stlDel"><div class="avdrub">${T("stlrubrik")}</div>` +
+      `<label title="${T("halTitel")}"><span>${T("halPa")}</span>
+      <input type="checkbox" class="pHalPa"${p.halPa ? " checked" : ""}></label>` +
       // Måttet anges för den FÄRDIGA globen, inte för STL:ens egen skala.
       // STL:en är 100 mm i diameter men skrivs ut kring 250 — "2 mm" i
       // exportfilen hade betytt 5 mm på bordet, och det säger ingen något.
-      `<label title="${T("halTitel")}"><span>${T("halKort")}</span>
-      <input type="number" class="pHal" min="0" max="60" step="1"
-             value="${p.halMm ?? 20}" style="width:52px"></label>` +
+      `<label class="halRad${p.halPa ? "" : " avstangd"}" title="${T("halDiamTitel")}">
+      <span>${T("halDiam")}</span>
+      <input type="number" class="pHal" min="1" max="60" step="1"
+             value="${p.halMm ?? 20}" style="width:52px"${p.halPa ? "" : " disabled"}></label>` +
       `<label title="${T("minOTitel")}"><span>${T("minO")}</span>
       <select class="pMinO">${[0, 2, 4, 8].map(v =>
         `<option value="${v}"${v === (p.minOMm ?? 2) ? " selected" : ""}>` +
@@ -371,6 +378,12 @@
     d.querySelector(".pRelief").oninput = e => { p.glob.reliefMul = +e.target.value; };
     d.querySelector(".pMinO").onchange = e => { p.minOMm = +e.target.value; };
     d.querySelector(".pHal").onchange = e => { p.halMm = +e.target.value; };
+    d.querySelector(".pHalPa").onchange = e => {
+      p.halPa = e.target.checked;
+      const fal = d.querySelector(".pHal"), rad = d.querySelector(".halRad");
+      fal.disabled = !p.halPa;
+      rad.classList.toggle("avstangd", !p.halPa);
+    };
     {
       const takTxt = d.querySelector(".takTxt");
       const settTak = sl => {
@@ -1188,7 +1201,8 @@
     if (!p.glob) throw new Error("ingen glob");
     // p.minOMm är angivet för en 250 mm-glob; STL:en är 100 mm (S = 50).
     exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id,
-                      null, (p.minOMm ?? 2) * (100 / 250), p.halMm ?? 20);
+                      null, (p.minOMm ?? 2) * (100 / 250),
+                      p.halPa ? (p.halMm ?? 20) : 0);      // av som förval
   }
 
   /* ── start ── */

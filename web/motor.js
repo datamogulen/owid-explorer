@@ -83,12 +83,21 @@ function stlBlob(tris) {   // tris: PLATT array, 9 tal (x,y,z ×3) per triangel 
 
    En cell utesluts om NÅGON av dess fyra hörnnoder ligger innanför. Då blir
    hålet aldrig smalare än beställt, bara marginellt vidare. */
-function halMask(nodeUnit, rCore, S, halDiameter) {
+/* ny/nx är rutnätets cellantal. byggSkal:s väggtest frågar om GRANNCELLEN, så
+   masken får index ett steg utanför rutnätet och läser då en nod som inte
+   finns. Longituden måste wrappa — annars saknas hålets vägg i den cell som
+   ligger mot ±180°-sömmen — och latituden klampas: bortom polen finns ingen
+   nod, men polen själv ligger alltid i hålet. Utelämnas ny/nx antas nodeUnit
+   klara vilka index som helst (platåvägens dirF2 räknar fram dem på plats). */
+function halMask(nodeUnit, rCore, S, halDiameter, ny = null, nx = null) {
   if (!(halDiameter > 0)) return null;
   const a = halDiameter / 2.0;
+  const nod = (ny !== null && nx !== null)
+    ? (j, i) => nodeUnit(Math.max(0, Math.min(ny, j)), ((i % nx) + nx) % nx)
+    : nodeUnit;
   const inneI = (j, i) => {
-    const d = nodeUnit(j, i);
-    return Math.hypot(d[0], d[1]) * rCore * S < a;   // avstånd till polaxeln
+    const d = nod(j, i);
+    return !!d && Math.hypot(d[0], d[1]) * rCore * S < a;   // avstånd till polaxeln
   };
   return (j, i) => inneI(j, i) || inneI(j, i + 1)
                 || inneI(j + 1, i) || inneI(j + 1, i + 1);
@@ -266,13 +275,20 @@ function byggKarna(ny, nx, rCore, S, halDiameter = 0) {   // solid kärnsfär
     // bandet mötte inte sfären: 720 obalanserade kanter, en per longitudsteg.
     const latH = Math.acos(Math.min(1, aH / R));          // latitud från ekvatorn
     const zH = Math.sin(latH) * R;                        // randringens höjd
-    const ring = (i, z, r) => { const lon = (i/nx*360-180)*Math.PI/180;
+    // i % nx: sista varvet frågar efter ring(nx), som ska vara SAMMA punkt som
+    // ring(0). Utan modulo blev lon +180° i stället för −180°, och sin(π) är
+    // +1,2e-16 medan sin(−π) är −1,2e-16 — skilda hörn även i float32, alltså
+    // en spricka längs hela sömmen.
+    const ring = (i, z, r) => { const lon = ((i % nx)/nx*360-180)*Math.PI/180;
       return [Math.cos(lon)*r, Math.sin(lon)*r, z]; };
     for (const [j, zr, upp] of [[jMin, -zH, true], [jMax, zH, false]]) {
-      const d = stlDir((j/ny*180-90)*Math.PI/180, 0);
-      const rj = Math.hypot(d[0], d[1]) * R, zj = d[2] * R;
       for (let i = 0; i < nx; i++) {
-        const A = ring(i, zj, rj), B = ring(i+1, zj, rj);
+        // Sfärens randrad tas med P — inte med ring() — så att hörnen blir
+        // BITIDENTISKA med sfärens egna. cos(lon)·(cos(lat)·R) och
+        // (cos(lat)·cos(lon))·R är samma tal i matematiken men inte i
+        // flyttal, och en ulps skillnad räcker för att en exakt hopslagning
+        // ska se två hörn där det ska vara ett.
+        const A = P(j, i), B = P(j, i+1);
         const C = ring(i+1, zr, aH), D = ring(i, zr, aH);
         // Bandet måste traversera sfärens randkant åt MOTSATT håll mot
         // sfären själv, annars ligger båda ytorna med samma kantriktning och
@@ -1332,9 +1348,10 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
   // Pinnhålet läggs på som "ingen data". Platåbyggaren reser då sin vanliga
   // vägg mot det, precis som mot en landgräns — hålet uppstår av konstruktion,
   // utan boolean och utan efterbehandling. halPrint är måttet på den FÄRDIGA
-  // globen (~244 mm); exportfilen är 100 mm, därav omräkningen.
-  const halE = halPrint > 0 ? halPrint * 100.0 / 244.0 : 0;
-  const iHal = halMask(dirF2, rCore, S, halE);
+  // globen; exportfilen är 100 mm, därav omräkningen. 250 är samma referens
+  // som ö-filtrets minOMm använder — de två måtten ska betyda samma sak.
+  const halE = halPrint > 0 ? halPrint * 100.0 / 250.0 : 0;
+  const iHal = halMask(dirF2, rCore, S, halE, fny2, fnx2);
   const skal = villkor => byggPlatoer(fny2, fnx2, dirF2,
     (j, i) => { if (iHal && iHal(j, i)) return -1;
                 const kk = kodAt(j, i); return kk >= 0 && villkor(rLand[kk]) ? kk : -1; },

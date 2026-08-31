@@ -150,6 +150,12 @@
   .undPop .und-lank a { font-size: 12.5px; }
   .undPop .und-fot { border-top: 1px solid var(--linje); padding-top: 8px;
                      color: var(--svag); font-size: 11px; }
+  /* Avdelaren markerar var visningsinställningarna slutar och STL-exportens
+     egna börjar — hålet finns inte på skärmglobens, bara i filen. */
+  .globPop .stlDel { border: 0; border-top: 1px solid var(--linje); margin: 9px 0 6px; }
+  .globPop .avdrub { color: var(--svag); font-size: 10.5px; letter-spacing: .04em;
+                     text-transform: uppercase; margin: 0 0 3px; }
+  .globPop label.avstangd { opacity: .45; }
   .globPop .stlRad { margin: 9px 0 2px; }
   .globPop .stlBtn { background: var(--yta2); color: var(--text); border: 1px solid var(--linje);
                      border-radius: 5px; padding: 3px 11px; font-size: 13px; }
@@ -395,8 +401,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=51"></script>
-<script src="motor.js?v=48"></script>
-<script src="explorer.js?v=51"></script>
+<script src="i18n.js?v=53"></script>
+<script src="motor.js?v=53"></script>
+<script src="explorer.js?v=53"></script>
 </body>
 </html>
