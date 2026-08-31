@@ -358,6 +358,9 @@
       // Måttet anges för den FÄRDIGA globen, inte för STL:ens egen skala.
       // STL:en är 100 mm i diameter men skrivs ut kring 250 — "2 mm" i
       // exportfilen hade betytt 5 mm på bordet, och det säger ingen något.
+      `<label title="${T("halTitel")}"><span>${T("halKort")}</span>
+      <input type="number" class="pHal" min="0" max="60" step="1"
+             value="${p.halMm ?? 20}" style="width:52px"></label>` +
       `<label title="${T("minOTitel")}"><span>${T("minO")}</span>
       <select class="pMinO">${[0, 2, 4, 8].map(v =>
         `<option value="${v}"${v === (p.minOMm ?? 2) ? " selected" : ""}>` +
@@ -367,6 +370,7 @@
     pop.append(d);
     d.querySelector(".pRelief").oninput = e => { p.glob.reliefMul = +e.target.value; };
     d.querySelector(".pMinO").onchange = e => { p.minOMm = +e.target.value; };
+    d.querySelector(".pHal").onchange = e => { p.halMm = +e.target.value; };
     {
       const takTxt = d.querySelector(".takTxt");
       const settTak = sl => {
@@ -1184,7 +1188,7 @@
     if (!p.glob) throw new Error("ingen glob");
     // p.minOMm är angivet för en 250 mm-glob; STL:en är 100 mm (S = 50).
     exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id,
-                      null, (p.minOMm ?? 2) * (100 / 250));
+                      null, (p.minOMm ?? 2) * (100 / 250), p.halMm ?? 20);
   }
 
   /* ── start ── */

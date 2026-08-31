@@ -5,7 +5,7 @@
    finns, hur gränssnittet ser ut — bor i respektive sidas egen app-fil.
 
    Kräver att i18n.js laddats först: T(), lokal(), ENHETTEXT() och LANG. */
-const VERSION = "47";
+const VERSION = "48";
 /* Cache-bust bara över http(s) (webben). I appen laddas allt via file://
    där ?v= skulle bryta fil-URL:erna → tom sträng där. */
 const CB = (typeof location !== "undefined" && location.protocol === "file:") ? "" : "?v=" + VERSION;
@@ -32,8 +32,21 @@ function hamta(url, typ) {
 
 /* ── STL-export (3D-utskrift) ── */
 function stlDir(latR, lonR) {   // enhetsriktning för STL: polaxel = Z → nordpol +Z (upp),
-  const cl = Math.cos(latR);    // sydpol −Z (nedåt i slicern). Ren rotation → bevarad vridning.
-  return [cl * Math.cos(lonR), cl * Math.sin(lonR), Math.sin(latR)];
+  // sydpol −Z (nedåt i slicern). Ren rotation → bevarad vridning.
+  //
+  // Polerna och sömmen måste bli EXAKTA. cos(±90°) blir 6,1e−17 i flyttal,
+  // inte 0, så varje "polpunkt" fick sin egen mikroskopiska x och y beroende
+  // på longituden — hörnen blev unika i stället för delade, och meshen föll
+  // isär i hundratals lösa bitar som ingen boolesk operation ville röra.
+  // Samma sak vid ±180°, där sin skiljer sig i femtonde decimalen.
+  // globe_common.oblate_pt gör redan precis det här på Python-sidan.
+  const lat = latR * 180 / Math.PI;
+  if (lat >= 89.999999) return [0, 0, 1];
+  if (lat <= -89.999999) return [0, 0, -1];
+  let lon = lonR;
+  if (lon >= Math.PI) lon -= 2 * Math.PI;         // 180° → −180°, samma punkt
+  const cl = Math.cos(latR);
+  return [cl * Math.cos(lon), cl * Math.sin(lon), Math.sin(latR)];
 }
 function stlBlob(tris) {   // tris: PLATT array, 9 tal (x,y,z ×3) per triangel → binär STL
   const n = (tris.length / 9) | 0;
@@ -55,23 +68,53 @@ function stlBlob(tris) {   // tris: PLATT array, 9 tal (x,y,z ×3) per triangel 
    nodeUnit(j,i)=enhetsriktning för noden, topR(j,i)=toppradie, inSolid(j,i)=hör cellen
    till skalet (ska returnera false för j utanför [0,ny) och wrappa i i longitud, så
    vägg-granntesten funkar vid kanterna). Används för både grovt inland och fin kustremsa. */
-function byggSkal(ny, nx, nodeUnit, topR, rCore, S, inSolid) {
+/* ── Pinnhål vid polerna, borrat REDAN I EXPORTEN ──────────────────────────
+   Att skära hålet efteråt kräver en boolesk operation på en mesh som ofta
+   inte är en perfekt volym — det gick sönder tyst i fem fall av sex. Här
+   uppstår hålet i stället av konstruktion: cellerna innanför hålet utesluts
+   ur masken, och byggarna reser redan väggar mot allt som saknas. Ingen
+   boolean, inga öppna kanter, ingen efterbehandling.
+
+   En nod ligger innanför hålet om dess avstånd från polaxeln vid KÄRNRADIEN
+   är mindre än hålets radie: rCore·cos(lat) < a. Kärnradien är globens
+   smalaste punkt, så väljs tröskeln där blir kanalen minst Ø2a hela vägen —
+   skalens vägg lutar utåt och gör öppningen vidare längre upp, vilket
+   dessutom är en fördel när pinnen ska in.
+
+   En cell utesluts om NÅGON av dess fyra hörnnoder ligger innanför. Då blir
+   hålet aldrig smalare än beställt, bara marginellt vidare. */
+function halMask(nodeUnit, rCore, S, halDiameter) {
+  if (!(halDiameter > 0)) return null;
+  const a = halDiameter / 2.0;
+  const inneI = (j, i) => {
+    const d = nodeUnit(j, i);
+    return Math.hypot(d[0], d[1]) * rCore * S < a;   // avstånd till polaxeln
+  };
+  return (j, i) => inneI(j, i) || inneI(j, i + 1)
+                || inneI(j + 1, i) || inneI(j + 1, i + 1);
+}
+
+
+function byggSkal(ny, nx, nodeUnit, topR, rCore, S, inSolid, iHal = null) {
   const tris = [];
   const P = (j, i, r) => { const d = nodeUnit(j, i); return [d[0]*r*S, d[1]*r*S, d[2]*r*S]; };
   const tri = (a, b, c) => tris.push(a[0],a[1],a[2], b[0],b[1],b[2], c[0],c[1],c[2]);
   const kvad = (a, b, c, d) => { tri(a, b, c); tri(a, c, d); };
+  // Hålet läggs ovanpå den vanliga masken: en cell som ligger i hålet räknas
+  // som frånvarande, och väggbyggandet nedan reser då hålets vägg åt oss.
+  const inne = iHal ? ((j, i) => inSolid(j, i) && !iHal(j, i)) : inSolid;
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-    if (!inSolid(j, i)) continue;
+    if (!inne(j, i)) continue;
     const t00=P(j,i,topR(j,i)), t01=P(j,i+1,topR(j,i+1)), t11=P(j+1,i+1,topR(j+1,i+1)), t10=P(j+1,i,topR(j+1,i));
     const b00=P(j,i,rCore), b01=P(j,i+1,rCore), b11=P(j+1,i+1,rCore), b10=P(j+1,i,rCore);
     kvad(t00, t01, t11, t10);        // topp (utåt)
     kvad(b00, b10, b11, b01);        // botten vid kärnradien (inåt)
     // Väggarna lindas MOT topp- och bottenytan (t00→t10 där toppen går
     // t10→t00), annars pekar deras normaler inåt och kanterna blir obalanserade.
-    if (!inSolid(j, i-1)) kvad(t00, t10, b10, b00);   // väst-vägg
-    if (!inSolid(j, i+1)) kvad(t11, t01, b01, b11);   // öst-vägg
-    if (!inSolid(j-1, i)) kvad(t01, t00, b00, b01);   // syd-vägg (lägre j = lägre lat)
-    if (!inSolid(j+1, i)) kvad(t10, t11, b11, b10);   // nord-vägg
+    if (!inne(j, i-1)) kvad(t00, t10, b10, b00);   // väst-vägg
+    if (!inne(j, i+1)) kvad(t11, t01, b01, b11);   // öst-vägg
+    if (!inne(j-1, i)) kvad(t01, t00, b00, b01);   // syd-vägg (lägre j = lägre lat)
+    if (!inne(j+1, i)) kvad(t10, t11, b11, b10);   // nord-vägg
   }
   return tris;
 }
@@ -178,13 +221,71 @@ function byggPlatoer(ny, nx, dirF, nyckel, radieAv, rCore, S, B = 2) {
   }
   return tris;
 }
-function byggKarna(ny, nx, rCore, S) {   // solid kärnsfär (grovt rutnät), platt array
+function byggKarna(ny, nx, rCore, S, halDiameter = 0) {   // solid kärnsfär
   const tris = [];
   const P = (j, i) => { const latR=(j/ny*180-90)*Math.PI/180, lonR=(i/nx*360-180)*Math.PI/180;
     const d = stlDir(latR, lonR); return [d[0]*rCore*S, d[1]*rCore*S, d[2]*rCore*S]; };
-  const tri = (a, b, c) => tris.push(a[0],a[1],a[2], b[0],b[1],b[2], c[0],c[1],c[2]);
-  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+  const tri = (a, b, c) => {
+    // Vid polraderna kollapsar rutan: P(0,i) och P(0,i+1) är SAMMA punkt, så
+    // ena triangeln får noll area. Sådana trianglar hänger inte ihop med något
+    // — de blev 720 lösa slivrar i STL:en, meshen räknades som 721 kroppar med
+    // 722 öppna kanter, och varje boolesk operation vägrade med "Not all
+    // meshes are volumes". Polerna ska vara rena solfjädrar. Samma fix som
+    // globe_common.write_sphere fick på Python-sidan.
+    const ux = b[0]-a[0], uy = b[1]-a[1], uz = b[2]-a[2];
+    const vx = c[0]-a[0], vy = c[1]-a[1], vz = c[2]-a[2];
+    const nx_ = uy*vz - uz*vy, ny_ = uz*vx - ux*vz, nz_ = ux*vy - uy*vx;
+    if (nx_*nx_ + ny_*ny_ + nz_*nz_ < 1e-18) return;      // nollarea → hoppa över
+    tris.push(a[0],a[1],a[2], b[0],b[1],b[2], c[0],c[1],c[2]);
+  };
+  const kvad = (a, b, c, d) => { tri(a, b, c); tri(a, c, d); };
+
+  // Pinnhålet. Kärnan är en sfär med konstant radie, så hålets rand är en
+  // exakt latitud: rCore·cos(lat) = a. Raden snappas till rutnätet UTÅT så
+  // att kanalen aldrig blir smalare än beställt, och de två ringarna binds
+  // ihop av en rak cylindervägg. Vattentätt av konstruktion.
+  const R = rCore * S, aH = halDiameter / 2.0;
+  let jMin = 0, jMax = ny;
+  if (aH > 0 && aH < R) {
+    const latG = Math.acos(Math.min(1, aH / R)) * 180 / Math.PI;   // grader från ekvatorn
+    jMin = Math.ceil((90 - latG) / 180 * ny);
+    jMax = ny - jMin;
+    if (jMax <= jMin) return tris;
+  }
+  for (let j = jMin; j < jMax; j++) for (let i = 0; i < nx; i++) {
     const a=P(j,i), b=P(j,i+1), c=P(j+1,i+1), e=P(j+1,i); tri(a,b,c); tri(a,c,e);
+  }
+  if (aH > 0 && aH < R) {
+    // Raden jMin snappades utåt, så den ligger en bit UTANFÖR hålets rand och
+    // hålet skulle bli några procent för vitt. Fyll i mellanrummet med ett
+    // band ned till den EXAKTA randlatituden, där radien per definition är aH.
+    // Då blir kanalen precis den beställda diametern, och cylinderväggen möter
+    // sfären utan spricka eftersom båda utgår från samma ring.
+    // r_xy = R·cos(lat) = aH  →  lat = acos(aH/R), och ringens höjd är R·SIN(lat).
+    // Med cos här blev höjden aH i stället, alltså ringen på fel ställe, och
+    // bandet mötte inte sfären: 720 obalanserade kanter, en per longitudsteg.
+    const latH = Math.acos(Math.min(1, aH / R));          // latitud från ekvatorn
+    const zH = Math.sin(latH) * R;                        // randringens höjd
+    const ring = (i, z, r) => { const lon = (i/nx*360-180)*Math.PI/180;
+      return [Math.cos(lon)*r, Math.sin(lon)*r, z]; };
+    for (const [j, zr, upp] of [[jMin, -zH, true], [jMax, zH, false]]) {
+      const d = stlDir((j/ny*180-90)*Math.PI/180, 0);
+      const rj = Math.hypot(d[0], d[1]) * R, zj = d[2] * R;
+      for (let i = 0; i < nx; i++) {
+        const A = ring(i, zj, rj), B = ring(i+1, zj, rj);
+        const C = ring(i+1, zr, aH), D = ring(i, zr, aH);
+        // Bandet måste traversera sfärens randkant åt MOTSATT håll mot
+        // sfären själv, annars ligger båda ytorna med samma kantriktning och
+        // meshen är inte sluten. Det gav 720 obalanserade kanter — en per
+        // longitudsteg och rand — helt oberoende av hålets storlek, vilket
+        // var ledtråden: strukturellt, inte numeriskt.
+        if (upp) kvad(B, A, D, C); else kvad(A, B, C, D);
+      }
+    }
+    // cylinderväggen mellan de två exakta randringarna, normalen inåt hålet
+    const V = (i, z) => ring(i, z, aH);
+    for (let i = 0; i < nx; i++)
+      kvad(V(i, -zH), V(i, zH), V(i+1, zH), V(i+1, -zH));
   }
   return tris;
 }
@@ -1159,7 +1260,7 @@ function smaOarMask(G, S, minMm) {
 }
 
 function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null,
-                           minOMm = 0) {
+                           minOMm = 0, halPrint = 0) {
   const m = g.meta, G = lander.fin;
   if (!m.platta || !G) throw new Error("inte en platåglob");
   const S = 50, SPAN = m.vmax - m.vmin, gH = g.gainHojd;   // S: enhetsradie → 50 mm
@@ -1228,14 +1329,22 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
     return (kk !== 65535 && harData[kk]) ? kk : -1;
   };
   const HAV = 65534;                       // egen nyckel; negativa tal = hoppa över
+  // Pinnhålet läggs på som "ingen data". Platåbyggaren reser då sin vanliga
+  // vägg mot det, precis som mot en landgräns — hålet uppstår av konstruktion,
+  // utan boolean och utan efterbehandling. halPrint är måttet på den FÄRDIGA
+  // globen (~244 mm); exportfilen är 100 mm, därav omräkningen.
+  const halE = halPrint > 0 ? halPrint * 100.0 / 244.0 : 0;
+  const iHal = halMask(dirF2, rCore, S, halE);
   const skal = villkor => byggPlatoer(fny2, fnx2, dirF2,
-    (j, i) => { const kk = kodAt(j, i); return kk >= 0 && villkor(rLand[kk]) ? kk : -1; },
+    (j, i) => { if (iHal && iHal(j, i)) return -1;
+                const kk = kodAt(j, i); return kk >= 0 && villkor(rLand[kk]) ? kk : -1; },
     k => rLand[k], rCore, S);
   const overT = skal(r => r >= HAVSYTA);
   const underT = skal(r => r < HAVSYTA);
   const havT = byggPlatoer(fny2, fnx2, dirF2,
-    (j, i) => kodAt(j, i) >= 0 ? -1 : HAV, () => HAVSYTA, rCore, S);
-  const karna = byggKarna(90, 180, rCore, S);
+    (j, i) => ((iHal && iHal(j, i)) || kodAt(j, i) >= 0) ? -1 : HAV,
+    () => HAVSYTA, rCore, S);
+  const karna = byggKarna(90, 180, rCore, S, halE);
   const bas = `${basnamn}_${Math.round(arVarde)}`;
   laddaNerBlob(stlBlob(karna), `${bas}_karna.stl`);
   setTimeout(() => laddaNerBlob(stlBlob(overT), `${bas}_over.stl`), 200);
