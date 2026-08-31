@@ -359,6 +359,9 @@
       // Utan avdelaren läses de som visningsinställningar, och de allra flesta
       // som öppnar panelen kommer aldrig att skriva ut någonting.
       `<hr class="stlDel"><div class="avdrub">${T("stlrubrik")}</div>` +
+      `<label title="${T("storlekTitel")}"><span>${T("storlek")}</span>
+      <input type="number" class="pStorlek" min="20" max="600" step="1"
+             value="${p.storlekMm ?? 244}" style="width:52px"></label>` +
       `<label title="${T("delaTitel")}"><span>${T("dela")}</span>
       <input type="checkbox" class="pDela"${p.delaEkv ? " checked" : ""}></label>` +
       `<label title="${T("halTitel")}"><span>${T("halPa")}</span>
@@ -381,6 +384,7 @@
     d.querySelector(".pMinO").onchange = e => { p.minOMm = +e.target.value; };
     d.querySelector(".pHal").onchange = e => { p.halMm = +e.target.value; };
     d.querySelector(".pDela").onchange = e => { p.delaEkv = e.target.checked; };
+    d.querySelector(".pStorlek").onchange = e => { p.storlekMm = +e.target.value; };
     d.querySelector(".pHalPa").onchange = e => {
       p.halPa = e.target.checked;
       const fal = d.querySelector(".pHal"), rad = d.querySelector(".halRad");
@@ -1203,11 +1207,12 @@
   /* ── STL: samma motor som klimatgloberna, samma fyra filer ── */
   function exporteraSTL(p) {
     if (!p.glob) throw new Error("ingen glob");
-    // p.minOMm är angivet för en 250 mm-glob; STL:en är 100 mm (S = 50).
+    // Alla mått i millimeter på den FÄRDIGA globen; motorn räknar själv om
+    // dem till byggskala med utskriftsstorleken som enda referens.
     return exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id,
-                      null, (p.minOMm ?? 2) * (100 / 250),
+                      null, p.minOMm ?? 2,
                       p.halPa ? (p.halMm ?? 20) : 0,       // båda av som förval
-                      !!p.delaEkv);
+                      !!p.delaEkv, p.storlekMm ?? 244);
   }
 
   /* ── start ── */

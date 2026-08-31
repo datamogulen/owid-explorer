@@ -242,7 +242,12 @@ function byggPlatoer(ny, nx, dirF, nyckel, radieAv, rCore, S, B = 2) {
   }
   return tris;
 }
-function byggKarna(ny, nx, rCore, S, halDiameter = 0, halva = null, djupAndel = 0.5) {
+/* halva: null = hel kula, "syd" / "nord" = halvklot snittat vid ekvatorn.
+   djupAndel: hur långt in i den NORRA halvan pinnkanalen fortsätter, som andel
+   av kärnradien. FÖRVAL 0 — den norra halvan ska vara helt orörd; ett blindhål
+   där skulle bara vara ett passtift, och Björn vill inte ha något hål alls
+   norr om snittet. Parametern är kvar för den som ändå vill ha stiftet. */
+function byggKarna(ny, nx, rCore, S, halDiameter = 0, halva = null, djupAndel = 0) {
   const tris = [];
   const P = (j, i) => { const latR=(j/ny*180-90)*Math.PI/180, lonR=(i/nx*360-180)*Math.PI/180;
     const d = stlDir(latR, lonR); return [d[0]*rCore*S, d[1]*rCore*S, d[2]*rCore*S]; };
@@ -324,8 +329,12 @@ function byggKarna(ny, nx, rCore, S, halDiameter = 0, halva = null, djupAndel = 
     const zTopp   = halNord ? djupAndel * R : 0;
     if (zTopp > zBotten) for (let i = 0; i < nx; i++)
       kvad(V(i, zBotten), V(i, zTopp), V(i+1, zTopp), V(i+1, zBotten));
-    // Blindhålets tak. Normalen pekar NEDÅT, ut ur solidet och in i hålet.
-    if (halNord) {
+    // Kanalens tak, där den slutar INNE i materialet. Normalen pekar nedåt,
+    // ut ur solidet och in i hålet. Den södra halvan får inget tak — där
+    // mynnar kanalen i snittytan, som är en ring. Men en ODELAD glob måste ha
+    // det: kanalen slutar då mitt inne i kärnan, och utan lock vore meshen
+    // öppen. (Det var precis det som hände när blindhålet i norr togs bort.)
+    if ((halSyd || halNord) && halva !== "syd") {
       const mitt = [0, 0, zTopp];
       for (let i = 0; i < nx; i++) tri(V(i+1, zTopp), V(i, zTopp), mitt);
     }
@@ -1326,7 +1335,8 @@ function smaOarMask(G, S, minMm) {
 }
 
 function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null,
-                           minOMm = 0, halPrint = 0, delaEkvatorn = false) {
+                           minOMm = 0, halPrint = 0, delaEkvatorn = false,
+                           utskriftMm = 244) {
   const m = g.meta, G = lander.fin;
   if (!m.platta || !G) throw new Error("inte en platåglob");
   const S = 50, SPAN = m.vmax - m.vmin, gH = g.gainHojd;   // S: enhetsradie → 50 mm
@@ -1359,7 +1369,9 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
   const lag = g.arTillLager(arVis);
   const l0 = Math.floor(lag), l1 = Math.min(l0 + 1, m.ar.length - 1), fl = lag - l0;
   const rLand = new Float64Array(m.nland), harData = new Uint8Array(m.nland);
-  let minR = Infinity;
+  // maxR: högsta platån. Används bara för att kunna hoppa över rader nära
+  // polerna när den bredaste punkten söks längre ned.
+  let minR = Infinity, maxR = 1.0;
   for (let k = 0; k < m.nland; k++) {
     const a = m.varden[l0 * m.nland + k], b = m.varden[l1 * m.nland + k];
     if (!a && !b) continue;
@@ -1375,15 +1387,47 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
     if (skrovliga && skrovliga.has(k)) rr += (hash(k, k * 7) - 0.5) * SKROV;
     rLand[k] = rr;
     if (rr < minR) minR = rr;
+    if (rr > maxR) maxR = rr;
   }
   const HAVSYTA = 1.0;
   const rCore = Math.max(0.2, Math.min(minR, HAVSYTA) - 4 / S);   // tunnaste vägg ≥ 4 mm
+  // Utskriftsstorleken är den enda referensen: filen skrivs i den storleken,
+  // och både hålet och ö-filtret mäts i samma millimeter. Förut skrevs alltid
+  // en 100 mm-kula som man fick skala i slicern, medan måtten räknades mot en
+  // ANTAGEN slutstorlek — skalade man till något annat blev de fel utan att
+  // något sa till.
+  // Bredaste punkten VINKELRÄTT mot polaxeln: max(r·cos φ). Det är den som
+  // avgör fotavtrycket på plattan. Största RADIEN duger inte — en hög platå
+  // nära en pol gör globen hög, inte bred, och globen blev då mycket smalare
+  // än beställt. Havet ligger på HAVSYTA och når ekvatorn, så 1,0 är en
+  // garanterad undre gräns, vilket också låter polnära rader hoppas över.
+  // Uppslaget görs rått mot G.kod, inte via kodAt: ö-filtret behöver skalan
+  // som räknas ut här, och kodAt behöver ö-filtret. Att räkna med de små
+  // öarna kvar kan bara göra globen någon tiondels millimeter mindre.
+  // Cellen sträcker sig mellan nodrad j och j+1, och platån når HELA vägen ut
+  // till båda. Mäts bara vid rad j underskattas bredden för celler söder om
+  // ekvatorn, där j är den rad som ligger LÄNGST från den — och globen hade
+  // blivit bredare än beställt. Ta den nod som ligger närmast ekvatorn.
+  const cosRad = j => Math.abs(Math.cos((j / fny2 * 180 - 90) * Math.PI / 180));
+  let maxXY = HAVSYTA;
+  for (let j = 0; j < fny2; j++) {
+    const c = Math.max(cosRad(j), cosRad(j + 1));
+    if (c * maxR <= maxXY) continue;               // kan omöjligt slå rekordet
+    const rad = j * fnx2;
+    for (let i = 0; i < fnx2; i++) {
+      const kk = G.kod[rad + i];
+      if (kk === 65535 || !harData[kk]) continue;
+      const xy = rLand[kk] * c;
+      if (xy > maxXY) maxXY = xy;
+    }
+  }
+  const skala = (utskriftMm / 2) / (maxXY * S);    // byggenheter → mm på plattan
   // Öfiltret: körs en gång, före platåbygget, och släcker cellerna direkt i
   // uppslaget. Då försvinner de ur BÅDA skalen och ur havet på samma gång —
   // ett hål kvar i havet hade varit värre än ön.
   let smaSlack = null;
   if (minOMm > 0) {
-    const r = smaOarMask(G, S, minOMm);
+    const r = smaOarMask(G, S, minOMm / skala);
     smaSlack = r.slack;
     console.log(`öfilter: ${r.slackta} av ${r.oar} landytor under Ø${minOMm} mm `
               + `(${r.slacktaCeller} celler) utesluts ur utskriften`);
@@ -1398,9 +1442,8 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
   // Pinnhålet läggs på som "ingen data". Platåbyggaren reser då sin vanliga
   // vägg mot det, precis som mot en landgräns — hålet uppstår av konstruktion,
   // utan boolean och utan efterbehandling. halPrint är måttet på den FÄRDIGA
-  // globen; exportfilen är 100 mm, därav omräkningen. 250 är samma referens
-  // som ö-filtrets minOMm använder — de två måtten ska betyda samma sak.
-  const halE = halPrint > 0 ? halPrint * 100.0 / 250.0 : 0;
+  // globen, alltså i samma millimeter som utskriftMm.
+  const halE = halPrint > 0 ? halPrint / skala : 0;
   const iHal = halMask(dirF2, rCore, S, halE, fny2, fnx2);
   // Ekvatorsnittet läggs på precis som hålet: cellerna på fel sida blir
   // "ingen data" och platåbyggaren reser sin vanliga vägg mot dem. Snittytan
@@ -1426,9 +1469,9 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
      rotation med determinant +1, så trianglarnas lindning står kvar. Att
      spegla bara z hade vänt alla normaler inåt. Snittet ligger redan i z = 0,
      så halvan står på plattan utan förflyttning. */
-  const vandSyd = t => {
-    const ut = new Array(t.length);
-    for (let k = 0; k < t.length; k += 3) { ut[k] = t[k]; ut[k+1] = -t[k+1]; ut[k+2] = -t[k+2]; }
+  const formaDel = (t, vand) => {
+    const ut = new Array(t.length), s = skala, sy = vand ? -skala : skala;
+    for (let k = 0; k < t.length; k += 3) { ut[k] = t[k]*s; ut[k+1] = t[k+1]*sy; ut[k+2] = t[k+2]*sy; }
     return ut;
   };
   const bas = `${basnamn}_${Math.round(arVarde)}`;
@@ -1440,12 +1483,12 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
   const nasta = hi => {
     if (hi >= halvor.length) return;
     const h = halvor[hi], d = bygg(h), suffix = h ? "_" + h : "";
-    const vand = h === "syd" ? vandSyd : (t => t);
+    const vand = h === "syd";
     const delar = [[d.karna, "karna"], [d.over, "over"], [d.hav, "hav"]];
     if (d.under.length) delar.push([d.under, "under"]);
     perHalva = Math.max(perHalva, delar.length);
     delar.forEach(([tris, namn], k) => setTimeout(
-      () => laddaNerBlob(stlBlob(vand(tris)), `${bas}_${namn}${suffix}.stl`), k * 250));
+      () => laddaNerBlob(stlBlob(formaDel(tris, vand)), `${bas}_${namn}${suffix}.stl`), k * 250));
     console.log(`platå-STL ${bas}${suffix}: över ${d.over.length/9|0}, ` +
                 `under ${d.under.length/9|0}, hav ${d.hav.length/9|0} trianglar ` +
                 `vid ${(360/fnx2).toFixed(3)}°`);
