@@ -364,6 +364,8 @@
              value="${p.storlekMm ?? 244}" style="width:52px"></label>` +
       `<label title="${T("delaTitel")}"><span>${T("dela")}</span>
       <input type="checkbox" class="pDela"${p.delaEkv ? " checked" : ""}></label>` +
+      `<label title="${T("lockTitel")}"><span>${T("lockLager")}</span>
+      <input type="checkbox" class="pLock"${p.lockLager ? " checked" : ""}></label>` +
       `<label title="${T("halTitel")}"><span>${T("halPa")}</span>
       <input type="checkbox" class="pHalPa"${p.halPa ? " checked" : ""}></label>` +
       // Måttet anges för den FÄRDIGA globen, inte för STL:ens egen skala.
@@ -384,6 +386,7 @@
     d.querySelector(".pMinO").onchange = e => { p.minOMm = +e.target.value; };
     d.querySelector(".pHal").onchange = e => { p.halMm = +e.target.value; };
     d.querySelector(".pDela").onchange = e => { p.delaEkv = e.target.checked; };
+    d.querySelector(".pLock").onchange = e => { p.lockLager = e.target.checked; };
     d.querySelector(".pStorlek").onchange = e => { p.storlekMm = +e.target.value; };
     d.querySelector(".pHalPa").onchange = e => {
       p.halPa = e.target.checked;
@@ -1212,7 +1215,7 @@
     return exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id,
                       null, p.minOMm ?? 2,
                       p.halPa ? (p.halMm ?? 20) : 0,       // båda av som förval
-                      !!p.delaEkv, p.storlekMm ?? 244);
+                      !!p.delaEkv, p.storlekMm ?? 244, !!p.lockLager);
   }
 
   /* ── start ── */

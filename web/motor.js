@@ -1336,7 +1336,7 @@ function smaOarMask(G, S, minMm) {
 
 function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null,
                            minOMm = 0, halPrint = 0, delaEkvatorn = false,
-                           utskriftMm = 244) {
+                           utskriftMm = 244, lockLager = false) {
   const m = g.meta, G = lander.fin;
   if (!m.platta || !G) throw new Error("inte en platåglob");
   const S = 50, SPAN = m.vmax - m.vmin, gH = g.gainHojd;   // S: enhetsradie → 50 mm
@@ -1369,6 +1369,8 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
   const lag = g.arTillLager(arVis);
   const l0 = Math.floor(lag), l1 = Math.min(l0 + 1, m.ar.length - 1), fl = lag - l0;
   const rLand = new Float64Array(m.nland), harData = new Uint8Array(m.nland);
+  const kapadLand = new Uint8Array(m.nland);      // vilka länder taket sågat av
+  const TAKNIVA = g.takNorm ?? 1;                 // nivån där taket biter
   // maxR: högsta platån. Används bara för att kunna hoppa över rader nära
   // polerna när den bredaste punkten söks längre ned.
   let minR = Infinity, maxR = 1.0;
@@ -1380,9 +1382,13 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
     // Samma kapning som shadern, annars stämmer inte utskriften med skärmen —
     // och det är just för UTSKRIFTER taket behövs: utan det äter Island och
     // Qatar hela reliefen och alla andra länder blir en platt matta.
-    const dispH = Math.min(g.takNorm ?? 1,
-                  g.lin ? Math.min(Math.pow(10, (n - 1) * SPAN) * gH, 1)
-                        : Math.min(n, 1 - Math.log10(gH) / SPAN));
+    // TAKNIVA är den nivå där Math.min biter. Länder över den får ett eget
+    // topplager: en avsågad platå och en genuint hög yta ser annars
+    // likadana ut i handen.
+    const raH = g.lin ? Math.min(Math.pow(10, (n - 1) * SPAN) * gH, 1)
+                      : Math.min(n, 1 - Math.log10(gH) / SPAN);
+    if (raH > TAKNIVA * (1 + 1e-9)) kapadLand[k] = 1;
+    const dispH = Math.min(TAKNIVA, raH);
     let rr = 1 + (dispH - nollp) * relf;
     if (skrovliga && skrovliga.has(k)) rr += (hash(k, k * 7) - 0.5) * SKROV;
     rLand[k] = rr;
@@ -1421,7 +1427,31 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
       if (xy > maxXY) maxXY = xy;
     }
   }
-  const skala = (utskriftMm / 2) / (maxXY * S);    // byggenheter → mm på plattan
+  // Locket ligger OVANPÅ platån och sticker ut 1,2 mm utanför resten, så
+  // globen blev bredare än beställt (mätt: 152,34 mm av 150). Men bara DÄR
+  // locket finns: cosKap säger hur nära ekvatorn det kapade området når.
+  // Raden bryts vid första träff, och rader som inte kan flytta gränsen
+  // hoppas över helt.
+  const kapadNagot = kapadLand.some(x => x === 1);
+  const LOCK_MM = 1.2;
+  let cosKap = 0;
+  if (lockLager && kapadNagot) for (let j = 0; j < fny2; j++) {
+    const c = Math.max(cosRad(j), cosRad(j + 1));
+    if (c <= cosKap) continue;
+    const rad = j * fnx2;
+    for (let i = 0; i < fnx2; i++) {
+      const kk = G.kod[rad + i];
+      if (kk !== 65535 && harData[kk] && kapadLand[kk]) { cosKap = c; break; }
+    }
+  }
+  const plataR = 1 + (TAKNIVA - nollp) * relf;   // radien där platån ligger
+  const D2 = utskriftMm / 2;
+  // Skalan ska klara BÅDA: skalens bredd och lockets. Lockets halva bredd i
+  // färdiga mm är plataR·S·skala·cosKap + LOCK_MM·cosKap, så villkoret löser
+  // ut direkt — ingen cirkel trots att lockets tjocklek beror på skalan.
+  const skala = cosKap > 0
+    ? Math.min(D2 / (maxXY * S), (D2 - LOCK_MM * cosKap) / (plataR * cosKap * S))
+    : D2 / (maxXY * S);
   // Öfiltret: körs en gång, före platåbygget, och släcker cellerna direkt i
   // uppslaget. Då försvinner de ur BÅDA skalen och ur havet på samma gång —
   // ett hål kvar i havet hade varit värre än ön.
@@ -1444,6 +1474,7 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
   // utan boolean och utan efterbehandling. halPrint är måttet på den FÄRDIGA
   // globen, alltså i samma millimeter som utskriftMm.
   const halE = halPrint > 0 ? halPrint / skala : 0;
+  const lockT = LOCK_MM / skala / S;             // mm på färdig glob → enhetsradier
   const iHal = halMask(dirF2, rCore, S, halE, fny2, fnx2);
   // Ekvatorsnittet läggs på precis som hålet: cellerna på fel sida blir
   // "ingen data" och platåbyggaren reser sin vanliga vägg mot dem. Snittytan
@@ -1462,6 +1493,15 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
              hav: byggPlatoer(fny2, fnx2, dirF2,
                     (j, i) => (ute(j, i) || kodAt(j, i) >= 0) ? -1 : HAV,
                     () => HAVSYTA, rCore, S),
+             // Topplager på de länder taket sågat av — egen fil, egen färg.
+             // Botten en hårsmån ned i platån så att slicern unionerar.
+             lock: (lockLager && kapadNagot)
+               ? byggPlatoer(fny2, fnx2, dirF2,
+                   (j, i) => { if (ute(j, i)) return -1;
+                               const kk = kodAt(j, i);
+                               return (kk >= 0 && kapadLand[kk]) ? kk : -1; },
+                   () => plataR + lockT, plataR - 0.0002, S)
+               : [],
              karna: byggKarna(90, 180, rCore, S, halE, halva) };
   };
   /* Södra halvan vänds upp och ned så att snittytan möter byggplattan.
@@ -1474,7 +1514,9 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
     for (let k = 0; k < t.length; k += 3) { ut[k] = t[k]*s; ut[k+1] = t[k+1]*sy; ut[k+2] = t[k+2]*sy; }
     return ut;
   };
-  const bas = `${basnamn}_${Math.round(arVarde)}`;
+  // Storleken i filnamnet: då syns det direkt i ~/Downloads vad man fått,
+  // och filer för olika storlekar krockar inte med varandra.
+  const bas = `${basnamn}_${Math.round(arVarde)}_${Math.round(utskriftMm)}mm`;
   const halvor = delaEkvatorn ? ["syd", "nord"] : [null];
   // En halva i taget: båda på en gång hade hållit åtta trianguppsättningar
   // i minnet samtidigt, och en finmaskad platåglob ligger på ~800 000
@@ -1486,6 +1528,7 @@ function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null
     const vand = h === "syd";
     const delar = [[d.karna, "karna"], [d.over, "over"], [d.hav, "hav"]];
     if (d.under.length) delar.push([d.under, "under"]);
+    if (d.lock && d.lock.length) delar.push([d.lock, "lock"]);
     perHalva = Math.max(perHalva, delar.length);
     delar.forEach(([tris, namn], k) => setTimeout(
       () => laddaNerBlob(stlBlob(formaDel(tris, vand)), `${bas}_${namn}${suffix}.stl`), k * 250));
