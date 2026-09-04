@@ -220,6 +220,16 @@
     // och slog över till den sekventiella så fort höjden nollställdes.
     const ramp = "energi_div";
     p.glob = new Glob(canvas, meta, ramp, kust, true);
+    // Fyllningen gäller den serie som just laddats också, inte bara dem som
+    // låg framme när kryssrutan slogs på.
+    if (fyllPa() && meta.platta) {
+      if (!meta._fyllt && !meta._fyllForsokt) { meta._fyllForsokt = true; byggFyllning(meta); }
+      if (meta._fyllt) {
+        meta.landvarden = meta._fyllt.landvarden;
+        meta.varden = meta._fyllt.varden;
+        meta.est = meta._fyllt.est;
+      }
+    }
     p.glob.sattLandmask({ nx: lander.mesh.nx, ny: lander.mesh.ny, data: lander.mesh.andel });
     p.glob.nollMedel = nollSerie(meta, p.nollLage);
     // FÄRGEN mäts alltid mot årets världssnitt, oavsett var höjden har sin
@@ -669,8 +679,11 @@
       const varden = aktiva.map((q, ix) => {
         const mt = q.glob.meta, v = arLand ? landvarde(mt, k, arNu) : null;
         const namn = esc2(mt.titel.replace(/\s*\(\d{4}\)\s*$/, ""));
+        // Ett ifyllt värde MÅSTE synas som ifyllt, annars påstår rutan att
+        // siffran är landets egen.
+        const gissat = v && arLand && arUppskattat(mt, k, arNu);
         html += `<div class="post p${ix}" title="${namn}"><span class="pil">${pilar[ix] || ""}</span>` +
-                `<span class="tal">${v ? q.glob.fysisktVarde(v.n)
+                `<span class="tal">${v ? q.glob.fysisktVarde(v.n) + (gissat ? ` <i class="gissat">${T("uppskattat")}</i>` : "")
                   : (arLand ? T("ingenData2") : "–")}</span></div>`;
         return v;
       });
@@ -805,6 +818,105 @@
     if (PER_YTA.test(s)) return "yta";
     if (m.norm === "abs" && m.extensiv) return "sum";   // ton, dödsfall, dollar
     return null;                                        // index, betyg, °C, %
+  }
+  /* ── Världsdelsfyllning ─────────────────────────────────────────────────
+     Konsumtionsbaserade utsläpp saknas för större delen av Afrika, och ett
+     land utan värde ritas som hav. Kartan säger då "här finns ingenting"
+     när den borde säga "här vet vi inte" — två helt olika påståenden, och
+     det är det senare som gäller.
+
+     Luckan fylls med världsdelens värde, räknat ur de länder som FAKTISKT
+     har data. Vikten väljs av sortAv, samma funktion som avgör hur den
+     globala kvoten summeras:
+
+       per person / per km²  →  storleksvägt medel; landet ärver intensiteten
+       summa (ton, dollar)   →  intensiteten × landets EGEN storlek, annars
+                                hade Lesotho fått hela Afrikas utsläpp
+       index, betyg, °C      →  oviktat medel; det finns ingen storhet att
+                                väga med
+
+     Ifyllda länder listas i m.est och märks överallt de syns: "(uppskattat)"
+     i avläsningen och skrovlig yta i STL:en. Att gissa är i sin ordning så
+     länge gissningen är utmärkt som gissning. ── */
+  function viktFor(m, ar) {
+    const s = sortAv(m);
+    if (!s) return null;                                // index, betyg, °C
+    if (s === "yta") return lander.yta ? (k => lander.yta[k] || 0) : null;
+    if (!folkmangd) return null;                        // person och summa
+    const t = Math.round(ar) - folkmangd.ar0;
+    if (t < 0 || t > folkmangd.ar1 - folkmangd.ar0) return null;
+    return k => folkmangd.v[t * folkmangd.nland + k] || 0;
+  }
+  const MIN_KALLOR = 3;          // under tre länder är "världsdelens värde" en gissning om en gissning
+  function byggFyllning(m) {
+    if (!lander.kont || !m.landvarden || !m.nland) return false;
+    const NL = m.nland, NA = m.ar.length, SPAN = m.vmax - m.vmin;
+    const log = m.skala === "log10", NK = lander.kontNamn.length;
+    if (!(SPAN > 0)) return false;
+    const fys = ra => { const lv = m.vmin + (ra - 1) / 65534 * SPAN;
+                        return log ? Math.pow(10, lv) : lv; };
+    const till = tal => {
+      const lv = log ? Math.log10(Math.max(tal, 1e-300)) : tal;
+      const n = Math.max(0, Math.min(1, (lv - m.vmin) / SPAN));
+      return 1 + Math.round(n * 65534);
+    };
+    const sort = sortAv(m), summa = sort === "sum";
+    const raw = new Uint16Array(m.landvarden);
+    const est = new Uint8Array(NL * NA);
+    let antalEst = 0;
+    const sV = new Float64Array(NK), sW = new Float64Array(NK), sN = new Int32Array(NK);
+    for (let t2 = 0; t2 < NA; t2++) {
+      sV.fill(0); sW.fill(0); sN.fill(0);
+      const vikt = viktFor(m, m.ar[t2]);
+      const bas = t2 * NL;
+      for (let k = 0; k < NL; k++) {
+        const c = lander.kont[k];
+        if (c < 0) continue;
+        const ra = m.landvarden[bas + k];
+        if (!ra) continue;
+        const v = fys(ra), w = vikt ? vikt(k) : 1;
+        if (!(w > 0)) continue;
+        sV[c] += summa ? v : v * w;
+        sW[c] += w; sN[c]++;
+      }
+      for (let k = 0; k < NL; k++) {
+        const c = lander.kont[k];
+        if (c < 0 || m.landvarden[bas + k]) continue;
+        if (sN[c] < MIN_KALLOR || !(sW[c] > 0)) continue;
+        const w = vikt ? vikt(k) : 1;
+        const v = summa ? (sV[c] / sW[c]) * w : sV[c] / sW[c];
+        if (!isFinite(v)) continue;
+        raw[bas + k] = till(v);
+        est[bas + k] = 1; antalEst++;
+      }
+    }
+    if (!antalEst) return false;
+    const varden = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++)
+      varden[i] = raw[i] ? 1 + Math.round((raw[i] - 1) / 65534 * 254) : 0;
+    m._akta = { landvarden: m.landvarden, varden: m.varden };
+    m._fyllt = { landvarden: raw, varden, est };
+    return true;
+  }
+  const fyllPa = () => !!(document.getElementById("fyllkont") || {}).checked;
+  /* Byter värdetabell på ALLA laddade serier och laddar om texturen. */
+  function sattFyllning() {
+    const pa = fyllPa();
+    for (const p of paneler) {
+      const m = p.glob && p.glob.meta;
+      if (!m || !m.platta) continue;
+      if (pa && !m._fyllt && !m._fyllForsokt) { m._fyllForsokt = true; byggFyllning(m); }
+      const kalla = (pa && m._fyllt) ? m._fyllt : (m._akta || m);
+      m.landvarden = kalla.landvarden; m.varden = kalla.varden;
+      m.est = (pa && m._fyllt) ? m._fyllt.est : null;
+      p.glob.laddaOmVarden();
+    }
+  }
+  function arUppskattat(m, k, ar) {
+    if (!m.est) return false;
+    let t = -1, d = 1e9;
+    m.ar.forEach((a, i) => { const q = Math.abs(a - ar); if (q < d) { d = q; t = i; } });
+    return t >= 0 && d <= 3 && !!m.est[t * m.nland + k];
   }
   function vikterFor(ma, mb, ar) {
     const sa = sortAv(ma);
@@ -1202,6 +1314,7 @@
     b.textContent = T("kopierad");
     setTimeout(() => { b.textContent = "🔗"; }, 1600);
   };
+  $("#fyllkont").onchange = () => sattFyllning();
   $("#omknapp").onclick = () => $("#om").classList.add("open");
   $("#omStang").onclick = () => $("#om").classList.remove("open");
   $("#om").onclick = e => { if (e.target === $("#om")) $("#om").classList.remove("open"); };
@@ -1212,8 +1325,20 @@
     if (!p.glob) throw new Error("ingen glob");
     // Alla mått i millimeter på den FÄRDIGA globen; motorn räknar själv om
     // dem till byggskala med utskriftsstorleken som enda referens.
+    // Uppskattade länder får skrovlig yta i utskriften — man ska kunna känna
+    // med fingret att siffran inte är landets egen.
+    const m0 = p.glob.meta;
+    let skrov = null;
+    if (m0.est) {
+      let t0 = -1, d0 = 1e9;
+      m0.ar.forEach((a, i) => { const q = Math.abs(a - arNu); if (q < d0) { d0 = q; t0 = i; } });
+      if (t0 >= 0) {
+        skrov = new Set();
+        for (let k = 0; k < m0.nland; k++) if (m0.est[t0 * m0.nland + k]) skrov.add(k);
+      }
+    }
     return exporteraPlatoSTL(p.glob, lander, arNu, parseFloat(reliefEl.value), p.id,
-                      null, p.minOMm ?? 2,
+                      skrov, p.minOMm ?? 2,
                       p.halPa ? (p.halMm ?? 20) : 0,       // båda av som förval
                       !!p.delaEkv, p.storlekMm ?? 244, !!p.lockLager);
   }

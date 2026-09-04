@@ -811,6 +811,17 @@ class Glob {
       gl.texParameteri(gl.TEXTURE_2D, q, gl.CLAMP_TO_EDGE);
   }
 
+  /* Värdetabellen har bytts (världsdelsfyllning på eller av). Bara texturen
+     behöver om — geometri och landkoder är desamma. */
+  laddaOmVarden() {
+    if (!this.meta.platta || !this.vardeTex) return;
+    const gl = this.gl, m = this.meta;
+    gl.bindTexture(gl.TEXTURE_2D, this.vardeTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, m.nland, m.ar.length, 0,
+                  gl.RED, gl.UNSIGNED_BYTE, m.varden);
+    this._stat = null;                    // statistiken gällde de gamla värdena
+  }
+
   _byggMesh(ny, nx) {
     const gl = this.gl;
     const uv = [], idx = [];

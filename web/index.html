@@ -156,6 +156,10 @@
   .globPop .avdrub { color: var(--svag); font-size: 10.5px; letter-spacing: .04em;
                      text-transform: uppercase; margin: 0 0 3px; }
   .globPop label.avstangd { opacity: .45; }
+  /* Ett ifyllt värde ska aldrig kunna läsas som landets eget. */
+  .gissat { font-style: normal; font-size: 10.5px; color: var(--svag);
+            border: 1px solid var(--linje); border-radius: 4px;
+            padding: 0 3px; margin-left: 5px; vertical-align: 1px; }
   .globPop .stlRad { margin: 9px 0 2px; }
   .globPop .stlBtn { background: var(--yta2); color: var(--text); border: 1px solid var(--linje);
                      border-radius: 5px; padding: 3px 11px; font-size: 13px; }
@@ -363,6 +367,8 @@
       <input type="range" id="relief" min="0.45" max="2.0" step="0.05" value="0.9" style="width:110px"></label>
     <label><span data-i18n="autorotation">autorotation</span>
       <input type="checkbox" id="rotera"></label>
+    <label title="Länder utan egen siffra får sin världsdels värde, räknat ur de länder som faktiskt har data. Ifyllda länder märks med (uppskattat) i avläsningen och får skrovlig yta i STL-exporten. Utan detta ritas ett land utan data som hav — kartan säger då ”här finns ingenting” när den borde säga ”här vet vi inte”."><span data-i18n="fyllkont">fyll luckor med världsdelen</span>
+      <input type="checkbox" id="fyllkont"></label>
     <hr>
     <label><span data-i18n="bakgrund">Bakgrund</span> <select id="temaval">
       <option value="beige" data-i18n="temaBeige">beige</option>
@@ -401,8 +407,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=60"></script>
-<script src="motor.js?v=60"></script>
-<script src="explorer.js?v=60"></script>
+<script src="i18n.js?v=63"></script>
+<script src="motor.js?v=63"></script>
+<script src="explorer.js?v=63"></script>
 </body>
 </html>
