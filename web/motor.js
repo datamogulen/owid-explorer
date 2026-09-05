@@ -1308,7 +1308,6 @@ function smaOarMask(G, S, minMm) {
   const sedd = new Uint8Array(N);
   const slack = new Uint8Array(N);          // 1 = för liten, uteslut ur exporten
   const stack = new Int32Array(N);          // arbetsstack
-  const komp = new Int32Array(N);           // cellerna i den komponent som byggs
   // Cellens area på enhetssfären beror bara på raden; × S² ger mm².
   const radArea = new Float64Array(ny), dlon = 2 * Math.PI / nx;
   for (let j = 0; j < ny; j++) {
@@ -1316,15 +1315,27 @@ function smaOarMask(G, S, minMm) {
     radArea[j] = dlon * (Math.sin(b) - Math.sin(a)) * S * S;
   }
   const minArea = Math.PI * (minMm / 2) * (minMm / 2);
-  let oar = 0, slackta = 0, slacktaCeller = 0;
+  /* Komponenterna samlas först och avgörs sedan, för regeln behöver veta
+     vilken som är landets STÖRSTA. Ett lands huvuddel stryks aldrig, hur
+     liten den än är på utskriften. Filtret är till för öar som knäcks —
+     inte för länder. Tröskeln mäts i millimeter på den färdiga globen, och
+     vid 65 mm motsvarar 2 mm ungefär 120 000 km²: hela Danmark, Baltikum,
+     Benelux, Schweiz, Österrike, Tjeckien, Ungern, Portugal och Irland
+     försvann ur utskriften, medan skärmen visade dem. En mikrostat som blir
+     smalare än dysan faller ändå bort i slicern, utan att någon behöver
+     bestämma det här. */
+  const komps = [];                          // {k, area, fran, antal}
+  const alla = new Int32Array(N);            // cellindex, komponent efter komponent
+  let fyllt = 0;
   for (let start = 0; start < N; start++) {
     if (sedd[start] || kod[start] === 65535) continue;
     const k = kod[start];
     let sp = 0, nk = 0, area = 0;
+    const fran = fyllt;
     stack[sp++] = start; sedd[start] = 1;
     while (sp > 0) {
       const c = stack[--sp];
-      komp[nk++] = c;
+      alla[fyllt++] = c; nk++;
       const j = (c / nx) | 0, i = c - j * nx;
       area += radArea[j];
       const g0 = j > 0 ? c - nx : -1;
@@ -1336,13 +1347,20 @@ function smaOarMask(G, S, minMm) {
         sedd[gi] = 1; stack[sp++] = gi;
       }
     }
-    oar++;
-    if (area < minArea) {
-      slackta++; slacktaCeller += nk;
-      for (let t = 0; t < nk; t++) slack[komp[t]] = 1;
-    }
+    komps.push({ k, area, fran, antal: nk });
   }
-  return { slack, oar, slackta, slacktaCeller };
+  const storst = new Map();                  // land → index i komps
+  komps.forEach((q, ix) => {
+    const s = storst.get(q.k);
+    if (s === undefined || komps[s].area < q.area) storst.set(q.k, ix);
+  });
+  let slackta = 0, slacktaCeller = 0;
+  komps.forEach((q, ix) => {
+    if (q.area >= minArea || storst.get(q.k) === ix) return;
+    slackta++; slacktaCeller += q.antal;
+    for (let t = q.fran; t < q.fran + q.antal; t++) slack[alla[t]] = 1;
+  });
+  return { slack, oar: komps.length, slackta, slacktaCeller };
 }
 
 function exporteraPlatoSTL(g, lander, arVarde, relief, basnamn, skrovliga = null,
