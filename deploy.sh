@@ -1,44 +1,30 @@
-#!/usr/bin/env bash
-# deploy.sh — lägger upp OWID-utforskaren på hedin.it/owid-explorer/.
-#
-#   bash deploy.sh          kod + katalog + serier + landgrid
-#   bash deploy.sh --torr   visa vad som skulle hända, ladda inte upp
-#
-# hedin.it är ett cPanel-konto utan shell, så lftp:s SFTP-spegling används —
-# samma väg som resten av hedin.it. Nyckeln (~/.ssh/hedin_deploy) lämnar aldrig
-# maskinen. --delete körs ALDRIG mot public_html: där ligger trettio andra
-# projekt. Speglingen är scopad till owid-explorer/ och dess underträd.
-
+#!/bin/bash
+# deploy.sh — laddar upp BARA ändrade kodfiler/bilder till hedin.it/owid-explorer/
+# (lftp put per fil över SFTP; aldrig mirror -R --delete, aldrig datamappar).
+# Kör från repots rot: ./deploy.sh   — verifierar efteråt med cmp mot live.
 set -euo pipefail
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WEB="$HERE/web"
-KEY="$HOME/.ssh/hedin_deploy"
-HOST="hedin.it"
-USER="bjornh"
-FJARR="public_html/owid-explorer"
-
-TORR=""
-[[ "${1:-}" == "--torr" || "${1:-}" == "--dry-run" ]] && TORR="--dry-run"
-
-command -v lftp >/dev/null || { echo "lftp saknas: brew install lftp"; exit 1; }
-[[ -f "$KEY" ]] || { echo "saknar deploy-nyckel $KEY"; exit 1; }
-[[ -d "$WEB/data/serier" ]] || { echo "kör export_explorer.py först"; exit 1; }
-
-skript="set sftp:connect-program \"ssh -a -x -i $KEY -o StrictHostKeyChecking=accept-new\";
-open sftp://$USER@$HOST;
-mkdir -p $FJARR;
-lcd $WEB;
-cd $FJARR;
-mirror -R $TORR --only-newer --parallel=4 --exclude-glob .DS_Store . .;
-bye"
-
-echo "→ $USER@$HOST:$FJARR ${TORR:+(TORRKÖRNING)}"
-# cPanel nekar chmod över SFTP. Filerna går upp, men lftp returnerar ändå 1 —
-# och med set -e dog skriptet tyst före kvittensen, som om deployen misslyckats.
-# Sortera bort chmod-bruset och avgör på vad som faktiskt blev fel.
-utdata="$(lftp -c "$skript" 2>&1 | grep -viE "^chmod|GetPass|^mkdir" || true)"
-echo "$utdata" | tail -15
-if echo "$utdata" | grep -qiE "fatal|permission denied|no such file|login failed"; then
-  echo "✗ deployen gick inte igenom"; exit 1
-fi
-echo "✓ klart"
+cd "$(dirname "$0")"
+URLDIR="owid-explorer"
+WEBROT="web"     # lokal webbrot relativt repot
+FILES=(
+  "index.html"
+  "i18n.js"
+  "explorer.js"
+)
+SFTP='set sftp:connect-program "ssh -a -x -i /Users/bjornh/.ssh/hedin_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o BatchMode=yes"; open -u bjornh, sftp://hedin.it:22'
+CMDS="$SFTP"
+for f in "${FILES[@]}"; do
+  d=$(dirname "$f")
+  if [ "$d" = "." ]; then mal="public_html/$URLDIR"; else mal="public_html/$URLDIR/$d"; fi
+  CMDS="$CMDS; mkdir -p -f $mal; put -O $mal $WEBROT/$f"
+done
+lftp -c "$CMDS"
+fel=0
+for f in "${FILES[@]}"; do
+  if cmp -s <(curl -s "https://hedin.it/$URLDIR/$f?nocache=$RANDOM") "$WEBROT/$f"; then
+    echo "OK   $f"
+  else
+    echo "FEL  $f skiljer sig från live"; fel=1
+  fi
+done
+exit $fel

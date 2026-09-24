@@ -46,3 +46,8 @@ IHME:s sjukdomsbördedata (causes-of-death 98, burden-of-disease 44). De står i
 - Synkroniserad hovermarkör mellan de två globerna (finns i Klimatgloberna).
 - Ämnesnamnen visas som OWID:s slugs (“co2 and greenhouse gas emissions”);
   kunde snyggas till.
+
+## Språk och deploy (2026-09-24)
+- sv/en/ja i `web/i18n.js` (tre flaggor, `?lang=` före sparat `owidx_sprak`). Exportens svenska
+  regel-/medelvärdestexter i seriefilerna översätts fras för fras vid visning (`DATATEXT`).
+- `./deploy.sh` laddar upp bara ändrade kodfiler (put per fil + cmp mot live). Kör aldrig utan Björns ja.

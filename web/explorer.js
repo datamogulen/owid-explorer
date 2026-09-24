@@ -271,7 +271,7 @@
       (meta.beskr ? `<p class="und-beskr"><span class="und-etikett">${T("owidOm")}</span>
         ${esc(meta.beskr)}</p>` : "") +
       `<p class="und-meta"><b>${esc(meta.enhet || "–")}</b><br>${esc(meta.kalla || "")}</p>` +
-      `<p class="und-meta">${esc(meta.regel)}<br>${esc(meta.medelMetod)}</p>` +
+      `<p class="und-meta">${esc(DATATEXT(meta.regel))}<br>${esc(DATATEXT(meta.medelMetod))}</p>` +
       `<p class="und-meta"><span class="und-etikett">${T("vadArMedel")}</span>
         ${esc(T("vadArMedelText"))}</p>` +
       `<p class="und-lank">` +
@@ -280,8 +280,8 @@
       `</p><p class="und-fot">${T("undersokFot")}</p>`;
     el.querySelector(".regel").innerHTML =
       `${meta.enhet ? `<b>${meta.enhet}</b> · ` : ""}${meta.kalla || ""}` +
-      `<br>${meta.regel.replace(/, höjd från 0[^·]*/, "")}` +
-      `<br>${T("nollEtikett")} = ${nollText(p)} · ${T("fargMot")} · ${meta.medelMetod}`;
+      `<br>${DATATEXT(meta.regel.replace(/, höjd från 0[^·]*/, ""))}` +
+      `<br>${T("nollEtikett")} = ${nollText(p)} · ${T("fargMot")} · ${DATATEXT(meta.medelMetod)}`;
     byggReglage(p);
     byggKnappar(p);
     sattLogflagga(p);
@@ -1403,6 +1403,7 @@
     document.documentElement.lang = LANG;
     document.title = T("rubrik");
     document.querySelectorAll("[data-i18n]").forEach(e => { e.textContent = T(e.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-title]").forEach(e => { e.title = T(e.dataset.i18nTitle); });
     spela.textContent = spelar ? T("paus") : T("spela");
     [...fart.options].forEach(o => { o.text = o.value + " " + T("arPerS"); });
     const vt = T("vyer") || {};
@@ -1415,7 +1416,13 @@
     }
   }
   for (const fl of document.querySelectorAll(".flagga"))
-    fl.onclick = () => { sattSprak(fl.dataset.sprak); location.reload(); };
+    fl.onclick = () => {
+      sattSprak(fl.dataset.sprak);
+      // ?lang= i adressen skulle annars vinna över valet vid omladdningen
+      const u = new URL(location.href);
+      if (u.searchParams.has("lang")) { u.searchParams.delete("lang"); location.replace(u.href); }
+      else location.reload();
+    };
 
   /* ── loop ── */
   let bredd = "";
