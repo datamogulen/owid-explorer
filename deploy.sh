@@ -10,6 +10,7 @@ FILES=(
   "index.html"
   "i18n.js"
   "explorer.js"
+  "motor.js"
 )
 SFTP='set sftp:connect-program "ssh -a -x -i /Users/bjornh/.ssh/hedin_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o BatchMode=yes"; open -u bjornh, sftp://hedin.it:22'
 CMDS="$SFTP"

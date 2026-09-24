@@ -485,7 +485,7 @@ function rotXY(yaw, pitch) {
 
 /* ── Enhetshjälp ── */
 const R_JORD = 6371000, SEK_PER_AR = 31556952;      // m, s/år
-function lokal() { return LANG === "sv" ? "sv-SE" : "en-US"; }
+function lokal() { return LANG === "sv" ? "sv-SE" : LANG === "ja" ? "ja-JP" : "en-US"; }
 function cellArea1grad(latDeg) {                     // m² för en 1°×1°-cell vid latituden
   const rad = Math.PI / 180;
   return R_JORD * R_JORD * rad *
