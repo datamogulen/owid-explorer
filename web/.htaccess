@@ -5,6 +5,13 @@
 # Samma läxa som rainmap och climate-globes.
 #
 # Katalogen och serierna byts bara vid omexport och får cachas länge.
+# Gränsgriden är stora men nästan tomma (lander_fin.bin 13 MB → 91 kB gzip):
+# utan komprimering tog mobilstarten ~24 MB.
+<IfModule mod_deflate.c>
+  <FilesMatch "\.(bin|json|js|css|html)$">
+    SetOutputFilter DEFLATE
+  </FilesMatch>
+</IfModule>
 <IfModule mod_headers.c>
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache, must-revalidate"

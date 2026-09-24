@@ -26,36 +26,38 @@
     arktis:   { lat: 78, lon: 10, zoom: 3.4 },
   };
 
-  let arNu = 2020, arValt = false, spelar = false, yaw = 0.6, pitch = 0.25, senast = 0, dras = null;
+  // start mot Europa/Afrika: rika och fattiga länder i samma bild
+  let arNu = 2020, arValt = false, spelar = false, yaw = -0.17, pitch = 0.3, senast = 0, dras = null;
 
   /* ── grunddata: gränsgrid + katalog. Laddas en gång, delas av alla serier ── */
   let lander = null, katalog = null, kust = null, folkmangd = null;
   const status = t => { const e = $("#status"); if (e) e.textContent = t; };
   try {
     status(T("laddar"));
-    const lj = await hamta(`data/lander.json${CB}`, "json");
-    const lb = await hamta(`data/lander.bin${CB}`, "arraybuffer");
+    // allt hämtas PARALLELLT — i följd tog det flera sekunder på mobilnät
+    const valfri = pr => pr.catch(() => null);
+    const [lj, lb, fb, fa, mb, ma, kat, bj, bb, ku] = await Promise.all([
+      hamta(`data/lander.json${CB}`, "json"), hamta(`data/lander.bin${CB}`, "arraybuffer"),
+      hamta(`data/lander_fin.bin${CB}`, "arraybuffer"), hamta(`data/landandel_fin.bin${CB}`, "arraybuffer"),
+      valfri(hamta(`data/lander_mesh.bin${CB}`, "arraybuffer")), valfri(hamta(`data/landandel_mesh.bin${CB}`, "arraybuffer")),
+      hamta(`data/katalog.json${CB}`, "json"),
+      valfri(hamta(`data/befolkning.json${CB}`, "json")), valfri(hamta(`data/befolkning.bin${CB}`, "arraybuffer")),
+      valfri(hamta(`data/kust.bin${CB}`, "arraybuffer")),
+    ]);
     lander = Object.assign({}, lj, { kod: new Uint16Array(lb) });
-    const fb = await hamta(`data/lander_fin.bin${CB}`, "arraybuffer");
-    const fa = await hamta(`data/landandel_fin.bin${CB}`, "arraybuffer");
     const nc = fb.byteLength / 2, fnx = Math.round(Math.sqrt(2 * nc));
     lander.fin = { nx: fnx, ny: Math.round(nc / fnx),
                    kod: new Uint16Array(fb), andel: new Uint8Array(fa) };
     lander.mesh = lander.fin;
-    try {   // separat, grövre grid för GEOMETRIN — färgen följer det fina
-      const mb = await hamta(`data/lander_mesh.bin${CB}`, "arraybuffer");
-      const ma = await hamta(`data/landandel_mesh.bin${CB}`, "arraybuffer");
+    if (mb && ma) {   // separat, grövre grid för GEOMETRIN — färgen följer det fina
       const mc = mb.byteLength / 2, mnx = Math.round(Math.sqrt(2 * mc));
       lander.mesh = { nx: mnx, ny: Math.round(mc / mnx),
                       kod: new Uint16Array(mb), andel: new Uint8Array(ma) };
-    } catch (e) { /* samma grid för geometri och färg */ }
-    katalog = await hamta(`data/katalog.json${CB}`, "json");
-    try {   // behövs för den GLOBALA kvoten: per-capita-tal går inte att summera
-      const bj = await hamta(`data/befolkning.json${CB}`, "json");
-      const bb = await hamta(`data/befolkning.bin${CB}`, "arraybuffer");
-      folkmangd = Object.assign({}, bj, { v: new Float32Array(bb) });
-    } catch (e) { folkmangd = null; }
-    try { kust = await hamta(`data/kust.bin${CB}`, "arraybuffer"); } catch (e) { kust = null; }
+    }
+    katalog = kat;
+    // behövs för den GLOBALA kvoten: per-capita-tal går inte att summera
+    folkmangd = bj && bb ? Object.assign({}, bj, { v: new Float32Array(bb) }) : null;
+    kust = ku;
   } catch (e) {
     status("Kunde inte ladda grunddata: " + e.message);
     return;
@@ -1351,21 +1353,32 @@
   behallare.insertBefore(mitt, B.el);        // mitt emellan globerna
   vila();
   const hash = new URLSearchParams(location.hash.slice(1));
-  let start = [["life-expectancy", null, null], ["gdp-per-capita-worldbank", null, null]];
+  // Startparet: rikedom mot utsläpp per person — sambandskortet mellan globerna
+  // visar direkt hur tätt de hänger ihop. (Gamla standarden
+  // gdp-per-capita-worldbank försvann ur katalogen vid en omexport, och då
+  // stod högra globen tom.)
+  const START_PAR = ["gdp-per-capita-worldbank-constant-usd", "annual-co2-emissions-per-country__capita"];
+  const START_RESERV = ["life-expectancy", "gdp-per-capita-penn-world-table"];
+  let start = START_PAR.map(id => [id, null, null]);
   if (hash.get("s")) {
     const bitar = decodeURIComponent(hash.get("s")).split(",").filter(Boolean)
       .map(b => b.split("~"));
     if (bitar.length) start = bitar;
   }
-  if (hash.get("ar")) { arNu = +hash.get("ar"); arValt = true; }
+  const arFranLank = !!hash.get("ar");
+  if (arFranLank) { arNu = +hash.get("ar"); arValt = true; }
   if (hash.get("fav")) {          // favoriter från en delad länk läggs till
     decodeURIComponent(hash.get("fav")).split(",").filter(Boolean).forEach(x => favoriter.add(x));
     sparaFav();
   }
   for (let i = 0; i < Math.min(2, start.length); i++) {
-    const [id, sk, no] = start[i];
+    let [id, sk, no] = start[i];
     const p = paneler[i];
-    if (!serieAv[id]) continue;
+    if (!serieAv[id]) {            // finns inte (längre) → reserv, så båda globerna fylls
+      id = [START_PAR[i], START_RESERV[i]].find(x => serieAv[x] && !start.some(s => s[0] === x));
+      sk = no = null;
+      if (!id) continue;
+    }
     p.skala = sk && sk !== "null" ? sk : null;
     p.nollLage = no && no !== "null" ? no : null;
     await visa(p, id);
@@ -1375,6 +1388,13 @@
     const b = katalog.indikatorer.slice().sort((x, y) => y.n - x.n);
     if (b[0]) await visa(A, b[0].id);
     if (b[1]) await visa(B, b[1].id);
+  }
+  // Startåret sattes när FÖRSTA globen laddades. Öppna i stället på det
+  // senaste år som BÅDA serierna täcker — annars står sambandskortet på
+  // ”inga data det året” direkt vid start.
+  if (!arFranLank) {
+    const s = paneler.filter(p => p.glob).map(p => p.glob.meta.startAr ?? p.glob.meta.ar.at(-1));
+    if (s.length) { arNu = Math.min(...s); tidslinje.value = arNu; }
   }
   status("");
   oversattStatiskt();

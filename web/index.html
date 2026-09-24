@@ -326,11 +326,17 @@
     .mini .txt, #vyfalt .vytxt { display: none; }
     #vyfalt { padding: 2px 4px; }
     .maxKnapp .txt, .merKnapp .txt { display: none; }
-    .glober { gap: 6px; padding: 4px; }
-    .panel { width: 47vw; }
-    canvas.glob, .saknas { width: 46vw; height: 46vw; }
-    canvas.bar { width: 46vw; height: 30px; }
-    .regel, .serieknapp { max-width: 46vw; font-size: 11px; }
+    /* Stående mobil: två 46vw-glober bredvid varandra blev frimärken. Nu
+       ligger de under varandra i nästan full bredd, sambandskortet sist. */
+    #styrfalt { flex-wrap: wrap; row-gap: 4px; }
+    #tidslinje { order: 9; flex: 1 1 100%; }
+    .glober { gap: 10px; padding: 4px 8px; }
+    .panel { width: 100%; }
+    canvas.glob, .saknas { width: min(94vw, 46vh); height: min(94vw, 46vh); margin: 0 auto; }
+    .saknas { height: 90px; }
+    canvas.bar { width: min(94vw, 46vh); height: 34px; }
+    .regel { max-width: 94vw; font-size: 11px; }
+    .serieknapp { max-width: 90vw; font-size: 13px; }
     #valjareTopp { flex-wrap: wrap; }
   }
 </style>
@@ -364,7 +370,7 @@
       <option value="4" selected>4</option><option value="8">8</option>
       <option value="15">15</option><option value="50">50</option></select></label>
     <label><span data-i18n="relief">Relief</span>
-      <input type="range" id="relief" min="0.45" max="2.0" step="0.05" value="0.9" style="width:110px"></label>
+      <input type="range" id="relief" min="0.45" max="3.0" step="0.05" value="1.3" style="width:110px"></label>
     <label><span data-i18n="autorotation">autorotation</span>
       <input type="checkbox" id="rotera"></label>
     <label title="Länder utan egen siffra får sin världsdels värde, räknat ur de länder som faktiskt har data. Ifyllda länder märks med (uppskattat) i avläsningen och får skrovlig yta i STL-exporten. Utan detta ritas ett land utan data som hav — kartan säger då ”här finns ingenting” när den borde säga ”här vet vi inte”."><span data-i18n="fyllkont">fyll luckor med världsdelen</span>
@@ -407,8 +413,8 @@
   window.addEventListener("error", e => __fel.push(e.message + " @ " + e.filename + ":" + e.lineno));
   window.addEventListener("unhandledrejection", e => __fel.push("promise: " + (e.reason && e.reason.stack || e.reason)));
 </script>
-<script src="i18n.js?v=64"></script>
-<script src="motor.js?v=64"></script>
-<script src="explorer.js?v=64"></script>
+<script src="i18n.js?v=65"></script>
+<script src="motor.js?v=65"></script>
+<script src="explorer.js?v=65"></script>
 </body>
 </html>
